@@ -5,7 +5,6 @@
 - [EALink](#EALink)
 - [LiSSA](#LiSSA)
 - [MPLinker](#MPLinker)
-- [MPLinker](#MPLinker)
 - [PromptLink](#PromptLink)
 
 
