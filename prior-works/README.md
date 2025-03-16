@@ -15,8 +15,9 @@ Automated Recovery of Issue-Commit Links Leveraging Both Textual and Non-textual
 
 ## AutoFL
 A Quantitative and Qualitative Evaluation of LLM-Based Explainable Fault Localization
-- [🐙 github](https://github.com/coinse/autofl/)
+- [🐙github](https://github.com/coinse/autofl/)
 - [📜 paper](https://arxiv.org/pdf/2308.05487)
+- [♻ reproduce](./autofl/)
 
 ## BTLink
 automatic link recovery between issues and commits based on pre-trained BERT model
