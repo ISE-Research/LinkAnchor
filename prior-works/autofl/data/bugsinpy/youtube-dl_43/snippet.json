@@ -1,0 +1,974 @@
+[
+    {
+        "name": "youtube_dl.extractor.steam.SteamIE.suitable#43",
+        "src_path": "youtube_dl/extractor/steam.py",
+        "class_name": "youtube_dl.extractor.steam.SteamIE",
+        "signature": "youtube_dl.extractor.steam.SteamIE.suitable(cls, url)",
+        "snippet": "    def suitable(cls, url):\n        \"\"\"Receives a URL and returns True if suitable for this IE.\"\"\"\n        return re.match(cls._VALID_URL, url, re.VERBOSE) is not None",
+        "begin_line": 43,
+        "end_line": 45,
+        "comment": "",
+        "is_bug": false,
+        "susp": {
+            "pseudo_ochiai_susp": 0.01639344262295082,
+            "pseudo_dstar_susp": 0.014492753623188406,
+            "pseudo_tarantula_susp": 0.0625,
+            "pseudo_op2_susp": 0.014492753623188406,
+            "pseudo_barinel_susp": 0.0625
+        }
+    },
+    {
+        "name": "youtube_dl.extractor.comedycentral.ComedyCentralShowsIE.suitable#87",
+        "src_path": "youtube_dl/extractor/comedycentral.py",
+        "class_name": "youtube_dl.extractor.comedycentral.ComedyCentralShowsIE",
+        "signature": "youtube_dl.extractor.comedycentral.ComedyCentralShowsIE.suitable(cls, url)",
+        "snippet": "    def suitable(cls, url):\n        \"\"\"Receives a URL and returns True if suitable for this IE.\"\"\"\n        return re.match(cls._VALID_URL, url, re.VERBOSE) is not None",
+        "begin_line": 87,
+        "end_line": 89,
+        "comment": "",
+        "is_bug": false,
+        "susp": {
+            "pseudo_ochiai_susp": 0.015873015873015872,
+            "pseudo_dstar_susp": 0.014084507042253521,
+            "pseudo_tarantula_susp": 0.01282051282051282,
+            "pseudo_op2_susp": 0.014084507042253521,
+            "pseudo_barinel_susp": 0.01282051282051282
+        }
+    },
+    {
+        "name": "youtube_dl.extractor.__init__.gen_extractors#235",
+        "src_path": "youtube_dl/extractor/__init__.py",
+        "class_name": "youtube_dl.extractor.__init__",
+        "signature": "youtube_dl.extractor.__init__.gen_extractors()",
+        "snippet": "def gen_extractors():\n    \"\"\" Return a list of an instance of every supported extractor.\n    The order does matter; the first extractor matched is the one handling the URL.\n    \"\"\"\n    return [klass() for klass in _ALL_CLASSES]",
+        "begin_line": 235,
+        "end_line": 239,
+        "comment": "",
+        "is_bug": false,
+        "susp": {
+            "pseudo_ochiai_susp": 0.0196078431372549,
+            "pseudo_dstar_susp": 0.0196078431372549,
+            "pseudo_tarantula_susp": 0.011235955056179775,
+            "pseudo_op2_susp": 0.0196078431372549,
+            "pseudo_barinel_susp": 0.011235955056179775
+        }
+    },
+    {
+        "name": "youtube_dl.extractor.__init__.get_info_extractor#242",
+        "src_path": "youtube_dl/extractor/__init__.py",
+        "class_name": "youtube_dl.extractor.__init__",
+        "signature": "youtube_dl.extractor.__init__.get_info_extractor(ie_name)",
+        "snippet": "def get_info_extractor(ie_name):\n    \"\"\"Returns the info extractor class with the given ie_name\"\"\"\n    return globals()[ie_name+'IE']",
+        "begin_line": 242,
+        "end_line": 244,
+        "comment": "",
+        "is_bug": false,
+        "susp": {
+            "pseudo_ochiai_susp": 0.022222222222222223,
+            "pseudo_dstar_susp": 0.022222222222222223,
+            "pseudo_tarantula_susp": 0.012345679012345678,
+            "pseudo_op2_susp": 0.022222222222222223,
+            "pseudo_barinel_susp": 0.012345679012345678
+        }
+    },
+    {
+        "name": "youtube_dl.extractor.sina.SinaIE.suitable#32",
+        "src_path": "youtube_dl/extractor/sina.py",
+        "class_name": "youtube_dl.extractor.sina.SinaIE",
+        "signature": "youtube_dl.extractor.sina.SinaIE.suitable(cls, url)",
+        "snippet": "    def suitable(cls, url):\n        return re.match(cls._VALID_URL, url, flags=re.VERBOSE) is not None",
+        "begin_line": 32,
+        "end_line": 33,
+        "comment": "",
+        "is_bug": false,
+        "susp": {
+            "pseudo_ochiai_susp": 0.02040816326530612,
+            "pseudo_dstar_susp": 0.02040816326530612,
+            "pseudo_tarantula_susp": 0.0625,
+            "pseudo_op2_susp": 0.02040816326530612,
+            "pseudo_barinel_susp": 0.0625
+        }
+    },
+    {
+        "name": "youtube_dl.extractor.youtube.YoutubeIE.suitable#370",
+        "src_path": "youtube_dl/extractor/youtube.py",
+        "class_name": "youtube_dl.extractor.youtube.YoutubeIE",
+        "signature": "youtube_dl.extractor.youtube.YoutubeIE.suitable(cls, url)",
+        "snippet": "    def suitable(cls, url):\n        \"\"\"Receives a URL and returns True if suitable for this IE.\"\"\"\n        if YoutubePlaylistIE.suitable(url): return False\n        return re.match(cls._VALID_URL, url) is not None",
+        "begin_line": 370,
+        "end_line": 373,
+        "comment": "",
+        "is_bug": false,
+        "susp": {
+            "pseudo_ochiai_susp": 0.011363636363636364,
+            "pseudo_dstar_susp": 0.011363636363636364,
+            "pseudo_tarantula_susp": 0.0625,
+            "pseudo_op2_susp": 0.011363636363636364,
+            "pseudo_barinel_susp": 0.0625
+        }
+    },
+    {
+        "name": "youtube_dl.extractor.youtube.YoutubeIE.__init__#375",
+        "src_path": "youtube_dl/extractor/youtube.py",
+        "class_name": "youtube_dl.extractor.youtube.YoutubeIE",
+        "signature": "youtube_dl.extractor.youtube.YoutubeIE.__init__(self, *args, **kwargs)",
+        "snippet": "    def __init__(self, *args, **kwargs):\n        super(YoutubeIE, self).__init__(*args, **kwargs)\n        self._player_cache = {}",
+        "begin_line": 375,
+        "end_line": 377,
+        "comment": "",
+        "is_bug": false,
+        "susp": {
+            "pseudo_ochiai_susp": 0.013888888888888888,
+            "pseudo_dstar_susp": 0.017857142857142856,
+            "pseudo_tarantula_susp": 0.011764705882352941,
+            "pseudo_op2_susp": 0.017857142857142856,
+            "pseudo_barinel_susp": 0.011764705882352941
+        }
+    },
+    {
+        "name": "youtube_dl.extractor.youtube.YoutubeIE._parse_sig_js#488",
+        "src_path": "youtube_dl/extractor/youtube.py",
+        "class_name": "youtube_dl.extractor.youtube.YoutubeIE",
+        "signature": "youtube_dl.extractor.youtube.YoutubeIE._parse_sig_js(self, jscode)",
+        "snippet": "    def _parse_sig_js(self, jscode):\n        funcname = self._search_regex(\n            r'signature=([a-zA-Z]+)', jscode,\n            u'Initial JS player signature function name')\n\n        functions = {}\n\n        def argidx(varname):\n            return string.lowercase.index(varname)\n\n        def interpret_statement(stmt, local_vars, allow_recursion=20):\n            if allow_recursion < 0:\n                raise ExtractorError(u'Recursion limit reached')\n\n            if stmt.startswith(u'var '):\n                stmt = stmt[len(u'var '):]\n            ass_m = re.match(r'^(?P<out>[a-z]+)(?:\\[(?P<index>[^\\]]+)\\])?' +\n                             r'=(?P<expr>.*)$', stmt)\n            if ass_m:\n                if ass_m.groupdict().get('index'):\n                    def assign(val):\n                        lvar = local_vars[ass_m.group('out')]\n                        idx = interpret_expression(ass_m.group('index'),\n                                                   local_vars, allow_recursion)\n                        assert isinstance(idx, int)\n                        lvar[idx] = val\n                        return val\n                    expr = ass_m.group('expr')\n                else:\n                    def assign(val):\n                        local_vars[ass_m.group('out')] = val\n                        return val\n                    expr = ass_m.group('expr')\n            elif stmt.startswith(u'return '):\n                assign = lambda v: v\n                expr = stmt[len(u'return '):]\n            else:\n                raise ExtractorError(\n                    u'Cannot determine left side of statement in %r' % stmt)\n\n            v = interpret_expression(expr, local_vars, allow_recursion)\n            return assign(v)\n\n        def interpret_expression(expr, local_vars, allow_recursion):\n            if expr.isdigit():\n                return int(expr)\n\n            if expr.isalpha():\n                return local_vars[expr]\n\n            m = re.match(r'^(?P<in>[a-z]+)\\.(?P<member>.*)$', expr)\n            if m:\n                member = m.group('member')\n                val = local_vars[m.group('in')]\n                if member == 'split(\"\")':\n                    return list(val)\n                if member == 'join(\"\")':\n                    return u''.join(val)\n                if member == 'length':\n                    return len(val)\n                if member == 'reverse()':\n                    return val[::-1]\n                slice_m = re.match(r'slice\\((?P<idx>.*)\\)', member)\n                if slice_m:\n                    idx = interpret_expression(\n                        slice_m.group('idx'), local_vars, allow_recursion-1)\n                    return val[idx:]\n\n            m = re.match(\n                r'^(?P<in>[a-z]+)\\[(?P<idx>.+)\\]$', expr)\n            if m:\n                val = local_vars[m.group('in')]\n                idx = interpret_expression(m.group('idx'), local_vars,\n                                           allow_recursion-1)\n                return val[idx]\n\n            m = re.match(r'^(?P<a>.+?)(?P<op>[%])(?P<b>.+?)$', expr)\n            if m:\n                a = interpret_expression(m.group('a'),\n                                         local_vars, allow_recursion)\n                b = interpret_expression(m.group('b'),\n                                         local_vars, allow_recursion)\n                return a % b\n\n            m = re.match(\n                r'^(?P<func>[a-zA-Z]+)\\((?P<args>[a-z0-9,]+)\\)$', expr)\n            if m:\n                fname = m.group('func')\n                if fname not in functions:\n                    functions[fname] = extract_function(fname)\n                argvals = [int(v) if v.isdigit() else local_vars[v]\n                           for v in m.group('args').split(',')]\n                return functions[fname](argvals)\n            raise ExtractorError(u'Unsupported JS expression %r' % expr)\n\n        def extract_function(funcname):\n            func_m = re.search(\n                r'function ' + re.escape(funcname) +\n                r'\\((?P<args>[a-z,]+)\\){(?P<code>[^}]+)}',\n                jscode)\n            argnames = func_m.group('args').split(',')\n\n            def resf(args):\n                local_vars = dict(zip(argnames, args))\n                for stmt in func_m.group('code').split(';'):\n                    res = interpret_statement(stmt, local_vars)\n                return res\n            return resf\n\n        initial_function = extract_function(funcname)\n        return lambda s: initial_function([s])",
+        "begin_line": 488,
+        "end_line": 598,
+        "comment": "",
+        "is_bug": false,
+        "susp": {
+            "pseudo_ochiai_susp": 0.004484304932735426,
+            "pseudo_dstar_susp": 0.004484304932735426,
+            "pseudo_tarantula_susp": 0.004484304932735426,
+            "pseudo_op2_susp": 0.005917159763313609,
+            "pseudo_barinel_susp": 0.004484304932735426
+        }
+    },
+    {
+        "name": "youtube_dl.extractor.youtube.YoutubeIE.argidx#495",
+        "src_path": "youtube_dl/extractor/youtube.py",
+        "class_name": "youtube_dl.extractor.youtube.YoutubeIE",
+        "signature": "youtube_dl.extractor.youtube.YoutubeIE.argidx(varname)",
+        "snippet": "        def argidx(varname):\n            return string.lowercase.index(varname)",
+        "begin_line": 495,
+        "end_line": 496,
+        "comment": "",
+        "is_bug": false,
+        "susp": {
+            "pseudo_ochiai_susp": 0.004484304932735426,
+            "pseudo_dstar_susp": 0.004484304932735426,
+            "pseudo_tarantula_susp": 0.004484304932735426,
+            "pseudo_op2_susp": 0.0035460992907801418,
+            "pseudo_barinel_susp": 0.004484304932735426
+        }
+    },
+    {
+        "name": "youtube_dl.extractor.youtube.YoutubeIE.interpret_statement#498",
+        "src_path": "youtube_dl/extractor/youtube.py",
+        "class_name": "youtube_dl.extractor.youtube.YoutubeIE",
+        "signature": "youtube_dl.extractor.youtube.YoutubeIE.interpret_statement(stmt, local_vars, allow_recursion=20)",
+        "snippet": "        def interpret_statement(stmt, local_vars, allow_recursion=20):\n            if allow_recursion < 0:\n                raise ExtractorError(u'Recursion limit reached')\n\n            if stmt.startswith(u'var '):\n                stmt = stmt[len(u'var '):]\n            ass_m = re.match(r'^(?P<out>[a-z]+)(?:\\[(?P<index>[^\\]]+)\\])?' +\n                             r'=(?P<expr>.*)$', stmt)\n            if ass_m:\n                if ass_m.groupdict().get('index'):\n                    def assign(val):\n                        lvar = local_vars[ass_m.group('out')]\n                        idx = interpret_expression(ass_m.group('index'),\n                                                   local_vars, allow_recursion)\n                        assert isinstance(idx, int)\n                        lvar[idx] = val\n                        return val\n                    expr = ass_m.group('expr')\n                else:\n                    def assign(val):\n                        local_vars[ass_m.group('out')] = val\n                        return val\n                    expr = ass_m.group('expr')\n            elif stmt.startswith(u'return '):\n                assign = lambda v: v\n                expr = stmt[len(u'return '):]\n            else:\n                raise ExtractorError(\n                    u'Cannot determine left side of statement in %r' % stmt)\n\n            v = interpret_expression(expr, local_vars, allow_recursion)\n            return assign(v)",
+        "begin_line": 498,
+        "end_line": 529,
+        "comment": "",
+        "is_bug": false,
+        "susp": {
+            "pseudo_ochiai_susp": 0.004484304932735426,
+            "pseudo_dstar_susp": 0.004484304932735426,
+            "pseudo_tarantula_susp": 0.004484304932735426,
+            "pseudo_op2_susp": 0.005917159763313609,
+            "pseudo_barinel_susp": 0.004484304932735426
+        }
+    },
+    {
+        "name": "youtube_dl.extractor.youtube.YoutubeIE.assign#508",
+        "src_path": "youtube_dl/extractor/youtube.py",
+        "class_name": "youtube_dl.extractor.youtube.YoutubeIE",
+        "signature": "youtube_dl.extractor.youtube.YoutubeIE.assign(val)",
+        "snippet": "                    def assign(val):\n                        lvar = local_vars[ass_m.group('out')]\n                        idx = interpret_expression(ass_m.group('index'),\n                                                   local_vars, allow_recursion)\n                        assert isinstance(idx, int)\n                        lvar[idx] = val\n                        return val",
+        "begin_line": 508,
+        "end_line": 514,
+        "comment": "",
+        "is_bug": false,
+        "susp": {
+            "pseudo_ochiai_susp": 0.004484304932735426,
+            "pseudo_dstar_susp": 0.004484304932735426,
+            "pseudo_tarantula_susp": 0.004484304932735426,
+            "pseudo_op2_susp": 0.005917159763313609,
+            "pseudo_barinel_susp": 0.004484304932735426
+        }
+    },
+    {
+        "name": "youtube_dl.extractor.youtube.YoutubeIE.assign#517",
+        "src_path": "youtube_dl/extractor/youtube.py",
+        "class_name": "youtube_dl.extractor.youtube.YoutubeIE",
+        "signature": "youtube_dl.extractor.youtube.YoutubeIE.assign(val)",
+        "snippet": "                    def assign(val):\n                        local_vars[ass_m.group('out')] = val\n                        return val",
+        "begin_line": 517,
+        "end_line": 519,
+        "comment": "",
+        "is_bug": false,
+        "susp": {
+            "pseudo_ochiai_susp": 0.004484304932735426,
+            "pseudo_dstar_susp": 0.004484304932735426,
+            "pseudo_tarantula_susp": 0.004484304932735426,
+            "pseudo_op2_susp": 0.005917159763313609,
+            "pseudo_barinel_susp": 0.004484304932735426
+        }
+    },
+    {
+        "name": "youtube_dl.extractor.youtube.YoutubeIE.interpret_expression#531",
+        "src_path": "youtube_dl/extractor/youtube.py",
+        "class_name": "youtube_dl.extractor.youtube.YoutubeIE",
+        "signature": "youtube_dl.extractor.youtube.YoutubeIE.interpret_expression(expr, local_vars, allow_recursion)",
+        "snippet": "        def interpret_expression(expr, local_vars, allow_recursion):\n            if expr.isdigit():\n                return int(expr)\n\n            if expr.isalpha():\n                return local_vars[expr]\n\n            m = re.match(r'^(?P<in>[a-z]+)\\.(?P<member>.*)$', expr)\n            if m:\n                member = m.group('member')\n                val = local_vars[m.group('in')]\n                if member == 'split(\"\")':\n                    return list(val)\n                if member == 'join(\"\")':\n                    return u''.join(val)\n                if member == 'length':\n                    return len(val)\n                if member == 'reverse()':\n                    return val[::-1]\n                slice_m = re.match(r'slice\\((?P<idx>.*)\\)', member)\n                if slice_m:\n                    idx = interpret_expression(\n                        slice_m.group('idx'), local_vars, allow_recursion-1)\n                    return val[idx:]\n\n            m = re.match(\n                r'^(?P<in>[a-z]+)\\[(?P<idx>.+)\\]$', expr)\n            if m:\n                val = local_vars[m.group('in')]\n                idx = interpret_expression(m.group('idx'), local_vars,\n                                           allow_recursion-1)\n                return val[idx]\n\n            m = re.match(r'^(?P<a>.+?)(?P<op>[%])(?P<b>.+?)$', expr)\n            if m:\n                a = interpret_expression(m.group('a'),\n                                         local_vars, allow_recursion)\n                b = interpret_expression(m.group('b'),\n                                         local_vars, allow_recursion)\n                return a % b\n\n            m = re.match(\n                r'^(?P<func>[a-zA-Z]+)\\((?P<args>[a-z0-9,]+)\\)$', expr)\n            if m:\n                fname = m.group('func')\n                if fname not in functions:\n                    functions[fname] = extract_function(fname)\n                argvals = [int(v) if v.isdigit() else local_vars[v]\n                           for v in m.group('args').split(',')]\n                return functions[fname](argvals)\n            raise ExtractorError(u'Unsupported JS expression %r' % expr)",
+        "begin_line": 531,
+        "end_line": 581,
+        "comment": "",
+        "is_bug": false,
+        "susp": {
+            "pseudo_ochiai_susp": 0.004484304932735426,
+            "pseudo_dstar_susp": 0.004484304932735426,
+            "pseudo_tarantula_susp": 0.004484304932735426,
+            "pseudo_op2_susp": 0.005917159763313609,
+            "pseudo_barinel_susp": 0.004484304932735426
+        }
+    },
+    {
+        "name": "youtube_dl.extractor.youtube.YoutubeIE.extract_function#583",
+        "src_path": "youtube_dl/extractor/youtube.py",
+        "class_name": "youtube_dl.extractor.youtube.YoutubeIE",
+        "signature": "youtube_dl.extractor.youtube.YoutubeIE.extract_function(funcname)",
+        "snippet": "        def extract_function(funcname):\n            func_m = re.search(\n                r'function ' + re.escape(funcname) +\n                r'\\((?P<args>[a-z,]+)\\){(?P<code>[^}]+)}',\n                jscode)\n            argnames = func_m.group('args').split(',')\n\n            def resf(args):\n                local_vars = dict(zip(argnames, args))\n                for stmt in func_m.group('code').split(';'):\n                    res = interpret_statement(stmt, local_vars)\n                return res\n            return resf",
+        "begin_line": 583,
+        "end_line": 595,
+        "comment": "",
+        "is_bug": false,
+        "susp": {
+            "pseudo_ochiai_susp": 0.004484304932735426,
+            "pseudo_dstar_susp": 0.004484304932735426,
+            "pseudo_tarantula_susp": 0.004484304932735426,
+            "pseudo_op2_susp": 0.005917159763313609,
+            "pseudo_barinel_susp": 0.004484304932735426
+        }
+    },
+    {
+        "name": "youtube_dl.extractor.youtube.YoutubeIE.resf#590",
+        "src_path": "youtube_dl/extractor/youtube.py",
+        "class_name": "youtube_dl.extractor.youtube.YoutubeIE",
+        "signature": "youtube_dl.extractor.youtube.YoutubeIE.resf(args)",
+        "snippet": "            def resf(args):\n                local_vars = dict(zip(argnames, args))\n                for stmt in func_m.group('code').split(';'):\n                    res = interpret_statement(stmt, local_vars)\n                return res",
+        "begin_line": 590,
+        "end_line": 594,
+        "comment": "",
+        "is_bug": false,
+        "susp": {
+            "pseudo_ochiai_susp": 0.004484304932735426,
+            "pseudo_dstar_susp": 0.004484304932735426,
+            "pseudo_tarantula_susp": 0.004484304932735426,
+            "pseudo_op2_susp": 0.005917159763313609,
+            "pseudo_barinel_susp": 0.004484304932735426
+        }
+    },
+    {
+        "name": "youtube_dl.extractor.youtube.YoutubeIE._extract_id#1163",
+        "src_path": "youtube_dl/extractor/youtube.py",
+        "class_name": "youtube_dl.extractor.youtube.YoutubeIE",
+        "signature": "youtube_dl.extractor.youtube.YoutubeIE._extract_id(self, url)",
+        "snippet": "    def _extract_id(self, url):\n        mobj = re.match(self._VALID_URL, url, re.VERBOSE)\n        if mobj is None:\n            raise ExtractorError(u'Invalid URL: %s' % url)\n        video_id = mobj.group(2)\n        return video_id",
+        "begin_line": 1163,
+        "end_line": 1168,
+        "comment": "",
+        "is_bug": false,
+        "susp": {
+            "pseudo_ochiai_susp": 0.004484304932735426,
+            "pseudo_dstar_susp": 0.004484304932735426,
+            "pseudo_tarantula_susp": 0.004484304932735426,
+            "pseudo_op2_susp": 0.005917159763313609,
+            "pseudo_barinel_susp": 0.004484304932735426
+        }
+    },
+    {
+        "name": "youtube_dl.extractor.youtube.YoutubePlaylistIE.suitable#1532",
+        "src_path": "youtube_dl/extractor/youtube.py",
+        "class_name": "youtube_dl.extractor.youtube.YoutubePlaylistIE",
+        "signature": "youtube_dl.extractor.youtube.YoutubePlaylistIE.suitable(cls, url)",
+        "snippet": "    def suitable(cls, url):\n        \"\"\"Receives a URL and returns True if suitable for this IE.\"\"\"\n        return re.match(cls._VALID_URL, url, re.VERBOSE) is not None",
+        "begin_line": 1532,
+        "end_line": 1534,
+        "comment": "",
+        "is_bug": false,
+        "susp": {
+            "pseudo_ochiai_susp": 0.011363636363636364,
+            "pseudo_dstar_susp": 0.011363636363636364,
+            "pseudo_tarantula_susp": 0.0625,
+            "pseudo_op2_susp": 0.011363636363636364,
+            "pseudo_barinel_susp": 0.0625
+        }
+    },
+    {
+        "name": "youtube_dl.extractor.arte.ArteTvIE.suitable#28",
+        "src_path": "youtube_dl/extractor/arte.py",
+        "class_name": "youtube_dl.extractor.arte.ArteTvIE",
+        "signature": "youtube_dl.extractor.arte.ArteTvIE.suitable(cls, url)",
+        "snippet": "    def suitable(cls, url):\n        return any(re.match(regex, url) for regex in (cls._VIDEOS_URL, cls._LIVEWEB_URL))",
+        "begin_line": 28,
+        "end_line": 29,
+        "comment": "",
+        "is_bug": false,
+        "susp": {
+            "pseudo_ochiai_susp": 0.02040816326530612,
+            "pseudo_dstar_susp": 0.02040816326530612,
+            "pseudo_tarantula_susp": 0.0625,
+            "pseudo_op2_susp": 0.02040816326530612,
+            "pseudo_barinel_susp": 0.0625
+        }
+    },
+    {
+        "name": "youtube_dl.YoutubeDL.YoutubeDL.__init__#165",
+        "src_path": "youtube_dl/YoutubeDL.py",
+        "class_name": "youtube_dl.YoutubeDL.YoutubeDL",
+        "signature": "youtube_dl.YoutubeDL.YoutubeDL.__init__(self, params=None)",
+        "snippet": "    def __init__(self, params=None):\n        \"\"\"Create a FileDownloader object with the given options.\"\"\"\n        self._ies = []\n        self._ies_instances = {}\n        self._pps = []\n        self._progress_hooks = []\n        self._download_retcode = 0\n        self._num_downloads = 0\n        self._screen_file = [sys.stdout, sys.stderr][params.get('logtostderr', False)]\n        self._err_file = sys.stderr\n        self.params = {} if params is None else params\n\n        if params.get('bidi_workaround', False):\n            try:\n                import pty\n                master, slave = pty.openpty()\n                width = get_term_width()\n                if width is None:\n                    width_args = []\n                else:\n                    width_args = ['-w', str(width)]\n                self._fribidi = subprocess.Popen(\n                    ['fribidi', '-c', 'UTF-8'] + width_args,\n                    stdin=subprocess.PIPE,\n                    stdout=slave,\n                    stderr=self._err_file)\n                self._fribidi_channel = os.fdopen(master, 'rb')\n            except OSError as ose:\n                if ose.errno == 2:\n                    self.report_warning(u'Could not find fribidi executable, ignoring --bidi-workaround . Make sure that  fribidi  is an executable file in one of the directories in your $PATH.')\n                else:\n                    raise\n\n        if (sys.version_info >= (3,) and sys.platform != 'win32' and\n                sys.getfilesystemencoding() in ['ascii', 'ANSI_X3.4-1968']\n                and not params['restrictfilenames']):\n            # On Python 3, the Unicode filesystem API will throw errors (#1474)\n            self.report_warning(\n                u'Assuming --restrict-filenames since file system encoding '\n                u'cannot encode all charactes. '\n                u'Set the LC_ALL environment variable to fix this.')\n            self.params['restrictfilenames'] = True\n\n        self.fd = FileDownloader(self, self.params)\n\n        if '%(stitle)s' in self.params.get('outtmpl', ''):\n            self.report_warning(u'%(stitle)s is deprecated. Use the %(title)s and the --restrict-filenames flag(which also secures %(uploader)s et al) instead.')\n\n        self._setup_opener()",
+        "begin_line": 165,
+        "end_line": 213,
+        "comment": "",
+        "is_bug": false,
+        "susp": {
+            "pseudo_ochiai_susp": 0.05,
+            "pseudo_dstar_susp": 0.05,
+            "pseudo_tarantula_susp": 0.0196078431372549,
+            "pseudo_op2_susp": 0.05,
+            "pseudo_barinel_susp": 0.0196078431372549
+        }
+    },
+    {
+        "name": "youtube_dl.YoutubeDL.YoutubeDL.add_extra_info#448",
+        "src_path": "youtube_dl/YoutubeDL.py",
+        "class_name": "youtube_dl.YoutubeDL.YoutubeDL",
+        "signature": "youtube_dl.YoutubeDL.YoutubeDL.add_extra_info(info_dict, extra_info)",
+        "snippet": "    def add_extra_info(info_dict, extra_info):\n        '''Set the keys from extra_info in info dict if they are missing'''\n        for key, value in extra_info.items():\n            info_dict.setdefault(key, value)",
+        "begin_line": 448,
+        "end_line": 451,
+        "comment": "",
+        "is_bug": false,
+        "susp": {
+            "pseudo_ochiai_susp": 0.004484304932735426,
+            "pseudo_dstar_susp": 0.004484304932735426,
+            "pseudo_tarantula_susp": 0.004484304932735426,
+            "pseudo_op2_susp": 0.005917159763313609,
+            "pseudo_barinel_susp": 0.004484304932735426
+        }
+    },
+    {
+        "name": "youtube_dl.YoutubeDL.YoutubeDL._setup_opener#1083",
+        "src_path": "youtube_dl/YoutubeDL.py",
+        "class_name": "youtube_dl.YoutubeDL.YoutubeDL",
+        "signature": "youtube_dl.YoutubeDL.YoutubeDL._setup_opener(self)",
+        "snippet": "    def _setup_opener(self):\n        timeout_val = self.params.get('socket_timeout')\n        timeout = 600 if timeout_val is None else float(timeout_val)\n\n        opts_cookiefile = self.params.get('cookiefile')\n        opts_proxy = self.params.get('proxy')\n\n        if opts_cookiefile is None:\n            self.cookiejar = compat_cookiejar.CookieJar()\n        else:\n            self.cookiejar = compat_cookiejar.MozillaCookieJar(\n                opts_cookiefile)\n            if os.access(opts_cookiefile, os.R_OK):\n                self.cookiejar.load()\n\n        cookie_processor = compat_urllib_request.HTTPCookieProcessor(\n            self.cookiejar)\n        if opts_proxy is not None:\n            if opts_proxy == '':\n                proxies = {}\n            else:\n                proxies = {'http': opts_proxy, 'https': opts_proxy}\n        else:\n            proxies = compat_urllib_request.getproxies()\n            # Set HTTPS proxy to HTTP one if given (https://github.com/rg3/youtube-dl/issues/805)\n            if 'http' in proxies and 'https' not in proxies:\n                proxies['https'] = proxies['http']\n        proxy_handler = compat_urllib_request.ProxyHandler(proxies)\n        https_handler = make_HTTPS_handler(\n            self.params.get('nocheckcertificate', False))\n        opener = compat_urllib_request.build_opener(\n            https_handler, proxy_handler, cookie_processor, YoutubeDLHandler())\n        # Delete the default user-agent header, which would otherwise apply in\n        # cases where our custom HTTP handler doesn't come into play\n        # (See https://github.com/rg3/youtube-dl/issues/1309 for details)\n        opener.addheaders = []\n        self._opener = opener\n\n        # TODO remove this global modification\n        compat_urllib_request.install_opener(opener)\n        socket.setdefaulttimeout(timeout)",
+        "begin_line": 1083,
+        "end_line": 1123,
+        "comment": "",
+        "is_bug": false,
+        "susp": {
+            "pseudo_ochiai_susp": 0.05,
+            "pseudo_dstar_susp": 0.05,
+            "pseudo_tarantula_susp": 0.0625,
+            "pseudo_op2_susp": 0.05,
+            "pseudo_barinel_susp": 0.0625
+        }
+    },
+    {
+        "name": "youtube_dl.extractor.common.InfoExtractor.__init__#108",
+        "src_path": "youtube_dl/extractor/common.py",
+        "class_name": "youtube_dl.extractor.common.InfoExtractor",
+        "signature": "youtube_dl.extractor.common.InfoExtractor.__init__(self, downloader=None)",
+        "snippet": "    def __init__(self, downloader=None):\n        \"\"\"Constructor. Receives an optional downloader.\"\"\"\n        self._ready = False\n        self.set_downloader(downloader)",
+        "begin_line": 108,
+        "end_line": 111,
+        "comment": "",
+        "is_bug": false,
+        "susp": {
+            "pseudo_ochiai_susp": 0.013888888888888888,
+            "pseudo_dstar_susp": 0.017857142857142856,
+            "pseudo_tarantula_susp": 0.010638297872340425,
+            "pseudo_op2_susp": 0.017857142857142856,
+            "pseudo_barinel_susp": 0.010638297872340425
+        }
+    },
+    {
+        "name": "youtube_dl.extractor.common.InfoExtractor.suitable#114",
+        "src_path": "youtube_dl/extractor/common.py",
+        "class_name": "youtube_dl.extractor.common.InfoExtractor",
+        "signature": "youtube_dl.extractor.common.InfoExtractor.suitable(cls, url)",
+        "snippet": "    def suitable(cls, url):\n        \"\"\"Receives a URL and returns True if suitable for this IE.\"\"\"\n\n        # This does not use has/getattr intentionally - we want to know whether\n        # we have cached the regexp for *this* class, whereas getattr would also\n        # match the superclass\n        if '_VALID_URL_RE' not in cls.__dict__:\n            cls._VALID_URL_RE = re.compile(cls._VALID_URL)\n        return cls._VALID_URL_RE.match(url) is not None",
+        "begin_line": 114,
+        "end_line": 122,
+        "comment": "",
+        "is_bug": false,
+        "susp": {
+            "pseudo_ochiai_susp": 0.015384615384615385,
+            "pseudo_dstar_susp": 0.0136986301369863,
+            "pseudo_tarantula_susp": 0.011904761904761904,
+            "pseudo_op2_susp": 0.0136986301369863,
+            "pseudo_barinel_susp": 0.011904761904761904
+        }
+    },
+    {
+        "name": "youtube_dl.extractor.common.InfoExtractor.working#125",
+        "src_path": "youtube_dl/extractor/common.py",
+        "class_name": "youtube_dl.extractor.common.InfoExtractor",
+        "signature": "youtube_dl.extractor.common.InfoExtractor.working(cls)",
+        "snippet": "    def working(cls):\n        \"\"\"Getter method for _WORKING.\"\"\"\n        return cls._WORKING",
+        "begin_line": 125,
+        "end_line": 127,
+        "comment": "",
+        "is_bug": false,
+        "susp": {
+            "pseudo_ochiai_susp": 0.022222222222222223,
+            "pseudo_dstar_susp": 0.022222222222222223,
+            "pseudo_tarantula_susp": 0.012345679012345678,
+            "pseudo_op2_susp": 0.022222222222222223,
+            "pseudo_barinel_susp": 0.012345679012345678
+        }
+    },
+    {
+        "name": "youtube_dl.extractor.common.InfoExtractor.set_downloader#140",
+        "src_path": "youtube_dl/extractor/common.py",
+        "class_name": "youtube_dl.extractor.common.InfoExtractor",
+        "signature": "youtube_dl.extractor.common.InfoExtractor.set_downloader(self, downloader)",
+        "snippet": "    def set_downloader(self, downloader):\n        \"\"\"Sets the downloader for this IE.\"\"\"\n        self._downloader = downloader",
+        "begin_line": 140,
+        "end_line": 142,
+        "comment": "",
+        "is_bug": false,
+        "susp": {
+            "pseudo_ochiai_susp": 0.013888888888888888,
+            "pseudo_dstar_susp": 0.017857142857142856,
+            "pseudo_tarantula_susp": 0.010638297872340425,
+            "pseudo_op2_susp": 0.017857142857142856,
+            "pseudo_barinel_susp": 0.010638297872340425
+        }
+    },
+    {
+        "name": "youtube_dl.extractor.common.InfoExtractor._search_regex#285",
+        "src_path": "youtube_dl/extractor/common.py",
+        "class_name": "youtube_dl.extractor.common.InfoExtractor",
+        "signature": "youtube_dl.extractor.common.InfoExtractor._search_regex(self, pattern, string, name, default=_NO_DEFAULT, fatal=True, flags=0)",
+        "snippet": "    def _search_regex(self, pattern, string, name, default=_NO_DEFAULT, fatal=True, flags=0):\n        \"\"\"\n        Perform a regex search on the given string, using a single or a list of\n        patterns returning the first matching group.\n        In case of failure return a default value or raise a WARNING or a\n        RegexNotFoundError, depending on fatal, specifying the field name.\n        \"\"\"\n        if isinstance(pattern, (str, compat_str, compiled_regex_type)):\n            mobj = re.search(pattern, string, flags)\n        else:\n            for p in pattern:\n                mobj = re.search(p, string, flags)\n                if mobj: break\n\n        if os.name != 'nt' and sys.stderr.isatty():\n            _name = u'\\033[0;34m%s\\033[0m' % name\n        else:\n            _name = name\n\n        if mobj:\n            # return the first matching group\n            return next(g for g in mobj.groups() if g is not None)\n        elif default is not _NO_DEFAULT:\n            return default\n        elif fatal:\n            raise RegexNotFoundError(u'Unable to extract %s' % _name)\n        else:\n            self._downloader.report_warning(u'unable to extract %s; '\n                u'please report this issue on http://yt-dl.org/bug' % _name)\n            return None",
+        "begin_line": 285,
+        "end_line": 314,
+        "comment": "",
+        "is_bug": false,
+        "susp": {
+            "pseudo_ochiai_susp": 0.004484304932735426,
+            "pseudo_dstar_susp": 0.004484304932735426,
+            "pseudo_tarantula_susp": 0.004484304932735426,
+            "pseudo_op2_susp": 0.005917159763313609,
+            "pseudo_barinel_susp": 0.004484304932735426
+        }
+    },
+    {
+        "name": "youtube_dl.extractor.common.SearchInfoExtractor._make_valid_url#435",
+        "src_path": "youtube_dl/extractor/common.py",
+        "class_name": "youtube_dl.extractor.common.SearchInfoExtractor",
+        "signature": "youtube_dl.extractor.common.SearchInfoExtractor._make_valid_url(cls)",
+        "snippet": "    def _make_valid_url(cls):\n        return r'%s(?P<prefix>|[1-9][0-9]*|all):(?P<query>[\\s\\S]+)' % cls._SEARCH_KEY",
+        "begin_line": 435,
+        "end_line": 436,
+        "comment": "",
+        "is_bug": false,
+        "susp": {
+            "pseudo_ochiai_susp": 0.01639344262295082,
+            "pseudo_dstar_susp": 0.014492753623188406,
+            "pseudo_tarantula_susp": 0.0625,
+            "pseudo_op2_susp": 0.014492753623188406,
+            "pseudo_barinel_susp": 0.0625
+        }
+    },
+    {
+        "name": "youtube_dl.extractor.common.SearchInfoExtractor.suitable#439",
+        "src_path": "youtube_dl/extractor/common.py",
+        "class_name": "youtube_dl.extractor.common.SearchInfoExtractor",
+        "signature": "youtube_dl.extractor.common.SearchInfoExtractor.suitable(cls, url)",
+        "snippet": "    def suitable(cls, url):\n        return re.match(cls._make_valid_url(), url) is not None",
+        "begin_line": 439,
+        "end_line": 440,
+        "comment": "",
+        "is_bug": false,
+        "susp": {
+            "pseudo_ochiai_susp": 0.01639344262295082,
+            "pseudo_dstar_susp": 0.014492753623188406,
+            "pseudo_tarantula_susp": 0.0625,
+            "pseudo_op2_susp": 0.014492753623188406,
+            "pseudo_barinel_susp": 0.0625
+        }
+    },
+    {
+        "name": "youtube_dl.extractor.nhl.NHLVideocenterIE.suitable#77",
+        "src_path": "youtube_dl/extractor/nhl.py",
+        "class_name": "youtube_dl.extractor.nhl.NHLVideocenterIE",
+        "signature": "youtube_dl.extractor.nhl.NHLVideocenterIE.suitable(cls, url)",
+        "snippet": "    def suitable(cls, url):\n        if NHLIE.suitable(url):\n            return False\n        return super(NHLVideocenterIE, cls).suitable(url)",
+        "begin_line": 77,
+        "end_line": 80,
+        "comment": "",
+        "is_bug": false,
+        "susp": {
+            "pseudo_ochiai_susp": 0.01818181818181818,
+            "pseudo_dstar_susp": 0.016129032258064516,
+            "pseudo_tarantula_susp": 0.0625,
+            "pseudo_op2_susp": 0.016129032258064516,
+            "pseudo_barinel_susp": 0.0625
+        }
+    },
+    {
+        "name": "youtube_dl.utils.find_xpath_attr#224",
+        "src_path": "youtube_dl/utils.py",
+        "class_name": "youtube_dl.utils",
+        "signature": "youtube_dl.utils.find_xpath_attr(node, xpath, key, val)",
+        "snippet": "    def find_xpath_attr(node, xpath, key, val):\n        \"\"\" Find the xpath xpath[@key=val] \"\"\"\n        assert re.match(r'^[a-zA-Z]+$', key)\n        assert re.match(r'^[a-zA-Z0-9@\\s]*$', val)\n        expr = xpath + u\"[@%s='%s']\" % (key, val)\n        return node.find(expr)",
+        "begin_line": 224,
+        "end_line": 229,
+        "comment": "",
+        "is_bug": false,
+        "susp": {
+            "pseudo_ochiai_susp": 0.004484304932735426,
+            "pseudo_dstar_susp": 0.004484304932735426,
+            "pseudo_tarantula_susp": 0.004484304932735426,
+            "pseudo_op2_susp": 0.005917159763313609,
+            "pseudo_barinel_susp": 0.004484304932735426
+        }
+    },
+    {
+        "name": "youtube_dl.utils.xpath_with_ns#239",
+        "src_path": "youtube_dl/utils.py",
+        "class_name": "youtube_dl.utils",
+        "signature": "youtube_dl.utils.xpath_with_ns(path, ns_map)",
+        "snippet": "def xpath_with_ns(path, ns_map):\n    components = [c.split(':') for c in path.split('/')]\n    replaced = []\n    for c in components:\n        if len(c) == 1:\n            replaced.append(c[0])\n        else:\n            ns, tag = c\n            replaced.append('{%s}%s' % (ns_map[ns], tag))\n    return '/'.join(replaced)",
+        "begin_line": 239,
+        "end_line": 248,
+        "comment": "",
+        "is_bug": false,
+        "susp": {
+            "pseudo_ochiai_susp": 0.004484304932735426,
+            "pseudo_dstar_susp": 0.004484304932735426,
+            "pseudo_tarantula_susp": 0.004484304932735426,
+            "pseudo_op2_susp": 0.005917159763313609,
+            "pseudo_barinel_susp": 0.004484304932735426
+        }
+    },
+    {
+        "name": "youtube_dl.utils.BaseHTMLParser.loads#281",
+        "src_path": "youtube_dl/utils.py",
+        "class_name": "youtube_dl.utils.BaseHTMLParser",
+        "signature": "youtube_dl.utils.BaseHTMLParser.loads(self, html)",
+        "snippet": "    def loads(self, html):\n        self.html = html\n        self.feed(html)\n        self.close()",
+        "begin_line": 281,
+        "end_line": 284,
+        "comment": "",
+        "is_bug": false,
+        "susp": {
+            "pseudo_ochiai_susp": 0.004484304932735426,
+            "pseudo_dstar_susp": 0.004484304932735426,
+            "pseudo_tarantula_susp": 0.004484304932735426,
+            "pseudo_op2_susp": 0.005917159763313609,
+            "pseudo_barinel_susp": 0.004484304932735426
+        }
+    },
+    {
+        "name": "youtube_dl.utils.MetaParser.__init__#370",
+        "src_path": "youtube_dl/utils.py",
+        "class_name": "youtube_dl.utils.MetaParser",
+        "signature": "youtube_dl.utils.MetaParser.__init__(self, name)",
+        "snippet": "    def __init__(self, name):\n        BaseHTMLParser.__init__(self)\n        self.name = name\n        self.content = None\n        self.result = None",
+        "begin_line": 370,
+        "end_line": 374,
+        "comment": "",
+        "is_bug": false,
+        "susp": {
+            "pseudo_ochiai_susp": 0.004484304932735426,
+            "pseudo_dstar_susp": 0.004484304932735426,
+            "pseudo_tarantula_susp": 0.004484304932735426,
+            "pseudo_op2_susp": 0.005917159763313609,
+            "pseudo_barinel_susp": 0.004484304932735426
+        }
+    },
+    {
+        "name": "youtube_dl.utils.MetaParser.handle_starttag#376",
+        "src_path": "youtube_dl/utils.py",
+        "class_name": "youtube_dl.utils.MetaParser",
+        "signature": "youtube_dl.utils.MetaParser.handle_starttag(self, tag, attrs)",
+        "snippet": "    def handle_starttag(self, tag, attrs):\n        if tag != 'meta':\n            return\n        attrs = dict(attrs)\n        if attrs.get('name') == self.name:\n            self.result = attrs.get('content')",
+        "begin_line": 376,
+        "end_line": 381,
+        "comment": "",
+        "is_bug": false,
+        "susp": {
+            "pseudo_ochiai_susp": 0.004484304932735426,
+            "pseudo_dstar_susp": 0.004484304932735426,
+            "pseudo_tarantula_susp": 0.004484304932735426,
+            "pseudo_op2_susp": 0.005917159763313609,
+            "pseudo_barinel_susp": 0.004484304932735426
+        }
+    },
+    {
+        "name": "youtube_dl.utils.MetaParser.get_result#383",
+        "src_path": "youtube_dl/utils.py",
+        "class_name": "youtube_dl.utils.MetaParser",
+        "signature": "youtube_dl.utils.MetaParser.get_result(self)",
+        "snippet": "    def get_result(self):\n        return self.result",
+        "begin_line": 383,
+        "end_line": 384,
+        "comment": "",
+        "is_bug": false,
+        "susp": {
+            "pseudo_ochiai_susp": 0.004484304932735426,
+            "pseudo_dstar_susp": 0.004484304932735426,
+            "pseudo_tarantula_susp": 0.004484304932735426,
+            "pseudo_op2_susp": 0.005917159763313609,
+            "pseudo_barinel_susp": 0.004484304932735426
+        }
+    },
+    {
+        "name": "youtube_dl.utils.get_meta_content#386",
+        "src_path": "youtube_dl/utils.py",
+        "class_name": "youtube_dl.utils",
+        "signature": "youtube_dl.utils.get_meta_content(name, html)",
+        "snippet": "def get_meta_content(name, html):\n    \"\"\"\n    Return the content attribute from the meta tag with the given name attribute.\n    \"\"\"\n    parser = MetaParser(name)\n    try:\n        parser.loads(html)\n    except compat_html_parser.HTMLParseError:\n        pass\n    return parser.get_result()",
+        "begin_line": 386,
+        "end_line": 395,
+        "comment": "",
+        "is_bug": false,
+        "susp": {
+            "pseudo_ochiai_susp": 0.004484304932735426,
+            "pseudo_dstar_susp": 0.004484304932735426,
+            "pseudo_tarantula_susp": 0.004484304932735426,
+            "pseudo_op2_susp": 0.005917159763313609,
+            "pseudo_barinel_susp": 0.004484304932735426
+        }
+    },
+    {
+        "name": "youtube_dl.utils.timeconvert#446",
+        "src_path": "youtube_dl/utils.py",
+        "class_name": "youtube_dl.utils",
+        "signature": "youtube_dl.utils.timeconvert(timestr)",
+        "snippet": "def timeconvert(timestr):\n    \"\"\"Convert RFC 2822 defined time string into system timestamp\"\"\"\n    timestamp = None\n    timetuple = email.utils.parsedate_tz(timestr)\n    if timetuple is not None:\n        timestamp = email.utils.mktime_tz(timetuple)\n    return timestamp",
+        "begin_line": 446,
+        "end_line": 452,
+        "comment": "",
+        "is_bug": false,
+        "susp": {
+            "pseudo_ochiai_susp": 0.004484304932735426,
+            "pseudo_dstar_susp": 0.004484304932735426,
+            "pseudo_tarantula_susp": 0.004484304932735426,
+            "pseudo_op2_susp": 0.005917159763313609,
+            "pseudo_barinel_susp": 0.004484304932735426
+        }
+    },
+    {
+        "name": "youtube_dl.utils.sanitize_filename#454",
+        "src_path": "youtube_dl/utils.py",
+        "class_name": "youtube_dl.utils",
+        "signature": "youtube_dl.utils.sanitize_filename(s, restricted=False, is_id=False)",
+        "snippet": "def sanitize_filename(s, restricted=False, is_id=False):\n    \"\"\"Sanitizes a string so it could be used as part of a filename.\n    If restricted is set, use a stricter subset of allowed characters.\n    Set is_id if this is not an arbitrary string, but an ID that should be kept if possible\n    \"\"\"\n    def replace_insane(char):\n        if char == '?' or ord(char) < 32 or ord(char) == 127:\n            return ''\n        elif char == '\"':\n            return '' if restricted else '\\''\n        elif char == ':':\n            return '_-' if restricted else ' -'\n        elif char in '\\\\/|*<>':\n            return '_'\n        if restricted and (char in '!&\\'()[]{}$;`^,#' or char.isspace()):\n            return '_'\n        if restricted and ord(char) > 127:\n            return '_'\n        return char\n\n    result = u''.join(map(replace_insane, s))\n    if not is_id:\n        while '__' in result:\n            result = result.replace('__', '_')\n        result = result.strip('_')\n        # Common case of \"Foreign band name - English song title\"\n        if restricted and result.startswith('-_'):\n            result = result[2:]\n        if not result:\n            result = '_'\n    return result",
+        "begin_line": 454,
+        "end_line": 484,
+        "comment": "",
+        "is_bug": false,
+        "susp": {
+            "pseudo_ochiai_susp": 0.004484304932735426,
+            "pseudo_dstar_susp": 0.004484304932735426,
+            "pseudo_tarantula_susp": 0.004484304932735426,
+            "pseudo_op2_susp": 0.005917159763313609,
+            "pseudo_barinel_susp": 0.004484304932735426
+        }
+    },
+    {
+        "name": "youtube_dl.utils.replace_insane#459",
+        "src_path": "youtube_dl/utils.py",
+        "class_name": "youtube_dl.utils",
+        "signature": "youtube_dl.utils.replace_insane(char)",
+        "snippet": "    def replace_insane(char):\n        if char == '?' or ord(char) < 32 or ord(char) == 127:\n            return ''\n        elif char == '\"':\n            return '' if restricted else '\\''\n        elif char == ':':\n            return '_-' if restricted else ' -'\n        elif char in '\\\\/|*<>':\n            return '_'\n        if restricted and (char in '!&\\'()[]{}$;`^,#' or char.isspace()):\n            return '_'\n        if restricted and ord(char) > 127:\n            return '_'\n        return char",
+        "begin_line": 459,
+        "end_line": 472,
+        "comment": "",
+        "is_bug": false,
+        "susp": {
+            "pseudo_ochiai_susp": 0.004484304932735426,
+            "pseudo_dstar_susp": 0.004484304932735426,
+            "pseudo_tarantula_susp": 0.004484304932735426,
+            "pseudo_op2_susp": 0.005917159763313609,
+            "pseudo_barinel_susp": 0.004484304932735426
+        }
+    },
+    {
+        "name": "youtube_dl.utils.orderedSet#486",
+        "src_path": "youtube_dl/utils.py",
+        "class_name": "youtube_dl.utils",
+        "signature": "youtube_dl.utils.orderedSet(iterable)",
+        "snippet": "def orderedSet(iterable):\n    \"\"\" Remove all duplicates from the input iterable \"\"\"\n    res = []\n    for el in iterable:\n        if el not in res:\n            res.append(el)\n    return res",
+        "begin_line": 486,
+        "end_line": 492,
+        "comment": "",
+        "is_bug": false,
+        "susp": {
+            "pseudo_ochiai_susp": 0.004484304932735426,
+            "pseudo_dstar_susp": 0.004484304932735426,
+            "pseudo_tarantula_susp": 0.004484304932735426,
+            "pseudo_op2_susp": 0.005917159763313609,
+            "pseudo_barinel_susp": 0.004484304932735426
+        }
+    },
+    {
+        "name": "youtube_dl.utils.unescapeHTML#494",
+        "src_path": "youtube_dl/utils.py",
+        "class_name": "youtube_dl.utils",
+        "signature": "youtube_dl.utils.unescapeHTML(s)",
+        "snippet": "def unescapeHTML(s):\n    \"\"\"\n    @param s a string\n    \"\"\"\n    assert type(s) == type(u'')\n\n    result = re.sub(u'(?u)&(.+?);', htmlentity_transform, s)\n    return result",
+        "begin_line": 494,
+        "end_line": 501,
+        "comment": "",
+        "is_bug": false,
+        "susp": {
+            "pseudo_ochiai_susp": 0.004484304932735426,
+            "pseudo_dstar_susp": 0.004484304932735426,
+            "pseudo_tarantula_susp": 0.004484304932735426,
+            "pseudo_op2_susp": 0.005917159763313609,
+            "pseudo_barinel_susp": 0.004484304932735426
+        }
+    },
+    {
+        "name": "youtube_dl.utils.encodeFilename#503",
+        "src_path": "youtube_dl/utils.py",
+        "class_name": "youtube_dl.utils",
+        "signature": "youtube_dl.utils.encodeFilename(s)",
+        "snippet": "def encodeFilename(s):\n    \"\"\"\n    @param s The name of the file\n    \"\"\"\n\n    assert type(s) == type(u'')\n\n    # Python 3 has a Unicode API\n    if sys.version_info >= (3, 0):\n        return s\n\n    if sys.platform == 'win32' and sys.getwindowsversion()[0] >= 5:\n        # Pass u'' directly to use Unicode APIs on Windows 2000 and up\n        # (Detecting Windows NT 4 is tricky because 'major >= 4' would\n        # match Windows 9x series as well. Besides, NT 4 is obsolete.)\n        return s\n    else:\n        encoding = sys.getfilesystemencoding()\n        if encoding is None:\n            encoding = 'utf-8'\n        return s.encode(encoding, 'ignore')",
+        "begin_line": 503,
+        "end_line": 523,
+        "comment": "",
+        "is_bug": false,
+        "susp": {
+            "pseudo_ochiai_susp": 0.004484304932735426,
+            "pseudo_dstar_susp": 0.004484304932735426,
+            "pseudo_tarantula_susp": 0.004484304932735426,
+            "pseudo_op2_susp": 0.005917159763313609,
+            "pseudo_barinel_susp": 0.004484304932735426
+        }
+    },
+    {
+        "name": "youtube_dl.utils.make_HTTPS_handler#542",
+        "src_path": "youtube_dl/utils.py",
+        "class_name": "youtube_dl.utils",
+        "signature": "youtube_dl.utils.make_HTTPS_handler(opts_no_check_certificate)",
+        "snippet": "def make_HTTPS_handler(opts_no_check_certificate):\n    if sys.version_info < (3, 2):\n        import httplib\n\n        class HTTPSConnectionV3(httplib.HTTPSConnection):\n            def __init__(self, *args, **kwargs):\n                httplib.HTTPSConnection.__init__(self, *args, **kwargs)\n\n            def connect(self):\n                sock = socket.create_connection((self.host, self.port), self.timeout)\n                if getattr(self, '_tunnel_host', False):\n                    self.sock = sock\n                    self._tunnel()\n                try:\n                    self.sock = ssl.wrap_socket(sock, self.key_file, self.cert_file, ssl_version=ssl.PROTOCOL_SSLv3)\n                except ssl.SSLError:\n                    self.sock = ssl.wrap_socket(sock, self.key_file, self.cert_file, ssl_version=ssl.PROTOCOL_SSLv23)\n\n        class HTTPSHandlerV3(compat_urllib_request.HTTPSHandler):\n            def https_open(self, req):\n                return self.do_open(HTTPSConnectionV3, req)\n        return HTTPSHandlerV3()\n    else:\n        context = ssl.SSLContext(ssl.PROTOCOL_SSLv3)\n        context.verify_mode = (ssl.CERT_NONE\n                               if opts_no_check_certificate\n                               else ssl.CERT_REQUIRED)\n        context.set_default_verify_paths()\n        try:\n            context.load_default_certs()\n        except AttributeError:\n            pass  # Python < 3.4\n        return compat_urllib_request.HTTPSHandler(context=context)",
+        "begin_line": 542,
+        "end_line": 574,
+        "comment": "",
+        "is_bug": false,
+        "susp": {
+            "pseudo_ochiai_susp": 0.05,
+            "pseudo_dstar_susp": 0.05,
+            "pseudo_tarantula_susp": 0.0625,
+            "pseudo_op2_susp": 0.05,
+            "pseudo_barinel_susp": 0.0625
+        }
+    },
+    {
+        "name": "youtube_dl.utils.unified_strdate#745",
+        "src_path": "youtube_dl/utils.py",
+        "class_name": "youtube_dl.utils",
+        "signature": "youtube_dl.utils.unified_strdate(date_str)",
+        "snippet": "def unified_strdate(date_str):\n    \"\"\"Return a string with the date in the format YYYYMMDD\"\"\"\n    upload_date = None\n    #Replace commas\n    date_str = date_str.replace(',',' ')\n    # %z (UTC offset) is only supported in python>=3.2\n    date_str = re.sub(r' (\\+|-)[\\d]*$', '', date_str)\n    format_expressions = [\n        '%d %B %Y',\n        '%B %d %Y',\n        '%b %d %Y',\n        '%Y-%m-%d',\n        '%d/%m/%Y',\n        '%Y/%m/%d %H:%M:%S',\n        '%d.%m.%Y %H:%M',\n        '%Y-%m-%dT%H:%M:%SZ',\n        '%Y-%m-%dT%H:%M:%S.%fZ',\n        '%Y-%m-%dT%H:%M:%S.%f0Z',\n        '%Y-%m-%dT%H:%M:%S',\n    ]\n    for expression in format_expressions:\n        try:\n            upload_date = datetime.datetime.strptime(date_str, expression).strftime('%Y%m%d')\n        except:\n            pass\n    return upload_date",
+        "begin_line": 745,
+        "end_line": 770,
+        "comment": "",
+        "is_bug": false,
+        "susp": {
+            "pseudo_ochiai_susp": 0.004484304932735426,
+            "pseudo_dstar_susp": 0.004484304932735426,
+            "pseudo_tarantula_susp": 0.004484304932735426,
+            "pseudo_op2_susp": 0.005917159763313609,
+            "pseudo_barinel_susp": 0.004484304932735426
+        }
+    },
+    {
+        "name": "youtube_dl.utils.date_from_str#782",
+        "src_path": "youtube_dl/utils.py",
+        "class_name": "youtube_dl.utils",
+        "signature": "youtube_dl.utils.date_from_str(date_str)",
+        "snippet": "def date_from_str(date_str):\n    \"\"\"\n    Return a datetime object from a string in the format YYYYMMDD or\n    (now|today)[+-][0-9](day|week|month|year)(s)?\"\"\"\n    today = datetime.date.today()\n    if date_str == 'now'or date_str == 'today':\n        return today\n    match = re.match('(now|today)(?P<sign>[+-])(?P<time>\\d+)(?P<unit>day|week|month|year)(s)?', date_str)\n    if match is not None:\n        sign = match.group('sign')\n        time = int(match.group('time'))\n        if sign == '-':\n            time = -time\n        unit = match.group('unit')\n        #A bad aproximation?\n        if unit == 'month':\n            unit = 'day'\n            time *= 30\n        elif unit == 'year':\n            unit = 'day'\n            time *= 365\n        unit += 's'\n        delta = datetime.timedelta(**{unit: time})\n        return today + delta\n    return datetime.datetime.strptime(date_str, \"%Y%m%d\").date()",
+        "begin_line": 782,
+        "end_line": 806,
+        "comment": "",
+        "is_bug": false,
+        "susp": {
+            "pseudo_ochiai_susp": 0.004484304932735426,
+            "pseudo_dstar_susp": 0.004484304932735426,
+            "pseudo_tarantula_susp": 0.004484304932735426,
+            "pseudo_op2_susp": 0.005917159763313609,
+            "pseudo_barinel_susp": 0.004484304932735426
+        }
+    },
+    {
+        "name": "youtube_dl.utils.DateRange.__init__#810",
+        "src_path": "youtube_dl/utils.py",
+        "class_name": "youtube_dl.utils.DateRange",
+        "signature": "youtube_dl.utils.DateRange.__init__(self, start=None, end=None)",
+        "snippet": "    def __init__(self, start=None, end=None):\n        \"\"\"start and end must be strings in the format accepted by date\"\"\"\n        if start is not None:\n            self.start = date_from_str(start)\n        else:\n            self.start = datetime.datetime.min.date()\n        if end is not None:\n            self.end = date_from_str(end)\n        else:\n            self.end = datetime.datetime.max.date()\n        if self.start > self.end:\n            raise ValueError('Date range: \"%s\" , the start date must be before the end date' % self)",
+        "begin_line": 810,
+        "end_line": 821,
+        "comment": "",
+        "is_bug": false,
+        "susp": {
+            "pseudo_ochiai_susp": 0.004484304932735426,
+            "pseudo_dstar_susp": 0.004484304932735426,
+            "pseudo_tarantula_susp": 0.004484304932735426,
+            "pseudo_op2_susp": 0.005917159763313609,
+            "pseudo_barinel_susp": 0.004484304932735426
+        }
+    },
+    {
+        "name": "youtube_dl.utils.DateRange.__contains__#826",
+        "src_path": "youtube_dl/utils.py",
+        "class_name": "youtube_dl.utils.DateRange",
+        "signature": "youtube_dl.utils.DateRange.__contains__(self, date)",
+        "snippet": "    def __contains__(self, date):\n        \"\"\"Check if the date is in the range\"\"\"\n        if not isinstance(date, datetime.date):\n            date = date_from_str(date)\n        return self.start <= date <= self.end",
+        "begin_line": 826,
+        "end_line": 830,
+        "comment": "",
+        "is_bug": false,
+        "susp": {
+            "pseudo_ochiai_susp": 0.004484304932735426,
+            "pseudo_dstar_susp": 0.004484304932735426,
+            "pseudo_tarantula_susp": 0.004484304932735426,
+            "pseudo_op2_susp": 0.005917159763313609,
+            "pseudo_barinel_susp": 0.004484304932735426
+        }
+    },
+    {
+        "name": "youtube_dl.utils.shell_quote#977",
+        "src_path": "youtube_dl/utils.py",
+        "class_name": "youtube_dl.utils",
+        "signature": "youtube_dl.utils.shell_quote(args)",
+        "snippet": "def shell_quote(args):\n    quoted_args = []\n    encoding = sys.getfilesystemencoding()\n    if encoding is None:\n        encoding = 'utf-8'\n    for a in args:\n        if isinstance(a, bytes):\n            # We may get a filename encoded with 'encodeFilename'\n            a = a.decode(encoding)\n        quoted_args.append(pipes.quote(a))\n    return u' '.join(quoted_args)",
+        "begin_line": 977,
+        "end_line": 987,
+        "comment": "",
+        "is_bug": false,
+        "susp": {
+            "pseudo_ochiai_susp": 0.004484304932735426,
+            "pseudo_dstar_susp": 0.004484304932735426,
+            "pseudo_tarantula_susp": 0.004484304932735426,
+            "pseudo_op2_susp": 0.005917159763313609,
+            "pseudo_barinel_susp": 0.004484304932735426
+        }
+    },
+    {
+        "name": "youtube_dl.utils.smuggle_url#999",
+        "src_path": "youtube_dl/utils.py",
+        "class_name": "youtube_dl.utils",
+        "signature": "youtube_dl.utils.smuggle_url(url, data)",
+        "snippet": "def smuggle_url(url, data):\n    \"\"\" Pass additional data in a URL for internal use. \"\"\"\n\n    sdata = compat_urllib_parse.urlencode(\n        {u'__youtubedl_smuggle': json.dumps(data)})\n    return url + u'#' + sdata",
+        "begin_line": 999,
+        "end_line": 1004,
+        "comment": "",
+        "is_bug": false,
+        "susp": {
+            "pseudo_ochiai_susp": 0.004484304932735426,
+            "pseudo_dstar_susp": 0.004484304932735426,
+            "pseudo_tarantula_susp": 0.004484304932735426,
+            "pseudo_op2_susp": 0.005917159763313609,
+            "pseudo_barinel_susp": 0.004484304932735426
+        }
+    },
+    {
+        "name": "youtube_dl.utils.unsmuggle_url#1007",
+        "src_path": "youtube_dl/utils.py",
+        "class_name": "youtube_dl.utils",
+        "signature": "youtube_dl.utils.unsmuggle_url(smug_url)",
+        "snippet": "def unsmuggle_url(smug_url):\n    if not '#__youtubedl_smuggle' in smug_url:\n        return smug_url, None\n    url, _, sdata = smug_url.rpartition(u'#')\n    jsond = compat_parse_qs(sdata)[u'__youtubedl_smuggle'][0]\n    data = json.loads(jsond)\n    return url, data",
+        "begin_line": 1007,
+        "end_line": 1013,
+        "comment": "",
+        "is_bug": false,
+        "susp": {
+            "pseudo_ochiai_susp": 0.004484304932735426,
+            "pseudo_dstar_susp": 0.004484304932735426,
+            "pseudo_tarantula_susp": 0.004484304932735426,
+            "pseudo_op2_susp": 0.005917159763313609,
+            "pseudo_barinel_susp": 0.004484304932735426
+        }
+    },
+    {
+        "name": "youtube_dl.utils.str_to_int#1030",
+        "src_path": "youtube_dl/utils.py",
+        "class_name": "youtube_dl.utils",
+        "signature": "youtube_dl.utils.str_to_int(int_str)",
+        "snippet": "def str_to_int(int_str):\n    int_str = re.sub(r'[,\\.]', u'', int_str)\n    return int(int_str)",
+        "begin_line": 1030,
+        "end_line": 1032,
+        "comment": "",
+        "is_bug": false,
+        "susp": {
+            "pseudo_ochiai_susp": 0.004484304932735426,
+            "pseudo_dstar_susp": 0.004484304932735426,
+            "pseudo_tarantula_susp": 0.004484304932735426,
+            "pseudo_op2_susp": 0.005917159763313609,
+            "pseudo_barinel_susp": 0.004484304932735426
+        }
+    },
+    {
+        "name": "youtube_dl.utils.url_basename#1089",
+        "src_path": "youtube_dl/utils.py",
+        "class_name": "youtube_dl.utils",
+        "signature": "youtube_dl.utils.url_basename(url)",
+        "snippet": "def url_basename(url):\n    m = re.match(r'(?:https?:|)//[^/]+/(?:[^/?#]+/)?([^/?#]+)/?(?:[?#]|$)', url)\n    if not m:\n        return u''\n    return m.group(1)",
+        "begin_line": 1089,
+        "end_line": 1093,
+        "comment": "",
+        "is_bug": true,
+        "susp": {
+            "pseudo_ochiai_susp": 0.011363636363636364,
+            "pseudo_dstar_susp": 0.011363636363636364,
+            "pseudo_tarantula_susp": 0.0625,
+            "pseudo_op2_susp": 0.011363636363636364,
+            "pseudo_barinel_susp": 0.0625
+        }
+    },
+    {
+        "name": "youtube_dl.FileDownloader.FileDownloader.__init__#50",
+        "src_path": "youtube_dl/FileDownloader.py",
+        "class_name": "youtube_dl.FileDownloader.FileDownloader",
+        "signature": "youtube_dl.FileDownloader.FileDownloader.__init__(self, ydl, params)",
+        "snippet": "    def __init__(self, ydl, params):\n        \"\"\"Create a FileDownloader object with the given options.\"\"\"\n        self.ydl = ydl\n        self._progress_hooks = []\n        self.params = params",
+        "begin_line": 50,
+        "end_line": 54,
+        "comment": "",
+        "is_bug": false,
+        "susp": {
+            "pseudo_ochiai_susp": 1.0,
+            "pseudo_dstar_susp": 1.0,
+            "pseudo_tarantula_susp": 0.03125,
+            "pseudo_op2_susp": 1.0,
+            "pseudo_barinel_susp": 0.03125
+        }
+    },
+    {
+        "name": "youtube_dl.extractor.soundcloud.SoundcloudIE.suitable#95",
+        "src_path": "youtube_dl/extractor/soundcloud.py",
+        "class_name": "youtube_dl.extractor.soundcloud.SoundcloudIE",
+        "signature": "youtube_dl.extractor.soundcloud.SoundcloudIE.suitable(cls, url)",
+        "snippet": "    def suitable(cls, url):\n        return re.match(cls._VALID_URL, url, flags=re.VERBOSE) is not None",
+        "begin_line": 95,
+        "end_line": 96,
+        "comment": "",
+        "is_bug": false,
+        "susp": {
+            "pseudo_ochiai_susp": 0.01818181818181818,
+            "pseudo_dstar_susp": 0.016129032258064516,
+            "pseudo_tarantula_susp": 0.0625,
+            "pseudo_op2_susp": 0.016129032258064516,
+            "pseudo_barinel_susp": 0.0625
+        }
+    }
+]

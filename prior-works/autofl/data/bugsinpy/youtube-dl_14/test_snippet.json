@@ -1,0 +1,13 @@
+[
+    {
+        "name": "test.test_youtube_chapters.TestYoutubeChapters.test_youtube_chapters#266",
+        "src_path": "test/test_youtube_chapters.py",
+        "class_name": "test.test_youtube_chapters.TestYoutubeChapters",
+        "signature": "test.test_youtube_chapters.TestYoutubeChapters.test_youtube_chapters(self)",
+        "snippet": "    def test_youtube_chapters(self):\n        for description, duration, expected_chapters in self._TEST_CASES:\n            ie = YoutubeIE()\n            expect_value(\n                self, ie._extract_chapters_from_description(description, duration),\n                expected_chapters, None)",
+        "begin_line": 266,
+        "end_line": 271,
+        "comment": "",
+        "is_bug": false
+    }
+]
