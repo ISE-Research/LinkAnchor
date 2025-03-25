@@ -1,2 +1,0 @@
-coverage run -m python3 -m pytest tqdm/tests/tests_synchronisation.py::test_imap
-No module named 'python3'
