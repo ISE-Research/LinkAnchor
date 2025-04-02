@@ -101,7 +101,7 @@ impl Wrapper {
     }
 
     pub fn commits_of_branch(&self, branch: &str) -> Result<Vec<CommitMeta>> {
-        if branch == self.default_branch {
+        if branch == self.default_branch || branch == format!("origin/{}", self.default_branch) {
             self.commits_from_git_log(vec![&self.default_branch])
         } else {
             let output = Command::new("git")
