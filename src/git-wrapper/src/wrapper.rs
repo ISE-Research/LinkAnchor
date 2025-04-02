@@ -63,7 +63,7 @@ impl Wrapper {
         }
     }
 
-    pub fn list_branchs(&self) -> Result<Vec<String>> {
+    pub fn list_branches(&self) -> Result<Vec<String>> {
         // List all remote branches
         let output = Command::new("git")
             .arg("branch")
@@ -324,7 +324,7 @@ mod test {
     #[test]
     fn list_branches() -> Result<()> {
         let w = Wrapper::new(REPO_URL)?;
-        let branches = w.list_branchs()?;
+        let branches = w.list_branches()?;
         assert!(branches.contains(&"origin/b1".into()));
         assert!(branches.contains(&"origin/master".into()));
         Ok(())
