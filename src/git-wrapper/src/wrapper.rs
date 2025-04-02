@@ -147,10 +147,15 @@ impl Wrapper {
             .ok_or(GitError::MalFormedData(commit_hash.to_string()))
     }
 
-    pub fn get_commits_of(&self, author_query: AuthorQuery) -> Result<Vec<CommitMeta>> {
+    pub fn get_commits_of(
+        &self,
+        author_query: AuthorQuery,
+        branch: &str,
+    ) -> Result<Vec<CommitMeta>> {
+        use AuthorQuery::*;
         match author_query {
-            AuthorQuery::Name(query) => self.commits_from_git_log(vec!["--author", &query]),
-            AuthorQuery::Email(query) => self.commits_from_git_log(vec!["--author", &query]),
+            Name(query) => self.commits_from_git_log(vec![branch, "--author", &query]),
+            Email(query) => self.commits_from_git_log(vec![branch, "--author", &query]),
         }
     }
 
@@ -269,7 +274,7 @@ mod test {
     use temp_dir::TempDir;
 
     use super::Wrapper;
-    use crate::{GitError, Result};
+    use crate::{wrapper::AuthorQuery, GitError, Result};
     const REPO_URL: &str = "git@github.com:ArshiAAkhavan/test.git";
 
     fn new_mock_wrapper() -> Result<Wrapper> {
@@ -338,6 +343,28 @@ mod test {
         assert_eq!(
             authors.iter().map(|c| &c.name).collect::<Vec<_>>(),
             author_names
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn commits_of_author() -> Result<()> {
+        let w = new_mock_wrapper()?;
+        let commits = w.get_commits_of(AuthorQuery::Name("user1".into()), "master")?;
+        let commit_messages = ["first commit"];
+        assert_eq!(commits.len(), commit_messages.len());
+        assert_eq!(
+            commits.iter().map(|c| &c.message).collect::<Vec<_>>(),
+            commit_messages
+        );
+
+        let commits = w.get_commits_of(AuthorQuery::Email("user3@test.com".into()), "branch1")?;
+        let commit_messages = ["fourth commit"];
+        assert_eq!(commits.len(), commit_messages.len());
+        assert_eq!(
+            commits.iter().map(|c| &c.message).collect::<Vec<_>>(),
+            commit_messages
         );
 
         Ok(())
