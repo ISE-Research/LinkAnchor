@@ -1,6 +1,7 @@
 use super::{GitError, Result};
 use chrono::{DateTime, FixedOffset};
-use std::{ffi::OsStr, process::Command};
+use pyo3::{pyclass, pymethods};
+use std::{ffi::OsStr, fmt::Display, process::Command};
 use temp_dir::TempDir;
 
 const COMMIT_SEPARATOR_GIT: &str = "%x1e";
@@ -9,12 +10,15 @@ const ATTRIBUTE_SEPARATOR_GIT: &str = "%x1d";
 const ATTRIBUTE_SEPARATOR_CHAR: char = '\x1d';
 const DATETIME_FORMAT: &str = "%Y-%m-%d %H:%M:%S %z";
 
+#[pyclass(str)]
 pub struct Wrapper {
     dir: TempDir,
     default_branch: String,
 }
 
+#[pymethods]
 impl Wrapper {
+    #[new]
     pub fn new(repo_url: &str) -> Result<Self> {
         let dir = TempDir::new()?;
 
@@ -58,9 +62,7 @@ impl Wrapper {
             }
         }
     }
-}
 
-impl Wrapper {
     pub fn list_branchs(&self) -> Result<Vec<String>> {
         // List all remote branches
         let output = Command::new("git")
@@ -122,7 +124,7 @@ impl Wrapper {
         }
     }
 
-    pub fn get_commit_diff(&self, commit_hash: String) -> Result<String> {
+    pub fn commit_diff(&self, commit_hash: String) -> Result<String> {
         let output = Command::new("git")
             .arg("diff")
             .arg(format!("{commit_hash}^ {commit_hash}"))
@@ -140,18 +142,14 @@ impl Wrapper {
         Ok(diff)
     }
 
-    pub fn get_commit_metadata(&self, commit_hash: &str) -> Result<CommitMeta> {
+    pub fn commit_metadata(&self, commit_hash: &str) -> Result<CommitMeta> {
         self.commits_from_git_log(vec!["-1", commit_hash])?
             .into_iter()
             .next()
             .ok_or(GitError::MalFormedData(commit_hash.to_string()))
     }
 
-    pub fn get_commits_of(
-        &self,
-        author_query: AuthorQuery,
-        branch: &str,
-    ) -> Result<Vec<CommitMeta>> {
+    pub fn commits_of(&self, author_query: AuthorQuery, branch: &str) -> Result<Vec<CommitMeta>> {
         use AuthorQuery::*;
         match author_query {
             Name(query) => self.commits_from_git_log(vec![branch, "--author", &query]),
@@ -159,7 +157,16 @@ impl Wrapper {
         }
     }
 
-    pub fn get_commits_between(
+    pub fn commits_between(&self, from: &str, to: &str) -> Result<Vec<CommitMeta>> {
+        self.commits_from_git_log(vec![format!("--since={}", from), format!("--until={}", to)])
+    }
+
+    pub fn commits_on_file(&self, file_path: &str) -> Result<Vec<CommitMeta>> {
+        self.commits_from_git_log(vec!["--", file_path])
+    }
+}
+impl Wrapper {
+    pub fn commits_between_dates(
         &self,
         from: DateTime<FixedOffset>,
         to: DateTime<FixedOffset>,
@@ -168,10 +175,6 @@ impl Wrapper {
             format!("--since={}", from.format(DATETIME_FORMAT).to_string()),
             format!("--until={}", to.format(DATETIME_FORMAT).to_string()),
         ])
-    }
-
-    pub fn get_commits_on_file(&self, file_path: &str) -> Result<Vec<CommitMeta>> {
-        self.commits_from_git_log(vec!["--", file_path])
     }
 }
 
@@ -207,18 +210,40 @@ impl Wrapper {
     }
 }
 
-#[derive(Debug, Clone)]
+impl Display for Wrapper {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?} on branch {}", self.dir.path(), self.default_branch)
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+#[pyclass(str, eq)]
 pub struct Author {
     pub name: String,
     pub email: String,
 }
+impl Display for Author {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{} <{}>", self.name, self.email)
+    }
+}
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
+#[pyclass(str, eq)]
 pub struct CommitMeta {
     pub hash: String,
     pub author: Author,
     pub date: DateTime<chrono::FixedOffset>,
     pub message: String,
+}
+impl Display for CommitMeta {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{} {} <{}> {} {}",
+            self.hash, self.author.name, self.author.email, self.date, self.message
+        )
+    }
 }
 
 impl CommitMeta {
@@ -262,6 +287,8 @@ fn git_log_formatted() -> Command {
     cmd
 }
 
+#[derive(Debug, Clone)]
+#[pyclass]
 pub enum AuthorQuery {
     Name(String),
     Email(String),
@@ -307,8 +334,8 @@ mod test {
         let w = new_mock_wrapper()?;
 
         let commits = w.commits_of_branch("master")?;
-        assert_eq!(commits.len(), 3);
-        let commit_messages = ["fifth commit", "second commit", "first commit"];
+        let commit_messages = ["sixth", "fifth", "second", "first"];
+        assert_eq!(commits.len(), commit_messages.len());
         assert_eq!(
             commits.iter().map(|c| &c.message).collect::<Vec<_>>(),
             commit_messages
@@ -316,7 +343,7 @@ mod test {
 
         let commits = w.commits_of_branch("branch1")?;
         assert_eq!(commits.len(), 2);
-        let commit_messages = ["fourth commit", "third commit"];
+        let commit_messages = ["fourth", "third"];
         assert_eq!(
             commits.iter().map(|c| &c.message).collect::<Vec<_>>(),
             commit_messages
@@ -330,8 +357,8 @@ mod test {
         let w = new_mock_wrapper()?;
 
         let authors = w.authors_of_branch("master")?;
-        assert_eq!(authors.len(), 3);
-        let author_names = ["user3", "user2", "user1"];
+        let author_names = ["user4", "user3", "user2", "user1"];
+        assert_eq!(authors.len(), author_names.len());
         assert_eq!(
             authors.iter().map(|c| &c.name).collect::<Vec<_>>(),
             author_names
@@ -351,22 +378,74 @@ mod test {
     #[test]
     fn commits_of_author() -> Result<()> {
         let w = new_mock_wrapper()?;
-        let commits = w.get_commits_of(AuthorQuery::Name("user1".into()), "master")?;
-        let commit_messages = ["first commit"];
+        let commits = w.commits_of(AuthorQuery::Name("user1".into()), "master")?;
+        let commit_messages = ["first"];
         assert_eq!(commits.len(), commit_messages.len());
         assert_eq!(
             commits.iter().map(|c| &c.message).collect::<Vec<_>>(),
             commit_messages
         );
 
-        let commits = w.get_commits_of(AuthorQuery::Email("user3@test.com".into()), "branch1")?;
-        let commit_messages = ["fourth commit"];
+        let commits = w.commits_of(AuthorQuery::Email("user3@test.com".into()), "branch1")?;
+        let commit_messages = ["fourth"];
         assert_eq!(commits.len(), commit_messages.len());
         assert_eq!(
             commits.iter().map(|c| &c.message).collect::<Vec<_>>(),
             commit_messages
         );
 
+        Ok(())
+    }
+
+    #[test]
+    fn commits_on_file() -> Result<()> {
+        let w = new_mock_wrapper()?;
+
+        let commits = w.commits_on_file("OTHER.md")?;
+        let commit_messages = ["sixth"];
+        assert_eq!(commits.len(), commit_messages.len());
+        assert_eq!(
+            commits.iter().map(|c| &c.message).collect::<Vec<_>>(),
+            commit_messages
+        );
+
+        let commits = w.commits_on_file("README.md")?;
+        let commit_messages = ["fifth", "second", "first"];
+        assert_eq!(commits.len(), commit_messages.len());
+        assert_eq!(
+            commits.iter().map(|c| &c.message).collect::<Vec<_>>(),
+            commit_messages
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn commits_between() -> Result<()> {
+        let w = new_mock_wrapper()?;
+
+        // should return all commits
+        let before = (chrono::Utc::now() - chrono::Duration::hours(1))
+            .with_timezone(&chrono::FixedOffset::east_opt(0).unwrap());
+        let after = (chrono::Utc::now() + chrono::Duration::hours(1))
+            .with_timezone(&chrono::FixedOffset::east_opt(0).unwrap());
+
+        let commits = w.commits_between_dates(before, after)?;
+        let commit_messages = ["sixth", "fifth", "second", "first"];
+        assert_eq!(commits.len(), commit_messages.len());
+        assert_eq!(
+            commits.iter().map(|c| &c.message).collect::<Vec<_>>(),
+            commit_messages
+        );
+
+        // should return no commits
+        let before = (chrono::Utc::now() + chrono::Duration::hours(1))
+            .with_timezone(&chrono::FixedOffset::east_opt(0).unwrap());
+        let after = (chrono::Utc::now() + chrono::Duration::hours(2))
+            .with_timezone(&chrono::FixedOffset::east_opt(0).unwrap());
+
+        let commits = w.commits_between_dates(before, after)?;
+        assert_eq!(commits.len(), 0);
         Ok(())
     }
 }

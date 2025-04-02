@@ -9,7 +9,7 @@ name = "git_wrapper"
 crate-type = ["cdylib"]
 
 [dependencies]
-pyo3 = "0.24.0"
-thiserror = "2.0.12"
+pyo3 = "0.24"
+thiserror = "2.0"
 temp-dir = "0.1.14"
 chrono = "0.4.40"
