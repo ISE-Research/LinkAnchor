@@ -48,7 +48,9 @@ impl Wrapper {
                 Err(GitError::GitCommandErr(error_message))
             }
             true => {
-                let default_branch = String::from_utf8_lossy(&output.stdout).to_string();
+                let default_branch = String::from_utf8_lossy(&output.stdout)
+                    .trim_end_matches("\n")
+                    .to_string();
                 Ok(Self {
                     dir,
                     default_branch,
@@ -72,7 +74,8 @@ impl Wrapper {
             return Err(GitError::GitCommandErr(error_message));
         }
 
-        let branches_output = String::from_utf8_lossy(&output.stdout).to_string();
+        let branches_output = String::from_utf8_lossy(&output.stdout);
+        let branches_output = branches_output.trim_end_matches("\n");
 
         let branches: Vec<String> = branches_output
             .lines()
@@ -96,22 +99,27 @@ impl Wrapper {
     }
 
     pub fn commits_of_branch(&self, branch: &str) -> Result<Vec<CommitMeta>> {
-        // Get the commit hash of the first commit in the branch
-        let output = Command::new("git")
-            .arg("merge-base")
-            .arg("master")
-            .arg(branch)
-            .current_dir(self.dir.path())
-            .output()?;
+        if branch == self.default_branch {
+            self.commits_from_git_log(vec![&self.default_branch])
+        } else {
+            let output = Command::new("git")
+                .arg("merge-base")
+                .arg(&self.default_branch)
+                .arg(branch)
+                .current_dir(self.dir.path())
+                .output()?;
 
-        if !output.status.success() {
-            let error_message = String::from_utf8_lossy(&output.stderr).to_string();
-            return Err(GitError::GitCommandErr(error_message));
+            // Get the commit hash of the first commit in the branch
+            if !output.status.success() {
+                let error_message = String::from_utf8_lossy(&output.stderr).to_string();
+                return Err(GitError::GitCommandErr(error_message));
+            }
+
+            let first_commit_hash = String::from_utf8_lossy(&output.stdout);
+            let first_commit_hash = first_commit_hash.trim_end_matches("\n");
+
+            self.commits_from_git_log(vec![format!("{first_commit_hash}..{branch}")])
         }
-
-        let first_commit_hash = String::from_utf8_lossy(&output.stdout).to_string();
-
-        self.commits_from_git_log(vec![format!("{first_commit_hash}..{branch}")])
     }
 
     pub fn get_commit_diff(&self, commit_hash: String) -> Result<String> {
@@ -126,7 +134,9 @@ impl Wrapper {
             return Err(GitError::GitCommandErr(error_message));
         }
 
-        let diff = String::from_utf8_lossy(&output.stdout).to_string();
+        let diff = String::from_utf8_lossy(&output.stdout)
+            .trim_end_matches("\n")
+            .to_string();
         Ok(diff)
     }
 
@@ -175,7 +185,8 @@ impl Wrapper {
             return Err(GitError::GitCommandErr(error_message));
         }
 
-        let log = String::from_utf8_lossy(&output.stdout).to_string();
+        let log = String::from_utf8_lossy(&output.stdout);
+        let log = log.trim_end_matches("\n");
 
         // list all commits between the first commit and the branch
         // using the format: %H %an %ae %ad %B to get the hash, author name, author email, date, and message
@@ -184,6 +195,7 @@ impl Wrapper {
         // The separator between each attribute is ATTRIBUTE_SEPARATOR_GIT
         let commits: Vec<CommitMeta> = log
             .split(COMMIT_SEPARATOR_CHAR)
+            .filter(|line| !line.is_empty())
             .map(CommitMeta::parse)
             .collect::<Result<_, _>>()?;
         Ok(commits)
@@ -219,9 +231,11 @@ impl CommitMeta {
         };
 
         let date = attributes[3];
+        // trim for extra quotes
+        let date = date.trim_matches('\'');
         let date: DateTime<chrono::FixedOffset> = DateTime::parse_from_str(date, DATETIME_FORMAT)?;
 
-        let message = attributes[4].to_string();
+        let message = attributes[4].trim().to_string();
         let commit = CommitMeta {
             hash,
             author,
@@ -250,9 +264,30 @@ pub enum AuthorQuery {
 
 #[cfg(test)]
 mod test {
+    use std::process::Command;
+
+    use temp_dir::TempDir;
+
     use super::Wrapper;
-    use crate::Result;
+    use crate::{GitError, Result};
     const REPO_URL: &str = "git@github.com:ArshiAAkhavan/test.git";
+
+    fn new_mock_wrapper() -> Result<Wrapper> {
+        let dir = TempDir::new()?;
+        let output = Command::new("bash")
+            .arg("./setup_test_repo.sh")
+            .arg(dir.path())
+            .output()?;
+
+        if !output.status.success() {
+            let error_message = String::from_utf8_lossy(&output.stderr).to_string();
+            return Err(GitError::GitCommandErr(error_message));
+        }
+        Ok(Wrapper {
+            dir,
+            default_branch: String::from("master"),
+        })
+    }
 
     #[test]
     fn list_branches() -> Result<()> {
@@ -260,6 +295,28 @@ mod test {
         let branches = w.list_branchs()?;
         assert!(branches.contains(&"origin/b1".into()));
         assert!(branches.contains(&"origin/master".into()));
+        Ok(())
+    }
+    #[test]
+    fn list_commits() -> Result<()> {
+        let w = new_mock_wrapper()?;
+
+        let commits = w.commits_of_branch("master")?;
+        assert_eq!(commits.len(), 3);
+        let commit_messages = ["fifth commit", "second commit", "first commit"];
+        assert_eq!(
+            commits.iter().map(|c| &c.message).collect::<Vec<_>>(),
+            commit_messages
+        );
+
+        let commits = w.commits_of_branch("branch1")?;
+        assert_eq!(commits.len(), 2);
+        let commit_messages =  ["fourth commit", "third commit"];
+        assert_eq!(
+            commits.iter().map(|c| &c.message).collect::<Vec<_>>(),
+            commit_messages
+        );
+
         Ok(())
     }
 }
