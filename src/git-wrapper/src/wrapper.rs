@@ -222,6 +222,19 @@ pub struct Author {
     pub name: String,
     pub email: String,
 }
+
+#[pymethods]
+impl Author {
+    #[getter]
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+    #[getter]
+    pub fn email(&self) -> &str {
+        &self.email
+    }
+}
+
 impl Display for Author {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{} <{}>", self.name, self.email)
@@ -236,6 +249,28 @@ pub struct CommitMeta {
     pub date: DateTime<chrono::FixedOffset>,
     pub message: String,
 }
+
+#[pymethods]
+impl CommitMeta {
+    #[getter]
+    pub fn hash(&self) -> &str {
+        &self.hash
+    }
+    #[getter]
+    pub fn author(&self) -> Author {
+        self.author.clone()
+    }
+
+    #[getter]
+    pub fn date(&self) -> String {
+        self.date.format(DATETIME_FORMAT).to_string()
+    }
+    #[getter]
+    pub fn message(&self) -> &str {
+        &self.message
+    }
+}
+
 impl Display for CommitMeta {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
