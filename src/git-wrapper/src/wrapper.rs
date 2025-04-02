@@ -311,10 +311,33 @@ mod test {
 
         let commits = w.commits_of_branch("branch1")?;
         assert_eq!(commits.len(), 2);
-        let commit_messages =  ["fourth commit", "third commit"];
+        let commit_messages = ["fourth commit", "third commit"];
         assert_eq!(
             commits.iter().map(|c| &c.message).collect::<Vec<_>>(),
             commit_messages
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn list_authors() -> Result<()> {
+        let w = new_mock_wrapper()?;
+
+        let authors = w.authors_of_branch("master")?;
+        assert_eq!(authors.len(), 3);
+        let author_names = ["user3", "user2", "user1"];
+        assert_eq!(
+            authors.iter().map(|c| &c.name).collect::<Vec<_>>(),
+            author_names
+        );
+
+        let authors = w.authors_of_branch("branch1")?;
+        assert_eq!(authors.len(), 2);
+        let author_names = ["user3", "user1"];
+        assert_eq!(
+            authors.iter().map(|c| &c.name).collect::<Vec<_>>(),
+            author_names
         );
 
         Ok(())
