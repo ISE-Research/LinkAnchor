@@ -22,9 +22,10 @@ def function_call_result(tool_call: ToolCall, result: Any) -> ToolMessage:
         content=f"{result}",
     )
 
-def is_commit_found(content: str) -> str|None:
-    if content.startswith(COMMIT_FOUND_MESSAGE):
-        commit_hash = content.split("<")[1].split(">")[0]
+def extract_commit_hash(content: str) -> str| None:
+    last_line = content.split("\n")[-1]
+    if last_line.startswith(COMMIT_FOUND_MESSAGE):
+        commit_hash = last_line.split(f"{COMMIT_FOUND_MESSAGE}: ")[-1].strip()
         return commit_hash
 
 COMMIT_FOUND_MESSAGE = "found commit resolving this issue"
@@ -41,7 +42,7 @@ Repeat this iterative process systematically until you accurately pinpoint the c
 Maintain explicit, logical, and transparent reasoning at each step, clearly outlining your decision-making process, function selection rationale, and the insights obtained from each function's response.
 For each interaction, also provide your reasoning and the function you intend to call next.
 
-Whenever you are assured that you found the commit that resolves the issue, return the following message:
+Whenever you are assured that you found the commit that resolves the issue, have the following line as the last line of your response where <commit_hash> is the commit hash of the commit you found:
 {COMMIT_FOUND_MESSAGE}: <commit_hash>
 
 Guidelines:

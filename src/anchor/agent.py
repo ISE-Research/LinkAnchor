@@ -42,28 +42,24 @@ class Agent:
         while True:
             completion = self.communicate(messages, tools)
             response = completion.choices[0].message
+            print(f"Response: {response.content}")
 
             # check if LLM found the link
-            content = response.content
-            if content is not None:
-                commit_hash = message.is_commit_found(content)
-                if commit_hash is not None:
-                    print(messages)
-                    return commit_hash
-
+            # no function call means that LLM found the link
             # must call a function
             if response.tool_calls is None or len(response.tool_calls) == 0:
-                print(messages)
-                raise ValueError("No tool call found in the message")
+                content = response.content or ""
+                commit_hash = message.extract_commit_hash(content)
+                return commit_hash or ""
 
-            tool_call = response.tool_calls[0]
 
-            function = tool_call.function.parsed_arguments
-            if function is None:
-                print(messages)
-                raise ValueError("Function not found in tool call")
-
-            result = call(function)
-
+            print(f"Tool call: {len(response.tool_calls)}")
             messages.append(response)
-            messages.append(message.function_call_result(tool_call, result))
+            for tool_call in response.tool_calls:
+                function = tool_call.function.parsed_arguments
+                if function is None:
+                    print(messages)
+                    raise ValueError("Function not found in tool call")
+
+                result = call(function)
+                messages.append(message.function_call_result(tool_call, result))
