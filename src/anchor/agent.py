@@ -27,6 +27,8 @@ class Agent:
         messages: List[Message],
         tools: List[Tool] | NotGiven = NOT_GIVEN,
     ) -> ParsedChatCompletion:
+        """Communicate with the OpenAI API."""
+
         return self.client.beta.chat.completions.parse(
             model="gpt-4o",
             messages=messages,
@@ -50,12 +52,10 @@ class Agent:
 
             # check if LLM found the link
             # no function call means that LLM found the link
-            # must call a function
             if response.tool_calls is None or len(response.tool_calls) == 0:
                 content = response.content or ""
                 commit_hash = message.extract_commit_hash(content)
                 return commit_hash or ""
-
 
             logger.info(f"{len(response.tool_calls)} tool called")
             messages.append(response)
