@@ -39,8 +39,6 @@ class Agent:
             message.user_initial_prompt(issue_title),
         ]
 
-        completion = self.communicate(messages, tools)
-
         while True:
             completion = self.communicate(messages, tools)
             response = completion.choices[0].message
@@ -64,7 +62,5 @@ class Agent:
 
             result = call(function)
 
-            # append tool call message
             messages.append(response)
-            # append result message
             messages.append(message.function_call_result(tool_call, result))
