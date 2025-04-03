@@ -1,7 +1,13 @@
 from typing import List, Any
 from pydantic import BaseModel
 import openai
-from git_wrapper import Wrapper as GitWrapper, CommitMeta, Author
+from git_wrapper import (
+    Wrapper as GitWrapper,
+    CommitMeta,
+    Author,
+    AuthorQuery,
+    Pagination,
+)
 from anchor.agent import Agent
 
 
@@ -45,22 +51,30 @@ class GitAnchor:
     def list_branches(self) -> List[str]:
         return self.git_wrapper.list_branches()
 
-    def commits_of_branch(self, branch: str) -> List[CommitMeta]:
-        return self.git_wrapper.commits_of_branch(branch)
+    def commits_of_branch(
+        self, branch: str, pagination: Pagination
+    ) -> List[CommitMeta]:
+        return self.git_wrapper.commits_of_branch(branch, pagination)
 
     def authors_of_branch(self, branch: str) -> List[Author]:
         return self.git_wrapper.authors_of_branch(branch)
 
-    def commits_of_author(self, query: Any, branch: str) -> List[CommitMeta]:
-        return self.git_wrapper.commits_of_author(query, branch)
+    def commits_of_author(
+        self, query: AuthorQuery, branch: str, pagination: Pagination
+    ) -> List[CommitMeta]:
+        return self.git_wrapper.commits_of_author(query, branch, pagination)
 
-    def commits_on_file(self, branch: str, file_path: str) -> List[CommitMeta]:
-        return self.git_wrapper.commits_on_file(branch, file_path)
+    def commits_on_file(
+        self, branch: str, file_path: str, pagination: Pagination
+    ) -> List[CommitMeta]:
+        return self.git_wrapper.commits_on_file(branch, file_path, pagination)
 
     def commits_between(
-        self, branch: str, start_date: str, end_date: str
+        self, branch: str, start_date: str, end_date: str, pagination: Pagination
     ) -> List[CommitMeta]:
-        return self.git_wrapper.commits_between(branch, start_date, end_date)
+        return self.git_wrapper.commits_between(
+            branch, start_date, end_date, pagination
+        )
 
 
 class IssueWrapper:
