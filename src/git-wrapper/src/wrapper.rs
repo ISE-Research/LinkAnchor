@@ -233,6 +233,10 @@ impl Author {
     pub fn email(&self) -> &str {
         &self.email
     }
+
+    fn __repr__(&self) -> String {
+        format!("{}", self)
+    }
 }
 
 impl Display for Author {
@@ -268,6 +272,10 @@ impl CommitMeta {
     #[getter]
     pub fn message(&self) -> &str {
         &self.message
+    }
+
+    fn __repr__(&self) -> String {
+        format!("{}", self)
     }
 }
 
