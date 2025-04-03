@@ -1,13 +1,7 @@
 from typing import List, Any
 from pydantic import BaseModel
 import openai
-from git_wrapper import (
-    Wrapper as GitWrapper,
-    CommitMeta,
-    Author,
-    AuthorQuery,
-    Pagination,
-)
+from git_wrapper import Wrapper as GitWrapper
 from anchor.agent import Agent
 
 
@@ -31,6 +25,7 @@ class GitAnchor:
         self.agent = Agent(api_key)
         self.git_wrapper = GitWrapper(git_repo_link)
         self.issue_wrapper = IssueWrapper(issue_link)
+        self.code_wrapper = CodeWrapper()
 
         self.tools = []
 
@@ -48,33 +43,11 @@ class GitAnchor:
         issue_title = self.issue_wrapper.get_issue_title()
         return self.agent.find_link(issue_title, self.tools, lambda f: f(self))
 
-    def list_branches(self) -> List[str]:
-        return self.git_wrapper.list_branches()
-
-    def commits_of_branch(
-        self, branch: str, pagination: Pagination
-    ) -> List[CommitMeta]:
-        return self.git_wrapper.commits_of_branch(branch, pagination)
-
-    def authors_of_branch(self, branch: str) -> List[Author]:
-        return self.git_wrapper.authors_of_branch(branch)
-
-    def commits_of_author(
-        self, query: AuthorQuery, branch: str, pagination: Pagination
-    ) -> List[CommitMeta]:
-        return self.git_wrapper.commits_of_author(query, branch, pagination)
-
-    def commits_on_file(
-        self, branch: str, file_path: str, pagination: Pagination
-    ) -> List[CommitMeta]:
-        return self.git_wrapper.commits_on_file(branch, file_path, pagination)
-
-    def commits_between(
-        self, branch: str, start_date: str, end_date: str, pagination: Pagination
-    ) -> List[CommitMeta]:
-        return self.git_wrapper.commits_between(
-            branch, start_date, end_date, pagination
-        )
+    def __getattr__(self, name: str) -> Any:
+        """Deligate to wrappers if avilable."""
+        for wrapper in [self.git_wrapper, self.issue_wrapper, self.code_wrapper]:
+            if hasattr(wrapper, name):
+                return getattr(wrapper, name)
 
 
 class IssueWrapper:
@@ -83,3 +56,7 @@ class IssueWrapper:
 
     def get_issue_title(self) -> str:
         return "'pkgutil.get_loader' is removed from Python 3.14"
+
+class CodeWrapper:
+    def __init__(self):
+        pass
