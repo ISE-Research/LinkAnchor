@@ -106,7 +106,7 @@ impl Wrapper {
         pagination: Pagination,
     ) -> Result<Vec<CommitMeta>> {
         if branch == self.default_branch || branch == format!("origin/{}", self.default_branch) {
-            self.commits_from_git_log(vec![&self.default_branch], Pagination::all())
+            self.commits_from_git_log(vec![&self.default_branch], pagination)
         } else {
             let output = Command::new("git")
                 .arg("merge-base")
@@ -147,7 +147,7 @@ impl Wrapper {
     }
 
     pub fn commit_metadata(&self, commit_hash: &str) -> Result<CommitMeta> {
-        self.commits_from_git_log(vec!["-1", commit_hash], Pagination::all())?
+        self.commits_from_git_log(vec!["-1", commit_hash], Pagination::first())?
             .into_iter()
             .next()
             .ok_or(GitError::MalFormedData(commit_hash.to_string()))
@@ -387,6 +387,11 @@ impl Pagination {
         Self::new(0, usize::MAX)
     }
 
+    #[staticmethod]
+    pub fn first() -> Self {
+        Self::new(0, 1)
+    }
+
     #[getter]
     pub fn offset(&self) -> usize {
         self.offset
@@ -562,6 +567,21 @@ mod test {
 
         let commits = w.commits_between_dates(before, after, p)?;
         assert_eq!(commits.len(), 0);
+        Ok(())
+    }
+    #[test]
+    fn pagination() -> Result<()> {
+        let w = new_mock_wrapper()?;
+        let p = Pagination::new(1, 2);
+
+        let commits = w.commits_of_branch("master", p)?;
+        let commit_messages = ["fifth", "second"];
+        assert_eq!(commits.len(), commit_messages.len());
+        assert_eq!(
+            commits.iter().map(|c| &c.message).collect::<Vec<_>>(),
+            commit_messages
+        );
+
         Ok(())
     }
 }
