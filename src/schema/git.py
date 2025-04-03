@@ -5,16 +5,14 @@ from git_wrapper import Author, CommitMeta, AuthorQuery
 from anchor.anchor import GitAnchor
 
 
-class AuthorQueryType(Enum):
+class AuthorQueryType(str, Enum):
     EMAIL = "email"
     NAME = "name"
 
 
 class ListBranches(BaseModel):
-    branch: str
-
     def __call__(self, anchor: GitAnchor) -> List[str]:
-        return anchor.list_branches(self.branch)
+        return anchor.list_branches()
 
 
 class CommitsOfBranch(BaseModel):

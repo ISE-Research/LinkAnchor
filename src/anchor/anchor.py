@@ -35,15 +35,15 @@ class GitAnchor:
             toosl should be pydantic models that are used to define the input
             and output of the function.
             they also should implement that takes Anchor as the only argument."""
-        self.tools.append([openai.pydantic_function_tool(tool) for tool in tools])
+        self.tools.extend([openai.pydantic_function_tool(tool) for tool in tools])
 
     def find_link(self) -> str:
         """Find the commit(s) that resolve(s) the issue."""
         issue_title = self.issue_wrapper.get_issue_title()
         return self.agent.find_link(issue_title, self.tools, lambda f: f(self))
 
-    def list_branches(self, branch: str) -> List[str]:
-        return self.git_wrapper.list_branches(branch)
+    def list_branches(self) -> List[str]:
+        return self.git_wrapper.list_branches()
 
     def commits_of_branch(self, branch: str) -> List[CommitMeta]:
         return self.git_wrapper.commits_of_branch(branch)
