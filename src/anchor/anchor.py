@@ -82,4 +82,4 @@ class IssueWrapper:
         self.issue_link = issue_link
 
     def get_issue_title(self) -> str:
-        return "dummy issue title"
+        return "'pkgutil.get_loader' is removed from Python 3.14"
