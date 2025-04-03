@@ -8,7 +8,7 @@ logging.basicConfig(
 )
 logging.getLogger("httpx").setLevel(logging.WARNING)
 
-ga = GitAnchor("nobari", "git@github.com:pallets/flask.git")
+ga = GitAnchor("https://github.com/pallets/flask/issues/5692", "git@github.com:pallets/flask.git")
 
 ga.register_tools(GIT_TOOLS)
 
