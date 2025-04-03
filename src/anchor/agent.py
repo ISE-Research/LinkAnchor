@@ -43,20 +43,19 @@ class Agent:
 
         while True:
             completion = self.communicate(messages, tools)
-
-            choice = completion.choices[0]
+            response = completion.choices[0].message
 
             # check if LLM found the link
-            content = choice.message.content
+            content = response.content
             if content is not None and content != "":
                 return content
 
             # must call a function
-            if choice.message.tool_calls is None or len(choice.message.tool_calls) == 0:
+            if response.tool_calls is None or len(response.tool_calls) == 0:
                 print(messages)
                 raise ValueError("No tool call found in the message")
 
-            tool_call = choice.message.tool_calls[0]
+            tool_call = response.tool_calls[0]
 
             function = tool_call.function.parsed_arguments
             if function is None:
@@ -66,6 +65,6 @@ class Agent:
             result = call(function)
 
             # append tool call message
-            messages.append(completion.choices[0].message)
+            messages.append(response)
             # append result message
             messages.append(message.function_call_result(tool_call, result))
