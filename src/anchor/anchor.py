@@ -2,7 +2,7 @@ from typing import List, Any
 from pydantic import BaseModel
 import openai
 from git_wrapper import Wrapper as GitWrapper, CommitMeta, Author
-from agent import Agent
+from anchor.agent import Agent
 
 
 class GitAnchor:
