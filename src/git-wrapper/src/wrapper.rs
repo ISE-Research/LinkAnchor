@@ -93,16 +93,20 @@ impl Wrapper {
 
     pub fn authors_of_branch(&self, branch: &str) -> Result<Vec<Author>> {
         let authors: Vec<Author> = self
-            .commits_of_branch(branch)?
+            .commits_of_branch(branch, Pagination::all())?
             .into_iter()
             .map(|commit| commit.author)
             .collect();
         Ok(authors)
     }
 
-    pub fn commits_of_branch(&self, branch: &str) -> Result<Vec<CommitMeta>> {
+    pub fn commits_of_branch(
+        &self,
+        branch: &str,
+        pagination: Pagination,
+    ) -> Result<Vec<CommitMeta>> {
         if branch == self.default_branch || branch == format!("origin/{}", self.default_branch) {
-            self.commits_from_git_log(vec![&self.default_branch])
+            self.commits_from_git_log(vec![&self.default_branch], Pagination::all())
         } else {
             let output = Command::new("git")
                 .arg("merge-base")
@@ -120,7 +124,7 @@ impl Wrapper {
             let first_commit_hash = String::from_utf8_lossy(&output.stdout);
             let first_commit_hash = first_commit_hash.trim_end_matches("\n");
 
-            self.commits_from_git_log(vec![format!("{first_commit_hash}..{branch}")])
+            self.commits_from_git_log(vec![format!("{first_commit_hash}..{branch}")], pagination)
         }
     }
 
@@ -143,26 +147,43 @@ impl Wrapper {
     }
 
     pub fn commit_metadata(&self, commit_hash: &str) -> Result<CommitMeta> {
-        self.commits_from_git_log(vec!["-1", commit_hash])?
+        self.commits_from_git_log(vec!["-1", commit_hash], Pagination::all())?
             .into_iter()
             .next()
             .ok_or(GitError::MalFormedData(commit_hash.to_string()))
     }
 
-    pub fn commits_of(&self, author_query: AuthorQuery, branch: &str) -> Result<Vec<CommitMeta>> {
+    pub fn commits_of(
+        &self,
+        author_query: AuthorQuery,
+        branch: &str,
+        pagination: Pagination,
+    ) -> Result<Vec<CommitMeta>> {
         use AuthorQuery::*;
         match author_query {
-            Name(query) => self.commits_from_git_log(vec![branch, "--author", &query]),
-            Email(query) => self.commits_from_git_log(vec![branch, "--author", &query]),
+            Name(query) => self.commits_from_git_log(vec![branch, "--author", &query], pagination),
+            Email(query) => self.commits_from_git_log(vec![branch, "--author", &query], pagination),
         }
     }
 
-    pub fn commits_between(&self, from: &str, to: &str) -> Result<Vec<CommitMeta>> {
-        self.commits_from_git_log(vec![format!("--since={}", from), format!("--until={}", to)])
+    pub fn commits_between(
+        &self,
+        from: &str,
+        to: &str,
+        pagination: Pagination,
+    ) -> Result<Vec<CommitMeta>> {
+        self.commits_from_git_log(
+            vec![format!("--since={}", from), format!("--until={}", to)],
+            pagination,
+        )
     }
 
-    pub fn commits_on_file(&self, file_path: &str) -> Result<Vec<CommitMeta>> {
-        self.commits_from_git_log(vec!["--", file_path])
+    pub fn commits_on_file(
+        &self,
+        file_path: &str,
+        pagination: Pagination,
+    ) -> Result<Vec<CommitMeta>> {
+        self.commits_from_git_log(vec!["--", file_path], pagination)
     }
 }
 impl Wrapper {
@@ -170,11 +191,15 @@ impl Wrapper {
         &self,
         from: DateTime<FixedOffset>,
         to: DateTime<FixedOffset>,
+        pagination: Pagination,
     ) -> Result<Vec<CommitMeta>> {
-        self.commits_from_git_log(vec![
-            format!("--since={}", from.format(DATETIME_FORMAT).to_string()),
-            format!("--until={}", to.format(DATETIME_FORMAT).to_string()),
-        ])
+        self.commits_from_git_log(
+            vec![
+                format!("--since={}", from.format(DATETIME_FORMAT).to_string()),
+                format!("--until={}", to.format(DATETIME_FORMAT).to_string()),
+            ],
+            pagination,
+        )
     }
 }
 
@@ -182,6 +207,7 @@ impl Wrapper {
     fn commits_from_git_log<S: AsRef<OsStr>>(
         &self,
         git_log_extra_args: Vec<S>,
+        pagination: Pagination,
     ) -> Result<Vec<CommitMeta>> {
         let output = git_log_formatted()
             .args(git_log_extra_args)
@@ -206,6 +232,12 @@ impl Wrapper {
             .filter(|line| !line.is_empty())
             .map(CommitMeta::parse)
             .collect::<Result<_, _>>()?;
+
+        let commits: Vec<CommitMeta> = commits
+            .into_iter()
+            .skip(pagination.offset)
+            .take(pagination.limit)
+            .collect();
         Ok(commits)
     }
 }
@@ -337,6 +369,39 @@ pub enum AuthorQuery {
     Email(String),
 }
 
+#[derive(Debug, Clone, Copy)]
+#[pyclass(str)]
+pub struct Pagination {
+    pub offset: usize,
+    pub limit: usize,
+}
+#[pymethods]
+impl Pagination {
+    #[new]
+    pub fn new(offset: usize, limit: usize) -> Self {
+        Self { offset, limit }
+    }
+
+    #[staticmethod]
+    pub fn all() -> Self {
+        Self::new(0, usize::MAX)
+    }
+
+    #[getter]
+    pub fn offset(&self) -> usize {
+        self.offset
+    }
+    #[getter]
+    pub fn limit(&self) -> usize {
+        self.limit
+    }
+}
+impl Display for Pagination {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "P[{}..{}]", self.offset, self.offset + self.limit)
+    }
+}
+
 #[cfg(test)]
 mod test {
     use std::process::Command;
@@ -344,7 +409,10 @@ mod test {
     use temp_dir::TempDir;
 
     use super::Wrapper;
-    use crate::{wrapper::AuthorQuery, GitError, Result};
+    use crate::{
+        wrapper::{AuthorQuery, Pagination},
+        GitError, Result,
+    };
     const REPO_URL: &str = "git@github.com:ArshiAAkhavan/test.git";
 
     fn new_mock_wrapper() -> Result<Wrapper> {
@@ -375,8 +443,9 @@ mod test {
     #[test]
     fn list_commits() -> Result<()> {
         let w = new_mock_wrapper()?;
+        let p = Pagination::all();
 
-        let commits = w.commits_of_branch("master")?;
+        let commits = w.commits_of_branch("master", p)?;
         let commit_messages = ["sixth", "fifth", "second", "first"];
         assert_eq!(commits.len(), commit_messages.len());
         assert_eq!(
@@ -384,7 +453,7 @@ mod test {
             commit_messages
         );
 
-        let commits = w.commits_of_branch("branch1")?;
+        let commits = w.commits_of_branch("branch1", p)?;
         assert_eq!(commits.len(), 2);
         let commit_messages = ["fourth", "third"];
         assert_eq!(
@@ -421,7 +490,9 @@ mod test {
     #[test]
     fn commits_of_author() -> Result<()> {
         let w = new_mock_wrapper()?;
-        let commits = w.commits_of(AuthorQuery::Name("user1".into()), "master")?;
+        let p = Pagination::all();
+
+        let commits = w.commits_of(AuthorQuery::Name("user1".into()), "master", p)?;
         let commit_messages = ["first"];
         assert_eq!(commits.len(), commit_messages.len());
         assert_eq!(
@@ -429,7 +500,7 @@ mod test {
             commit_messages
         );
 
-        let commits = w.commits_of(AuthorQuery::Email("user3@test.com".into()), "branch1")?;
+        let commits = w.commits_of(AuthorQuery::Email("user3@test.com".into()), "branch1", p)?;
         let commit_messages = ["fourth"];
         assert_eq!(commits.len(), commit_messages.len());
         assert_eq!(
@@ -443,8 +514,9 @@ mod test {
     #[test]
     fn commits_on_file() -> Result<()> {
         let w = new_mock_wrapper()?;
+        let p = Pagination::all();
 
-        let commits = w.commits_on_file("OTHER.md")?;
+        let commits = w.commits_on_file("OTHER.md", p)?;
         let commit_messages = ["sixth"];
         assert_eq!(commits.len(), commit_messages.len());
         assert_eq!(
@@ -452,7 +524,7 @@ mod test {
             commit_messages
         );
 
-        let commits = w.commits_on_file("README.md")?;
+        let commits = w.commits_on_file("README.md", p)?;
         let commit_messages = ["fifth", "second", "first"];
         assert_eq!(commits.len(), commit_messages.len());
         assert_eq!(
@@ -466,6 +538,7 @@ mod test {
     #[test]
     fn commits_between() -> Result<()> {
         let w = new_mock_wrapper()?;
+        let p = Pagination::all();
 
         // should return all commits
         let before = (chrono::Utc::now() - chrono::Duration::hours(1))
@@ -473,7 +546,7 @@ mod test {
         let after = (chrono::Utc::now() + chrono::Duration::hours(1))
             .with_timezone(&chrono::FixedOffset::east_opt(0).unwrap());
 
-        let commits = w.commits_between_dates(before, after)?;
+        let commits = w.commits_between_dates(before, after, p)?;
         let commit_messages = ["sixth", "fifth", "second", "first"];
         assert_eq!(commits.len(), commit_messages.len());
         assert_eq!(
@@ -487,7 +560,7 @@ mod test {
         let after = (chrono::Utc::now() + chrono::Duration::hours(2))
             .with_timezone(&chrono::FixedOffset::east_opt(0).unwrap());
 
-        let commits = w.commits_between_dates(before, after)?;
+        let commits = w.commits_between_dates(before, after, p)?;
         assert_eq!(commits.len(), 0);
         Ok(())
     }
