@@ -5,6 +5,10 @@ from openai.types.chat import ParsedChatCompletion
 from openai import NotGiven, NOT_GIVEN
 import openai
 import message
+import logging
+
+# Configure logger for this module
+logger = logging.getLogger(__name__)
 
 
 class Agent:
@@ -42,7 +46,7 @@ class Agent:
         while True:
             completion = self.communicate(messages, tools)
             response = completion.choices[0].message
-            print(f"Response: {response.content}")
+            logger.info(f"Response: {response.content}")
 
             # check if LLM found the link
             # no function call means that LLM found the link
@@ -53,12 +57,12 @@ class Agent:
                 return commit_hash or ""
 
 
-            print(f"Tool call: {len(response.tool_calls)}")
+            logger.info(f"{len(response.tool_calls)} tool called")
             messages.append(response)
             for tool_call in response.tool_calls:
                 function = tool_call.function.parsed_arguments
                 if function is None:
-                    print(messages)
+                    logger.error(f"message that caused error: {messages[-1]}")
                     raise ValueError("Function not found in tool call")
 
                 result = call(function)
