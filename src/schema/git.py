@@ -11,8 +11,8 @@ class AuthorQueryType(str, Enum):
 
 
 class Pagination(BaseModel):
-    offset: int = 0
-    limit: int = 10
+    offset: int
+    limit: int
 
     def to_wrapper_pagination(self) -> wrapperPagination:
         return wrapperPagination(offset=self.offset, limit=self.limit)

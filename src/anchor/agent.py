@@ -45,8 +45,11 @@ class Agent:
 
             # check if LLM found the link
             content = response.content
-            if content is not None and content != "":
-                return content
+            if content is not None:
+                commit_hash = message.is_commit_found(content)
+                if commit_hash is not None:
+                    print(messages)
+                    return commit_hash
 
             # must call a function
             if response.tool_calls is None or len(response.tool_calls) == 0:

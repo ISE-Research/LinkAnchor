@@ -22,8 +22,14 @@ def function_call_result(tool_call: ToolCall, result: Any) -> ToolMessage:
         content=f"{result}",
     )
 
+def is_commit_found(content: str) -> str|None:
+    if content.startswith(COMMIT_FOUND_MESSAGE):
+        commit_hash = content.split("<")[1].split(">")[0]
+        return commit_hash
 
-PROBLEM_EXPLANATION_PROMPT_TEXT = """
+COMMIT_FOUND_MESSAGE = "found commit resolving this issue"
+
+PROBLEM_EXPLANATION_PROMPT_TEXT = f"""
 Role & Goals:
 You are an intelligent agent specialized in identifying and linking software issues directly to the specific commit hashes that resolve them. Your primary objective is to determine and provide the exact commit hash responsible for resolving a given issue.
 To accomplish this goal, you will iteratively leverage the provided functions to gather relevant repository information. At each interaction, you should:
@@ -35,8 +41,12 @@ Repeat this iterative process systematically until you accurately pinpoint the c
 Maintain explicit, logical, and transparent reasoning at each step, clearly outlining your decision-making process, function selection rationale, and the insights obtained from each function's response.
 For each interaction, also provide your reasoning and the function you intend to call next.
 
+Whenever you are assured that you found the commit that resolves the issue, return the following message:
+{COMMIT_FOUND_MESSAGE}: <commit_hash>
+
 Guidelines:
 Only the project's source code is important. Therefore, if you find yourself needing to call one of the codebase functions related to a dependency or external library, avoid making such calls. Instead, rely on your existing knowledge about the dependency or library.
 """
 
 USER_INITIAL_PROMPT_TEXT = "Find the commit that resolves the issue with the title"
+
