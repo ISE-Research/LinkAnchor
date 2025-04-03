@@ -1,5 +1,8 @@
-from git_anchor import GitAnchor
+from anchor.anchor import GitAnchor
+from schema.git import TOOLS as GIT_TOOLS
+
 ga = GitAnchor("mamad","nobari")
 
-print(ga.find_link())
+ga.register_tools(GIT_TOOLS)
 
+print(ga.find_link())
