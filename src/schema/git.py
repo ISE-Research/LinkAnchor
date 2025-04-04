@@ -106,12 +106,21 @@ class CommitsBetween(BaseModel):
             self.pagination.to_wrapper_pagination(),
         )
 
+class CommitDiff(BaseModel):
+    """changes staged by the given commit"""
+    commit_hash: str = Field(..., description="commit hash. could be short or long")
+
+    def __call__(self, anchor: GitAnchor) -> str:
+        return anchor.commit_diff(self.commit_hash)
+    
+
 
 TOOLS = [
+    ListBranches,
+    AuthorsOfBranch,
+    CommitsOfAuthor,
+    CommitsOfBranch,
     CommitsBetween,
     CommitsOnFile,
-    CommitsOfAuthor,
-    AuthorsOfBranch,
-    CommitsOfBranch,
-    ListBranches,
+    CommitDiff,
 ]
