@@ -5,19 +5,16 @@ an authomated tool for linking commits and issues
 
 ### setup virtual env
 ```bash
-# using poetry
-poetry shell
-poetry install
+# ensure poetry is installed
+pip install poetry
 
-# using virtualenv
-python3 -m venv venv
-source venv/bin/activate
-pip install .
+# install dependencies
+poetry shell
+poetry install --no-root
 ```
-### building python package for development use:
+### install git-wrapper development use:
 ```bash
-cd src/git-wrapper
-maturin develop
+(cd src/git-wrapper && maturin develop)
 ```
 ### Run
 ```bash 
