@@ -29,64 +29,12 @@ impl Lang {
     }
 }
 
-#[derive(Debug)]
-struct ParsedPath {
-    lang: Lang,
-    // For Rust, "package" is the module path (if provided).
-    // For Go, it's the package name (or full package path).
-    package: Option<String>,
-    // For methods, the type (struct/enum) name; for functions this remains None.
+struct Target {
+    function_name: Option<String>,
     type_name: Option<String>,
-    // The function or method name.
-    function_name: String,
 }
 
-/// Infer target language based on the full path string:
-/// - Rust: uses "::" as separator
-/// - Go: uses "." as separator
-fn infer_language(full_path: &str) -> Lang {
-    if full_path.contains("::") {
-        Lang::rust()
-    } else {
-        Lang::go()
-    }
-}
-
-/// Parse the full path string into its components.
-/// For Rust: parts are separated by "::" (e.g. "baz::Bar::foo()").
-/// For Go: parts are separated by "." (e.g. "baz.Bar.Foo()").
-fn parse_full_path(full_path: &str, lang: Lang) -> ParsedPath {
-    let full_path = full_path.trim();
-    let full_path = full_path.trim_end_matches("()");
-
-    let mut parts: Vec<&str> = full_path.split(&lang.separator).collect();
-    let function_name = parts.pop().unwrap().to_string();
-    // Depending on number of parts left, we may have package/module and/or type
-    let (package, type_name) = match parts.len() {
-        0 => (None, None),
-        1 => (None, Some(parts[0].to_string())), // single type or function in root
-        _ => (Some(parts[0].to_string()), Some(parts[1].to_string())),
-    };
-    ParsedPath {
-        lang,
-        package,
-        type_name,
-        function_name,
-    }
-}
-
-fn comment_of(node: tree_sitter::Node) -> Option<tree_sitter::Node> {
-    if let Some(prev) = node.prev_sibling() {
-        if prev.kind() == "comment" {
-            return Some(prev);
-        }
-    }
-    None
-}
-
-/// Create a tree-sitter parser and query for the target function/method,
-/// then search the file for matching nodes.
-impl ParsedPath {
+impl Lang {
     fn vars(&self) -> HashMap<String, String> {
         let mut vars = HashMap::new();
         vars.insert(String::from("function"), self.function_name.clone());
@@ -99,7 +47,7 @@ impl ParsedPath {
     fn is_typed(&self) -> bool {
         self.type_name.is_some()
     }
-    fn find_in(&self, file_path: &Path) -> Option<(String, String)> {
+    fn find_in(file: &Path, target: Target) -> (String, String) {
         let mut parser = Parser::new();
 
         parser
@@ -145,6 +93,19 @@ impl ParsedPath {
         None
     }
 }
+
+fn comment_of(node: tree_sitter::Node) -> Option<tree_sitter::Node> {
+    if let Some(prev) = node.prev_sibling() {
+        if prev.kind() == "comment" {
+            return Some(prev);
+        }
+    }
+    None
+}
+
+/// Create a tree-sitter parser and query for the target function/method,
+/// then search the file for matching nodes.
+impl ParsedPath {}
 
 fn main() {
     let codebase_dir = "/home/ark/Documents/Code/University/BGSU/git-anchor/src/gotest";

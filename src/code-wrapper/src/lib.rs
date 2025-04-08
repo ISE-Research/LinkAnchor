@@ -1,5 +1,6 @@
-mod code;
+mod ts;
 mod query;
+mod cherk;
 
 use pyo3::prelude::*;
 
