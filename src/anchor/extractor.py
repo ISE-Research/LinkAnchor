@@ -1,8 +1,8 @@
-from typing import Any, Optional
+from typing import Any
 from git_wrapper import Wrapper as GitWrapper
 
 class Extractor:
-    def __init__(self, issue_link: str, git_repo_link: str, api_key: str = ""):
+    def __init__(self, issue_link: str, git_repo_link: str):
         """Initialize the Data Extractor instance.
         Args:
             issue_link (str): The link to the issue in GitHub.
