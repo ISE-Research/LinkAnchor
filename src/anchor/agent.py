@@ -7,6 +7,8 @@ import openai
 import message
 import logging
 
+from .extractor import Extractor
+
 # Configure logger for this module
 logger = logging.getLogger(__name__)
 
@@ -36,7 +38,7 @@ class Agent:
         )
 
     def find_link(
-        self, issue_title: str, tools: List[Tool], call: Callable[[Any], Any]
+        self, issue_title: str, tools: List[Tool], extractor: Extractor
     ) -> str:
         """Find the commit(s) that resolve(s) the issue."""
 
@@ -60,10 +62,13 @@ class Agent:
             logger.info(f"{len(response.tool_calls)} tool called")
             messages.append(response)
             for tool_call in response.tool_calls:
-                function = tool_call.function.parsed_arguments
-                if function is None:
+                functionn = tool_call.function.parsed_arguments
+                if functionn is None:
                     logger.error(f"message that caused error: {messages[-1]}")
                     raise ValueError("Function not found in tool call")
 
-                result = call(function)
+                # just to saticfy type checking
+                function: Callable[[Extractor], Any] = functionn # type: ignore
+
+                result = function(extractor)
                 messages.append(message.function_call_result(tool_call, result))

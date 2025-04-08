@@ -2,7 +2,7 @@ from typing import List
 from enum import Enum
 from pydantic import BaseModel, Field
 from git_wrapper import Author, CommitMeta, AuthorQuery, Pagination as wrapperPagination
-from anchor.anchor import GitAnchor
+from anchor.extractor import Extractor
 
 
 class AuthorQueryType(str, Enum):
@@ -23,7 +23,7 @@ class Pagination(BaseModel):
 class ListBranches(BaseModel):
     """listing all branches in a Git repository"""
 
-    def __call__(self, anchor: GitAnchor) -> List[str]:
+    def __call__(self, anchor: Extractor) -> List[str]:
         return anchor.list_branches()
 
 
@@ -35,7 +35,7 @@ class CommitsOfBranch(BaseModel):
         ..., description="pagination from offset to atleast offset + limit"
     )
 
-    def __call__(self, anchor: GitAnchor) -> List[CommitMeta]:
+    def __call__(self, anchor: Extractor) -> List[CommitMeta]:
         return anchor.commits_of_branch(
             self.branch, self.pagination.to_wrapper_pagination()
         )
@@ -46,7 +46,7 @@ class AuthorsOfBranch(BaseModel):
 
     branch: str = Field(..., description="branch name")
 
-    def __call__(self, anchor: GitAnchor) -> List[Author]:
+    def __call__(self, anchor: Extractor) -> List[Author]:
         return anchor.authors_of_branch(self.branch)
 
 
@@ -62,7 +62,7 @@ class CommitsOfAuthor(BaseModel):
         ..., description="pagination from offset to atleast offset + limit"
     )
 
-    def __call__(self, anchor: GitAnchor) -> List[CommitMeta]:
+    def __call__(self, anchor: Extractor) -> List[CommitMeta]:
         if self.query_type == AuthorQueryType.NAME:
             query = AuthorQuery.name(self.query)
         else:
@@ -82,7 +82,7 @@ class CommitsOnFile(BaseModel):
         ..., description="pagination from offset to atleast offset + limit"
     )
 
-    def __call__(self, anchor: GitAnchor) -> List[CommitMeta]:
+    def __call__(self, anchor: Extractor) -> List[CommitMeta]:
         return anchor.commits_on_file(
             self.branch, self.file_path, self.pagination.to_wrapper_pagination()
         )
@@ -98,7 +98,7 @@ class CommitsBetween(BaseModel):
         ..., description="pagination from offset to atleast offset + limit"
     )
 
-    def __call__(self, anchor: GitAnchor) -> List[CommitMeta]:
+    def __call__(self, anchor: Extractor) -> List[CommitMeta]:
         return anchor.commits_between(
             self.branch,
             self.start_date,
@@ -110,7 +110,7 @@ class CommitDiff(BaseModel):
     """changes staged by the given commit"""
     commit_hash: str = Field(..., description="commit hash. could be short or long")
 
-    def __call__(self, anchor: GitAnchor) -> str:
+    def __call__(self, anchor: Extractor) -> str:
         return anchor.commit_diff(self.commit_hash)
     
 
