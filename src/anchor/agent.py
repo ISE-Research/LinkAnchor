@@ -14,6 +14,12 @@ logger = logging.getLogger(__name__)
 
 
 class Agent:
+    """
+    Agent class is responsible for communicating with the LLM API.
+    It has one public method `find_link` that takes an issue title and a list of tools.
+    It returns the commit hash that resolves the issue.
+    """
+
     def __init__(self, api_key: str = ""):
         """Initialize the Agent instance.
         Args:
@@ -40,7 +46,12 @@ class Agent:
     def find_link(
         self, issue_title: str, tools: List[Tool], extractor: Extractor
     ) -> str:
-        """Find the commit(s) that resolve(s) the issue."""
+        """Find the commit(s) that resolve(s) the issue.
+        Args:
+            issue_title (str): The title of the issue.
+            tools (List[Tool]): List of tools to use.
+            extractor (Extractor): Extractor instance to extract information for the LLM.
+        """
 
         messages = [
             message.problem_explanation(),
@@ -68,7 +79,7 @@ class Agent:
                     raise ValueError("Function not found in tool call")
 
                 # just to saticfy type checking
-                function: Callable[[Extractor], Any] = functionn # type: ignore
+                function: Callable[[Extractor], Any] = functionn  # type: ignore
 
                 result = function(extractor)
                 messages.append(message.function_call_result(tool_call, result))
