@@ -120,6 +120,12 @@ impl Target {
             },
         }
     }
+    
+    pub fn parse(&self, path: &str) -> Target{
+
+
+
+    }
 }
 
 impl Display for Target {
