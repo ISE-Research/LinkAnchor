@@ -1,3 +1,6 @@
+mod go;
+mod python;
+
 use std::collections::HashMap;
 use std::fmt::Display;
 use std::fs;
@@ -6,20 +9,29 @@ use strfmt::strfmt;
 use tree_sitter::StreamingIterator;
 use tree_sitter::{Parser, Query, QueryCursor};
 
-use crate::query;
 use crate::CodeError;
 use crate::Result;
 
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+enum QueryMode {
+    Functions,
+    Methods,
+    Types,
+}
+
+const FUNCTION_KEY: &str = "function";
+const RECEIVER_KEY: &str = "receiver";
+
 #[derive(Debug, Clone)]
 pub struct Lang {
-    queries: HashMap<String, Vec<String>>,
+    queries: HashMap<QueryMode, Vec<String>>,
     language_fn: tree_sitter::Language,
     file_extension: &'static str,
 }
 impl Lang {
     pub fn go() -> Self {
         Self {
-            queries: query::go(),
+            queries: go::queries(),
             language_fn: tree_sitter_go::LANGUAGE.into(),
             file_extension: "go",
         }
@@ -33,7 +45,7 @@ impl Lang {
         parser
             .set_language(&self.language_fn)
             .expect("Error loading language grammar");
-        let queries = self.queries[target.query_mode()?]
+        let queries = self.queries[&target.query_mode()?]
             .iter()
             .filter_map(|q_fstr| target.update_query(q_fstr).ok())
             .collect::<Vec<_>>();
@@ -99,10 +111,10 @@ impl Target {
     fn vars(&self) -> HashMap<String, String> {
         let mut vars = HashMap::new();
         if let Some(ref name) = self.function_name {
-            vars.insert(String::from("function"), name.clone());
+            vars.insert(String::from(FUNCTION_KEY), name.clone());
         }
         if let Some(ref name) = self.type_name {
-            vars.insert(String::from("receiver"), name.clone());
+            vars.insert(String::from(RECEIVER_KEY), name.clone());
         }
         vars
     }
@@ -114,14 +126,14 @@ impl Target {
         self.type_name.is_some()
     }
 
-    fn query_mode(&self) -> Result<&'static str> {
+    fn query_mode(&self) -> Result<QueryMode> {
         match self.is_typed() {
             true => match self.function_name.is_some() {
-                true => Ok("methods"),
-                false => Ok("types"),
+                true => Ok(QueryMode::Methods),
+                false => Ok(QueryMode::Types),
             },
             false => match self.function_name.is_some() {
-                true => Ok("functions"),
+                true => Ok(QueryMode::Functions),
                 false => Err(CodeError::TargetCanNotBeEmpty),
             },
         }
