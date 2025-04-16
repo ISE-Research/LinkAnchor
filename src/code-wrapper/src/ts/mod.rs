@@ -64,7 +64,6 @@ impl Lang {
         let tree = parser.parse(&source, None).ok_or(CodeError::TSParseError)?;
         let mut results = Vec::new();
         for q in queries {
-            dbg!(&q);
             let query = Query::new(&self.language_fn, &q).expect("Error creating query");
             let mut query_cursor = QueryCursor::new();
             let mut matches = query_cursor.matches(&query, tree.root_node(), source.as_bytes());
@@ -151,15 +150,21 @@ impl Target {
     }
 
     pub fn parse(full_path: &str) -> Self {
+        let is_function = full_path.ends_with("()");
         let full_path = full_path.trim();
         let full_path = full_path.trim_end_matches("()");
 
-        let mut parts: Vec<&str> = full_path.split(".").collect();
-        let function_name = parts.pop().map(|s| s.to_string());
+        let parts: Vec<&str> = full_path.split(".").collect();
         // Depending on number of parts left, we may have package/module and/or type
-        let (_package, type_name) = match parts.len() {
+        let (type_name, function_name) = match parts.len() {
             0 => (None, None),
-            1 => (None, Some(parts[0].to_string())), // single type or function in root
+            1 => {
+                if is_function {
+                    (None, Some(parts[0].to_string()))
+                } else {
+                    (Some(parts[0].to_string()), None)
+                }
+            } // single type or function in root
             _ => (Some(parts[0].to_string()), Some(parts[1].to_string())),
         };
         Self {

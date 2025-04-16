@@ -10,7 +10,7 @@ requires-python = ">=3.12"
 dependencies = [
     "openai (>=1.70.0,<2.0.0)",
     "pydantic (>=2.11.2,<3.0.0)",
-    "maturin (>=1.8.3,<2.0.0)"
+    "maturin (>=1.8.3,<2.0.0)",
 ]
 
 [tool.poetry]
