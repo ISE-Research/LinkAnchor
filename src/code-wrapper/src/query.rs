@@ -47,6 +47,8 @@ const GO_FUNCTIONS: &[&str] = &[r#"
 "#];
 
 const GO_TYPES: &[&str] = &[
+    // struct types
+    // interface types
     r#"
 (
   (type_declaration
@@ -57,6 +59,7 @@ const GO_TYPES: &[&str] = &[
   (#eq?  @receiver_type "{receiver}")
 ) @capture
 "#,
+    // alias types
     r#"
 (
   (type_declaration

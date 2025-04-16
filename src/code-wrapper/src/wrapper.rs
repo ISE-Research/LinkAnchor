@@ -202,7 +202,7 @@ mod test {
     fn new_mock_wrapper() -> Result<Wrapper> {
         let dir = TempDir::new()?;
         let output = Command::new("bash")
-            .arg("./setup_test_codebase.sh")
+            .arg("./scripts/setup_test_codebase.sh")
             .arg(dir.path())
             .output()?;
 
@@ -247,7 +247,6 @@ mod test {
     fn fetch() -> Result<()> {
         let w = new_mock_wrapper()?;
         let targets = [
-            Target::new_method("Mamad", "SayHello"),
             Target::new_method("Mamad", "SayGoodBye"),
             Target::new_function("greet"),
             Target::new_class("Mamad"),

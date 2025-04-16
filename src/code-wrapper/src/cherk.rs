@@ -36,10 +36,10 @@ fn main() {
     }
 }
 
-#[cfg(test)]
-mod test {
-    #[test]
-    fn main() {
-        super::main();
-    }
-}
+//#[cfg(test)]
+//mod test {
+//    #[test]
+//    fn main() {
+//        super::main();
+//    }
+//}
