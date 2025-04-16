@@ -1,3 +1,4 @@
+use std::io::BufRead;
 use std::{fmt::Display, path::PathBuf, process::Command};
 
 use crate::ts::Lang;
@@ -55,28 +56,65 @@ impl Wrapper {
                 Ok(Self {
                     dir,
                     default_branch,
-                    langs: vec![],
+                    langs: vec![Lang::go()],
                 })
             }
         }
     }
 
-    pub fn function_definition(
+    pub fn fetch_class_definition(
         &self,
         name: &str,
         commit: &str,
         file_path: PathBuf,
     ) -> Result<Vec<String>> {
+        self.fetch_definition(name, commit, file_path)
+    }
+
+    pub fn fetch_class_documentation(
+        &self,
+        name: &str,
+        commit: &str,
+        file_path: PathBuf,
+    ) -> Result<Vec<String>> {
+        self.fetch_definition(name, commit, file_path)
+    }
+
+    pub fn fetch_function_definition(
+        &self,
+        name: &str,
+        commit: &str,
+        file_path: PathBuf,
+    ) -> Result<Vec<String>> {
+        self.fetch_definition(name, commit, file_path)
+    }
+
+    pub fn fetch_function_documentation(
+        &self,
+        name: &str,
+        commit: &str,
+        file_path: PathBuf,
+    ) -> Result<Vec<String>> {
+        self.fetch_definition(name, commit, file_path)
+    }
+
+    pub fn fetch_lines_of_file(
+        &self,
+        commit: &str,
+        file_path: PathBuf,
+        start: usize,
+        end: usize,
+    ) -> Result<Vec<String>> {
         self.checkout(commit)?;
-        for lang in &self.langs {
-            if lang.accepts(&file_path) {
-                let target = lang.parse(name);
-                let matches = lang.find_in(target, &file_path)?;
-                let matches = matches.iter().map(|(def, doc)| def).collect();
-                Ok(matches);
-            }
-        }
-        Ok(Vec::new())
+        let full_path = self.dir.path().join(file_path);
+        let file = std::fs::File::open(full_path)?;
+        let reader = std::io::BufReader::new(file);
+        reader
+            .lines()
+            .map(|line| line.map_err(CodeError::FileReadError))
+            .skip(start)
+            .take(end - start + 1)
+            .collect::<Result<Vec<_>>>()
     }
 }
 
@@ -96,10 +134,103 @@ impl Wrapper {
             true => Ok(()),
         }
     }
+
+    fn fetch_target(
+        &self,
+        name: &str,
+        commit: &str,
+        file_path: PathBuf,
+    ) -> Result<Vec<(String, String)>> {
+        self.checkout(commit)?;
+        for lang in &self.langs {
+            if lang.accepts(&file_path) {
+                let target = lang.parse(name);
+                let matches = lang.find_in(&target, &file_path)?;
+                return Ok(matches);
+            }
+        }
+        Ok(Vec::new())
+    }
+
+    fn fetch_definition(
+        &self,
+        name: &str,
+        commit: &str,
+        file_path: PathBuf,
+    ) -> Result<Vec<String>> {
+        let matches: Vec<String> = self
+            .fetch_target(name, commit, file_path)?
+            .into_iter()
+            .map(|(def, _doc)| def)
+            .collect();
+        Ok(matches)
+    }
+    pub fn fetch_documentation(
+        &self,
+        name: &str,
+        commit: &str,
+        file_path: PathBuf,
+    ) -> Result<Vec<String>> {
+        let matches: Vec<String> = self
+            .fetch_target(name, commit, file_path)?
+            .into_iter()
+            .map(|(_def, doc)| doc)
+            .collect();
+        Ok(matches)
+    }
 }
 
 impl Display for Wrapper {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{:?} on branch {}", self.dir.path(), self.default_branch)
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    fn new_mock_wrapper() -> Result<Wrapper> {
+        let dir = TempDir::new()?;
+        let output = Command::new("bash")
+            .arg("./setup_test_codebase.sh")
+            .arg(dir.path())
+            .output()?;
+
+        if !output.status.success() {
+            let error_message = String::from_utf8_lossy(&output.stderr).to_string();
+            return Err(CodeError::GitCommandErr(error_message));
+        }
+        Ok(Wrapper {
+            dir,
+            default_branch: String::from("master"),
+            langs: vec![Lang::go()],
+        })
+    }
+
+    #[test]
+    fn checkout() -> Result<()> {
+        let w = new_mock_wrapper()?;
+        w.checkout("hello")?;
+        let main_go = w.dir.path().join("main.go");
+        let main_go = std::fs::File::open(main_go)?;
+        let main_go = std::io::BufReader::new(main_go);
+        let main_go_hello_branch = main_go
+            .lines()
+            .map(|l| l.map_err(CodeError::FileReadError))
+            .collect::<Result<Vec<_>>>()?;
+
+        let lines =
+            w.fetch_lines_of_file("hello", PathBuf::from("./main.go"), 0, usize::MAX >> 1)?;
+        assert_eq!(lines.len(), main_go_hello_branch.len());
+        for (l1, l2) in lines.iter().zip(main_go_hello_branch.iter()) {
+            assert_eq!(l1, l2);
+        }
+
+        let lines =
+            w.fetch_lines_of_file("goodbye", PathBuf::from("./main.go"), 0, usize::MAX >> 1)?;
+        assert_ne!(lines.len(), main_go_hello_branch.len());
+
+        Ok(())
     }
 }

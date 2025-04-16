@@ -26,6 +26,27 @@ impl Lang {
             file_extension: "go",
         }
     }
+
+    /// Parse the full path string into its components.
+    /// For Rust: parts are separated by "::" (e.g. "baz::Bar::foo()").
+    /// For Go: parts are separated by "." (e.g. "baz.Bar.Foo()").
+    pub fn parse(&self, full_path: &str) -> Target {
+        let full_path = full_path.trim();
+        let full_path = full_path.trim_end_matches("()");
+
+        let mut parts: Vec<&str> = full_path.split(self.separator).collect();
+        let function_name = parts.pop().map(|s| s.to_string());
+        // Depending on number of parts left, we may have package/module and/or type
+        let (_package, type_name) = match parts.len() {
+            0 => (None, None),
+            1 => (None, Some(parts[0].to_string())), // single type or function in root
+            _ => (Some(parts[0].to_string()), Some(parts[1].to_string())),
+        };
+        Target {
+            function_name,
+            type_name,
+        }
+    }
 }
 
 impl Lang {
@@ -83,7 +104,7 @@ pub struct Target {
 }
 
 impl Target {
-    pub fn new_method<S: Into<String>>(type_name: S,function_name: S ) -> Self {
+    pub fn new_method<S: Into<String>>(type_name: S, function_name: S) -> Self {
         Self {
             function_name: Some(function_name.into()),
             type_name: Some(type_name.into()),
@@ -119,12 +140,6 @@ impl Target {
                 false => Err(CodeError::TargetCanNotBeEmpty),
             },
         }
-    }
-    
-    pub fn parse(&self, path: &str) -> Target{
-
-
-
     }
 }
 
