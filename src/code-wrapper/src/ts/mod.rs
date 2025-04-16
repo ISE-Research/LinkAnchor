@@ -38,6 +38,14 @@ impl Lang {
             file_extension: "go",
         }
     }
+
+    pub fn python() -> Self {
+        Self {
+            queries: python::queries(),
+            language_fn: tree_sitter_python::LANGUAGE.into(),
+            file_extension: "py",
+        }
+    }
 }
 
 impl Lang {
@@ -56,6 +64,7 @@ impl Lang {
         let tree = parser.parse(&source, None).ok_or(CodeError::TSParseError)?;
         let mut results = Vec::new();
         for q in queries {
+            dbg!(&q);
             let query = Query::new(&self.language_fn, &q).expect("Error creating query");
             let mut query_cursor = QueryCursor::new();
             let mut matches = query_cursor.matches(&query, tree.root_node(), source.as_bytes());

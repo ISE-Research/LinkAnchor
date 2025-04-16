@@ -36,3 +36,16 @@ fn go() -> Result<()> {
     ];
     find_targets_for_lang(targets, Lang::go())
 }
+
+#[test]
+fn python() -> Result<()> {
+    let targets = vec![
+        Target::new_method("Type1", "method1"),
+        Target::new_method("Type1", "__init__"),
+        Target::new_function("static_function"),
+        Target::new_class("Type1"),
+        Target::new_class("Type2"),
+        Target::new_class("Type3"),
+    ];
+    find_targets_for_lang(targets, Lang::python())
+}
