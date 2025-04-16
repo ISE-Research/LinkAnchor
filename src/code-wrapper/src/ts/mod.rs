@@ -1,5 +1,7 @@
 mod go;
 mod python;
+#[cfg(test)]
+mod test;
 
 use std::collections::HashMap;
 use std::fmt::Display;

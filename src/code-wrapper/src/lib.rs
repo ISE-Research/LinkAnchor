@@ -1,11 +1,8 @@
-mod cherk;
 mod error;
-mod query;
 mod ts;
 mod wrapper;
 
 use error::{CodeError, Result};
-use ts::{Lang,Target};
 
 use pyo3::prelude::*;
 
