@@ -1,7 +1,7 @@
 use std::io::BufRead;
 use std::{fmt::Display, path::PathBuf, process::Command};
 
-use crate::ts::Lang;
+use crate::ts::{Lang, Target};
 
 use super::{CodeError, Result};
 use pyo3::{pyclass, pymethods};
@@ -68,7 +68,8 @@ impl Wrapper {
         commit: &str,
         file_path: PathBuf,
     ) -> Result<Vec<String>> {
-        self.fetch_definition(name, commit, file_path)
+        let target = Target::parse(name);
+        self.fetch_definition(&target, commit, file_path)
     }
 
     pub fn fetch_class_documentation(
@@ -77,7 +78,8 @@ impl Wrapper {
         commit: &str,
         file_path: PathBuf,
     ) -> Result<Vec<String>> {
-        self.fetch_definition(name, commit, file_path)
+        let target = Target::parse(name);
+        self.fetch_definition(&target, commit, file_path)
     }
 
     pub fn fetch_function_definition(
@@ -86,7 +88,8 @@ impl Wrapper {
         commit: &str,
         file_path: PathBuf,
     ) -> Result<Vec<String>> {
-        self.fetch_definition(name, commit, file_path)
+        let target = Target::parse(name);
+        self.fetch_definition(&target, commit, file_path)
     }
 
     pub fn fetch_function_documentation(
@@ -95,7 +98,8 @@ impl Wrapper {
         commit: &str,
         file_path: PathBuf,
     ) -> Result<Vec<String>> {
-        self.fetch_definition(name, commit, file_path)
+        let target = Target::parse(name);
+        self.fetch_definition(&target, commit, file_path)
     }
 
     pub fn fetch_lines_of_file(
@@ -135,18 +139,20 @@ impl Wrapper {
         }
     }
 
-    fn fetch_target(
+    fn fetch(
         &self,
-        name: &str,
+        target: &Target,
         commit: &str,
         file_path: PathBuf,
     ) -> Result<Vec<(String, String)>> {
         self.checkout(commit)?;
+        let file_path = self.dir.path().join(file_path);
+        if !file_path.exists() {
+            return Err(CodeError::FileNotFound(file_path));
+        }
         for lang in &self.langs {
             if lang.accepts(&file_path) {
-                let target = lang.parse(name);
-                let matches = lang.find_in(&target, &file_path)?;
-                return Ok(matches);
+                return lang.find_in(target, &file_path);
             }
         }
         Ok(Vec::new())
@@ -154,25 +160,26 @@ impl Wrapper {
 
     fn fetch_definition(
         &self,
-        name: &str,
+        target: &Target,
         commit: &str,
         file_path: PathBuf,
     ) -> Result<Vec<String>> {
         let matches: Vec<String> = self
-            .fetch_target(name, commit, file_path)?
+            .fetch(target, commit, file_path)?
             .into_iter()
             .map(|(def, _doc)| def)
             .collect();
         Ok(matches)
     }
+
     pub fn fetch_documentation(
         &self,
-        name: &str,
+        target: &Target,
         commit: &str,
         file_path: PathBuf,
     ) -> Result<Vec<String>> {
         let matches: Vec<String> = self
-            .fetch_target(name, commit, file_path)?
+            .fetch(target, commit, file_path)?
             .into_iter()
             .map(|(_def, doc)| doc)
             .collect();
@@ -188,6 +195,8 @@ impl Display for Wrapper {
 
 #[cfg(test)]
 mod test {
+    use crate::ts::Target;
+
     use super::*;
 
     fn new_mock_wrapper() -> Result<Wrapper> {
@@ -230,6 +239,36 @@ mod test {
         let lines =
             w.fetch_lines_of_file("goodbye", PathBuf::from("./main.go"), 0, usize::MAX >> 1)?;
         assert_ne!(lines.len(), main_go_hello_branch.len());
+
+        Ok(())
+    }
+
+    #[test]
+    fn fetch() -> Result<()> {
+        let w = new_mock_wrapper()?;
+        let targets = [
+            Target::new_method("Mamad", "SayHello"),
+            Target::new_method("Mamad", "SayGoodBye"),
+            Target::new_function("greet"),
+            Target::new_class("Mamad"),
+        ];
+        for target in targets.iter() {
+            let matches = w.fetch_definition(target, "goodbye", PathBuf::from("./main.go"))?;
+            assert!(!matches.is_empty());
+            for def in matches {
+                assert!(!def.is_empty());
+            }
+        }
+
+        // check for any documentation
+        assert!(targets
+            .iter()
+            .filter_map(|t| {
+                w.fetch_documentation(t, "goodbye", PathBuf::from("./main.go"))
+                    .ok()
+            })
+            .flatten()
+            .any(|doc| !doc.is_empty()));
 
         Ok(())
     }

@@ -13,7 +13,7 @@ cat <<EOF > main.go
 package main
 import "fmt"
 
-func Greeting() {
+func greet() {
   fmt.Println("Hello, world!")
 }
 

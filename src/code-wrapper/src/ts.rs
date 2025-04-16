@@ -12,7 +12,6 @@ use crate::Result;
 
 #[derive(Debug, Clone)]
 pub struct Lang {
-    separator: &'static str,
     queries: HashMap<String, Vec<String>>,
     language_fn: tree_sitter::Language,
     file_extension: &'static str,
@@ -20,31 +19,9 @@ pub struct Lang {
 impl Lang {
     pub fn go() -> Self {
         Self {
-            separator: ".",
             queries: query::go(),
             language_fn: tree_sitter_go::LANGUAGE.into(),
             file_extension: "go",
-        }
-    }
-
-    /// Parse the full path string into its components.
-    /// For Rust: parts are separated by "::" (e.g. "baz::Bar::foo()").
-    /// For Go: parts are separated by "." (e.g. "baz.Bar.Foo()").
-    pub fn parse(&self, full_path: &str) -> Target {
-        let full_path = full_path.trim();
-        let full_path = full_path.trim_end_matches("()");
-
-        let mut parts: Vec<&str> = full_path.split(self.separator).collect();
-        let function_name = parts.pop().map(|s| s.to_string());
-        // Depending on number of parts left, we may have package/module and/or type
-        let (_package, type_name) = match parts.len() {
-            0 => (None, None),
-            1 => (None, Some(parts[0].to_string())), // single type or function in root
-            _ => (Some(parts[0].to_string()), Some(parts[1].to_string())),
-        };
-        Target {
-            function_name,
-            type_name,
         }
     }
 }
@@ -65,7 +42,6 @@ impl Lang {
         let tree = parser.parse(&source, None).ok_or(CodeError::TSParseError)?;
         let mut results = Vec::new();
         for q in queries {
-            dbg!(&q);
             let query = Query::new(&self.language_fn, &q).expect("Error creating query");
             let mut query_cursor = QueryCursor::new();
             let mut matches = query_cursor.matches(&query, tree.root_node(), source.as_bytes());
@@ -91,9 +67,7 @@ impl Lang {
     }
 
     pub fn accepts(&self, path: &Path) -> bool {
-        path.extension()
-            .and_then(|s| s.to_str())
-            .map_or(false, |ext| ext == self.file_extension)
+        path.extension().and_then(|s| s.to_str()) == Some(self.file_extension)
     }
 }
 
@@ -110,6 +84,18 @@ impl Target {
             type_name: Some(type_name.into()),
         }
     }
+    pub fn new_function<S: Into<String>>(function_name: S) -> Self {
+        Self {
+            function_name: Some(function_name.into()),
+            type_name: None,
+        }
+    }
+    pub fn new_class<S: Into<String>>(type_name: S) -> Self {
+        Self {
+            function_name: None,
+            type_name: Some(type_name.into()),
+        }
+    }
     fn vars(&self) -> HashMap<String, String> {
         let mut vars = HashMap::new();
         if let Some(ref name) = self.function_name {
@@ -118,11 +104,10 @@ impl Target {
         if let Some(ref name) = self.type_name {
             vars.insert(String::from("receiver"), name.clone());
         }
-        dbg!(vars)
+        vars
     }
     fn update_query(&self, query: &str) -> Result<String> {
-        let x = strfmt(query, &self.vars()).map_err(CodeError::from);
-        dbg!(x)
+        strfmt(query, &self.vars()).map_err(CodeError::from)
     }
 
     fn is_typed(&self) -> bool {
@@ -139,6 +124,24 @@ impl Target {
                 true => Ok("functions"),
                 false => Err(CodeError::TargetCanNotBeEmpty),
             },
+        }
+    }
+
+    pub fn parse(full_path: &str) -> Self {
+        let full_path = full_path.trim();
+        let full_path = full_path.trim_end_matches("()");
+
+        let mut parts: Vec<&str> = full_path.split(".").collect();
+        let function_name = parts.pop().map(|s| s.to_string());
+        // Depending on number of parts left, we may have package/module and/or type
+        let (_package, type_name) = match parts.len() {
+            0 => (None, None),
+            1 => (None, Some(parts[0].to_string())), // single type or function in root
+            _ => (Some(parts[0].to_string()), Some(parts[1].to_string())),
+        };
+        Self {
+            function_name,
+            type_name,
         }
     }
 }

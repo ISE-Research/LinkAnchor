@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use pyo3::{PyErr, exceptions::PyValueError};
 use thiserror::Error;
 
@@ -13,6 +15,8 @@ pub enum CodeError {
     QueryPopulationError(#[from] strfmt::FmtError),
     #[error("failed to execute git command: {0}")]
     GitCommandErr(String),
+    #[error("file not found: {0}")]
+    FileNotFound(PathBuf),
 }
 pub type Result<T, E = CodeError> = core::result::Result<T, E>;
 
