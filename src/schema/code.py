@@ -1,4 +1,3 @@
-from typing import List
 from pydantic import BaseModel, Field
 from anchor.extractor import Extractor
 
@@ -18,7 +17,7 @@ class FetchFunctionDefinition(BaseModel):
     )
 
     def __call__(self, anchor: Extractor) -> str:
-        return anchor.fetch_function_definition(self.name, self.commit, self.file_path)
+        return anchor.fetch_definition(self.name, self.commit, self.file_path)
 
 
 class FetchFunctionDocumentation(BaseModel):
@@ -36,7 +35,7 @@ class FetchFunctionDocumentation(BaseModel):
     )
 
     def __call__(self, anchor: Extractor) -> str:
-        return anchor.fetch_function_documentation(
+        return anchor.fetch_documentation(
             self.name, self.commit, self.file_path
         )
 
@@ -56,7 +55,7 @@ class FetchClassDefinition(BaseModel):
     )
 
     def __call__(self, anchor: Extractor) -> str:
-        return anchor.fetch_class_definition(self.name, self.commit, self.file_path)
+        return anchor.fetch_definition(self.name, self.commit, self.file_path)
 
 
 class FetchClassDocumentation(BaseModel):
@@ -74,7 +73,7 @@ class FetchClassDocumentation(BaseModel):
     )
 
     def __call__(self, anchor: Extractor) -> str:
-        return anchor.fetch_class_documentation(self.name, self.commit, self.file_path)
+        return anchor.fetch_documentation(self.name, self.commit, self.file_path)
 
 
 class FetchLinesOfFile(BaseModel):
