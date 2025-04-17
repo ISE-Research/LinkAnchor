@@ -1,16 +1,17 @@
 from typing import Any
 from git_wrapper import Wrapper as GitWrapper
+from code_wrapper import Wrapper as CodeWrapper
 
 class Extractor:
-    def __init__(self, issue_link: str, git_repo_link: str):
+    def __init__(self, issue_url: str, git_repo_url: str):
         """Initialize the Data Extractor instance.
         Args:
             issue_link (str): The link to the issue in GitHub.
             git_repo_link (str): The link to the git repository.
         """
-        self.git_wrapper = GitWrapper(git_repo_link)
-        self.issue_wrapper = DummyIssueWrapper(issue_link)
-        self.code_wrapper = DummyCodeWrapper()
+        self.git_wrapper = GitWrapper(git_repo_url)
+        self.issue_wrapper = DummyIssueWrapper(issue_url)
+        self.code_wrapper = CodeWrapper(git_repo_url)
 
     def __getattr__(self, name: str) -> Any:
         """Deligate to wrappers if avilable."""
@@ -25,7 +26,3 @@ class DummyIssueWrapper:
 
     def get_issue_title(self) -> str:
         return "'pkgutil.get_loader' is removed from Python 3.14"
-
-class DummyCodeWrapper:
-    def __init__(self):
-        pass
