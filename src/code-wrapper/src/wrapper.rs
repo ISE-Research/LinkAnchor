@@ -62,44 +62,34 @@ impl Wrapper {
         }
     }
 
-    pub fn fetch_class_definition(
+    pub fn fetch_definition(
         &self,
         name: &str,
         commit: &str,
         file_path: PathBuf,
     ) -> Result<Vec<String>> {
         let target = Target::parse(name)?;
-        self.fetch_definition(&target, commit, file_path)
+        let matches: Vec<String> = self
+            .fetch(&target, commit, file_path)?
+            .into_iter()
+            .map(|(def, _doc)| def)
+            .collect();
+        Ok(matches)
     }
 
-    pub fn fetch_class_documentation(
+    pub fn fetch_documentation(
         &self,
         name: &str,
         commit: &str,
         file_path: PathBuf,
     ) -> Result<Vec<String>> {
         let target = Target::parse(name)?;
-        self.fetch_documentation(&target, commit, file_path)
-    }
-
-    pub fn fetch_function_definition(
-        &self,
-        name: &str,
-        commit: &str,
-        file_path: PathBuf,
-    ) -> Result<Vec<String>> {
-        let target = Target::parse(name)?;
-        self.fetch_definition(&target, commit, file_path)
-    }
-
-    pub fn fetch_function_documentation(
-        &self,
-        name: &str,
-        commit: &str,
-        file_path: PathBuf,
-    ) -> Result<Vec<String>> {
-        let target = Target::parse(name)?;
-        self.fetch_documentation(&target, commit, file_path)
+        let matches: Vec<String> = self
+            .fetch(&target, commit, file_path)?
+            .into_iter()
+            .map(|(_def, doc)| doc)
+            .collect();
+        Ok(matches)
     }
 
     pub fn fetch_lines_of_file(
@@ -156,34 +146,6 @@ impl Wrapper {
             }
         }
         Ok(Vec::new())
-    }
-
-    fn fetch_definition(
-        &self,
-        target: &Target,
-        commit: &str,
-        file_path: PathBuf,
-    ) -> Result<Vec<String>> {
-        let matches: Vec<String> = self
-            .fetch(target, commit, file_path)?
-            .into_iter()
-            .map(|(def, _doc)| def)
-            .collect();
-        Ok(matches)
-    }
-
-    fn fetch_documentation(
-        &self,
-        target: &Target,
-        commit: &str,
-        file_path: PathBuf,
-    ) -> Result<Vec<String>> {
-        let matches: Vec<String> = self
-            .fetch(target, commit, file_path)?
-            .into_iter()
-            .map(|(_def, doc)| doc)
-            .collect();
-        Ok(matches)
     }
 }
 
@@ -252,9 +214,9 @@ mod test {
             Target::new_class("Mamad"),
         ];
         for target in targets.iter() {
-            let matches = w.fetch_definition(target, "goodbye", PathBuf::from("./main.go"))?;
+            let matches = w.fetch(target, "goodbye", PathBuf::from("./main.go"))?;
             assert!(!matches.is_empty());
-            for def in matches {
+            for (def, _doc) in matches {
                 assert!(!def.is_empty());
             }
         }
@@ -262,12 +224,9 @@ mod test {
         // check for any documentation
         assert!(targets
             .iter()
-            .filter_map(|t| {
-                w.fetch_documentation(t, "goodbye", PathBuf::from("./main.go"))
-                    .ok()
-            })
+            .filter_map(|t| { w.fetch(t, "goodbye", PathBuf::from("./main.go")).ok() })
             .flatten()
-            .any(|doc| !doc.is_empty()));
+            .any(|(_def, doc)| !doc.is_empty()));
 
         Ok(())
     }
