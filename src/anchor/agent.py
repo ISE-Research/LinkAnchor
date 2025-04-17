@@ -68,7 +68,8 @@ class Agent:
                     raise ValueError("Function not found in tool call")
 
                 # just to saticfy type checking
-                function: Callable[[Extractor], Any] = functionn # type: ignore
+                function: Callable[[Extractor], Any] = functionn  # type: ignore
+                logger.info(f"LLM calling:\t{function.__repr__()}")
 
                 result = function(extractor)
                 messages.append(message.function_call_result(tool_call, result))
