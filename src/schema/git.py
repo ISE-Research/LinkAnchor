@@ -23,8 +23,8 @@ class Pagination(BaseModel):
 class ListBranches(BaseModel):
     """listing all branches in a Git repository"""
 
-    def __call__(self, anchor: Extractor) -> List[str]:
-        return anchor.list_branches()
+    def __call__(self, extractor: Extractor) -> List[str]:
+        return extractor.list_branches()
 
 
 class CommitsOfBranch(BaseModel):
@@ -35,8 +35,8 @@ class CommitsOfBranch(BaseModel):
         ..., description="pagination from offset to atleast offset + limit"
     )
 
-    def __call__(self, anchor: Extractor) -> List[CommitMeta]:
-        return anchor.commits_of_branch(
+    def __call__(self, extractor: Extractor) -> List[CommitMeta]:
+        return extractor.commits_of_branch(
             self.branch, self.pagination.to_wrapper_pagination()
         )
 
@@ -46,8 +46,8 @@ class AuthorsOfBranch(BaseModel):
 
     branch: str = Field(..., description="branch name")
 
-    def __call__(self, anchor: Extractor) -> List[Author]:
-        return anchor.authors_of_branch(self.branch)
+    def __call__(self, extractor: Extractor) -> List[Author]:
+        return extractor.authors_of_branch(self.branch)
 
 
 class CommitsOfAuthor(BaseModel):
@@ -62,13 +62,13 @@ class CommitsOfAuthor(BaseModel):
         ..., description="pagination from offset to atleast offset + limit"
     )
 
-    def __call__(self, anchor: Extractor) -> List[CommitMeta]:
+    def __call__(self, extractor: Extractor) -> List[CommitMeta]:
         if self.query_type == AuthorQueryType.NAME:
             query = AuthorQuery.name(self.query)
         else:
             query = AuthorQuery.email(self.query)
 
-        return anchor.commits_of_author(
+        return extractor.commits_of_author(
             query, self.branch, self.pagination.to_wrapper_pagination()
         )
 
@@ -82,8 +82,8 @@ class CommitsOnFile(BaseModel):
         ..., description="pagination from offset to atleast offset + limit"
     )
 
-    def __call__(self, anchor: Extractor) -> List[CommitMeta]:
-        return anchor.commits_on_file(
+    def __call__(self, extractor: Extractor) -> List[CommitMeta]:
+        return extractor.commits_on_file(
             self.branch, self.file_path, self.pagination.to_wrapper_pagination()
         )
 
@@ -98,8 +98,8 @@ class CommitsBetween(BaseModel):
         ..., description="pagination from offset to atleast offset + limit"
     )
 
-    def __call__(self, anchor: Extractor) -> List[CommitMeta]:
-        return anchor.commits_between(
+    def __call__(self, extractor: Extractor) -> List[CommitMeta]:
+        return extractor.commits_between(
             self.branch,
             self.start_date,
             self.end_date,
@@ -110,8 +110,8 @@ class CommitDiff(BaseModel):
     """changes staged by the given commit"""
     commit_hash: str = Field(..., description="commit hash. could be short or long")
 
-    def __call__(self, anchor: Extractor) -> str:
-        return anchor.commit_diff(self.commit_hash)
+    def __call__(self, extractor: Extractor) -> str:
+        return extractor.commit_diff(self.commit_hash)
     
 
 

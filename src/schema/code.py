@@ -16,8 +16,8 @@ class FetchFunctionDefinition(BaseModel):
         ..., description="file path of the file in repo to fetch the function from"
     )
 
-    def __call__(self, anchor: Extractor) -> str:
-        return anchor.fetch_definition(self.name, self.commit, self.file_path)
+    def __call__(self, extractor: Extractor) -> str:
+        return extractor.fetch_definition(self.name, self.commit, self.file_path)
 
 
 class FetchFunctionDocumentation(BaseModel):
@@ -34,8 +34,8 @@ class FetchFunctionDocumentation(BaseModel):
         ..., description="file path of the file in repo to fetch the function from"
     )
 
-    def __call__(self, anchor: Extractor) -> str:
-        return anchor.fetch_documentation(
+    def __call__(self, extractor: Extractor) -> str:
+        return extractor.fetch_documentation(
             self.name, self.commit, self.file_path
         )
 
@@ -54,8 +54,8 @@ class FetchClassDefinition(BaseModel):
         ..., description="file path of the file in repo to fetch the class from"
     )
 
-    def __call__(self, anchor: Extractor) -> str:
-        return anchor.fetch_definition(self.name, self.commit, self.file_path)
+    def __call__(self, extractor: Extractor) -> str:
+        return extractor.fetch_definition(self.name, self.commit, self.file_path)
 
 
 class FetchClassDocumentation(BaseModel):
@@ -72,8 +72,8 @@ class FetchClassDocumentation(BaseModel):
         ..., description="file path of the file in repo to fetch the class from"
     )
 
-    def __call__(self, anchor: Extractor) -> str:
-        return anchor.fetch_documentation(self.name, self.commit, self.file_path)
+    def __call__(self, extractor: Extractor) -> str:
+        return extractor.fetch_documentation(self.name, self.commit, self.file_path)
 
 
 class FetchLinesOfFile(BaseModel):
@@ -88,8 +88,8 @@ class FetchLinesOfFile(BaseModel):
     start: int = Field(..., description="start line number")
     end: int = Field(..., description="end line number")
 
-    def __call__(self, anchor: Extractor) -> str:
-        return anchor.fetch_lines_of_file(
+    def __call__(self, extractor: Extractor) -> str:
+        return extractor.fetch_lines_of_file(
             self.commit, self.file_path, self.start, self.end
         )
 
