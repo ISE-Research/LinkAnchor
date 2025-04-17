@@ -144,12 +144,12 @@ impl Target {
             },
             false => match self.function_name.is_some() {
                 true => Ok(QueryMode::Functions),
-                false => Err(CodeError::TargetCanNotBeEmpty),
+                false => unreachable!(),
             },
         }
     }
 
-    pub fn parse(full_path: &str) -> Self {
+    pub fn parse(full_path: &str) -> Result<Self> {
         let is_function = full_path.ends_with("()");
         let full_path = full_path.trim();
         let full_path = full_path.trim_end_matches("()");
@@ -157,7 +157,7 @@ impl Target {
         let parts: Vec<&str> = full_path.split(".").collect();
         // Depending on number of parts left, we may have package/module and/or type
         let (type_name, function_name) = match parts.len() {
-            0 => (None, None),
+            0 => return Err(CodeError::TargetCanNotBeEmpty),
             1 => {
                 if is_function {
                     (None, Some(parts[0].to_string()))
@@ -167,10 +167,10 @@ impl Target {
             } // single type or function in root
             _ => (Some(parts[0].to_string()), Some(parts[1].to_string())),
         };
-        Self {
+        Ok(Self {
             function_name,
             type_name,
-        }
+        })
     }
 }
 

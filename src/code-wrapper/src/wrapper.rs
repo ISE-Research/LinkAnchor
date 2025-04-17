@@ -68,7 +68,7 @@ impl Wrapper {
         commit: &str,
         file_path: PathBuf,
     ) -> Result<Vec<String>> {
-        let target = Target::parse(name);
+        let target = Target::parse(name)?;
         self.fetch_definition(&target, commit, file_path)
     }
 
@@ -78,7 +78,7 @@ impl Wrapper {
         commit: &str,
         file_path: PathBuf,
     ) -> Result<Vec<String>> {
-        let target = Target::parse(name);
+        let target = Target::parse(name)?;
         self.fetch_definition(&target, commit, file_path)
     }
 
@@ -88,7 +88,7 @@ impl Wrapper {
         commit: &str,
         file_path: PathBuf,
     ) -> Result<Vec<String>> {
-        let target = Target::parse(name);
+        let target = Target::parse(name)?;
         self.fetch_definition(&target, commit, file_path)
     }
 
@@ -98,7 +98,7 @@ impl Wrapper {
         commit: &str,
         file_path: PathBuf,
     ) -> Result<Vec<String>> {
-        let target = Target::parse(name);
+        let target = Target::parse(name)?;
         self.fetch_definition(&target, commit, file_path)
     }
 
