@@ -55,7 +55,7 @@ impl Lang {
         parser
             .set_language(&self.language_fn)
             .expect("Error loading language grammar");
-        let queries = self.queries[&target.query_mode()?]
+        let queries = self.queries[&target.query_mode()]
             .iter()
             .filter_map(|q_fstr| target.update_query(q_fstr).ok())
             .collect::<Vec<_>>();
@@ -136,14 +136,14 @@ impl Target {
         self.type_name.is_some()
     }
 
-    fn query_mode(&self) -> Result<QueryMode> {
+    fn query_mode(&self) -> QueryMode {
         match self.is_typed() {
             true => match self.function_name.is_some() {
-                true => Ok(QueryMode::Methods),
-                false => Ok(QueryMode::Types),
+                true => QueryMode::Methods,
+                false => QueryMode::Types,
             },
             false => match self.function_name.is_some() {
-                true => Ok(QueryMode::Functions),
+                true => QueryMode::Functions,
                 false => unreachable!(),
             },
         }
