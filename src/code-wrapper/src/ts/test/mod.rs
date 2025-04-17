@@ -1,8 +1,8 @@
 use std::path::PathBuf;
 
-use crate::ts::Lang;
-use crate::ts::Target;
-use crate::Result;
+use super::Lang;
+use super::Result;
+use super::Target;
 
 fn find_targets_for_lang(targets: Vec<Target>, lang: Lang) -> Result<()> {
     let file_path = format!("./src/ts/test/samples/code.{}", lang.file_extension);

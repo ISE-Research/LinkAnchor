@@ -3,6 +3,7 @@ mod ts;
 mod wrapper;
 
 use error::{CodeError, Result};
+pub use ts::Target;
 
 use pyo3::prelude::*;
 
