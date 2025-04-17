@@ -164,8 +164,11 @@ impl Target {
                 } else {
                     (Some(parts[0].to_string()), None)
                 }
-            } // single type or function in root
-            _ => (Some(parts[0].to_string()), Some(parts[1].to_string())),
+            }
+            n => (
+                Some(parts[n - 2].to_string()),
+                Some(parts[n - 1].to_string()),
+            ), // last two parts are function and type
         };
         Ok(Self {
             function_name,
