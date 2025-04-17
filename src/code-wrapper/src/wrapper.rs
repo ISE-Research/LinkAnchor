@@ -79,7 +79,7 @@ impl Wrapper {
         file_path: PathBuf,
     ) -> Result<Vec<String>> {
         let target = Target::parse(name)?;
-        self.fetch_definition(&target, commit, file_path)
+        self.fetch_documentation(&target, commit, file_path)
     }
 
     pub fn fetch_function_definition(
@@ -99,7 +99,7 @@ impl Wrapper {
         file_path: PathBuf,
     ) -> Result<Vec<String>> {
         let target = Target::parse(name)?;
-        self.fetch_definition(&target, commit, file_path)
+        self.fetch_documentation(&target, commit, file_path)
     }
 
     pub fn fetch_lines_of_file(
@@ -172,7 +172,7 @@ impl Wrapper {
         Ok(matches)
     }
 
-    pub fn fetch_documentation(
+    fn fetch_documentation(
         &self,
         target: &Target,
         commit: &str,
