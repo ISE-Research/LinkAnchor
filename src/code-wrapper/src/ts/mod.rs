@@ -179,13 +179,16 @@ impl Target {
 
 impl Display for Target {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "{}{}{}",
-            self.type_name.as_deref().unwrap_or(""),
-            if self.is_typed() { "." } else { "" },
-            self.function_name.as_deref().unwrap_or(""),
-        )
+        match self.query_mode() {
+            QueryMode::Functions => write!(f, "{}()", self.function_name.as_deref().unwrap_or("")),
+            QueryMode::Methods => write!(
+                f,
+                "{}.{}()",
+                self.type_name.as_deref().unwrap_or(""),
+                self.function_name.as_deref().unwrap_or("")
+            ),
+            QueryMode::Types => write!(f, "{}", self.type_name.as_deref().unwrap_or("")),
+        }
     }
 }
 
