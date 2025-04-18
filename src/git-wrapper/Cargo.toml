@@ -1,0 +1,15 @@
+[package]
+name = "git-wrapper"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[lib]
+name = "git_wrapper"
+crate-type = ["cdylib"]
+
+[dependencies]
+pyo3 = "0.24"
+thiserror = "2.0"
+temp-dir = "0.1.14"
+chrono = "0.4.40"

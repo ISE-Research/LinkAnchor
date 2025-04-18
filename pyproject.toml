@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "git-anchor"
+version = "0.1.0"
+description = ""
+authors = ["ArshiAAkhavan <letmemakenewone@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+openai = "^1.66.5"
+pydantic = "^2.10.6"
+maturin = "^1.8.3"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

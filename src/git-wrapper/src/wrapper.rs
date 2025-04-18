@@ -1,0 +1,587 @@
+use super::{GitError, Result};
+use chrono::{DateTime, FixedOffset};
+use pyo3::{pyclass, pymethods};
+use std::{ffi::OsStr, fmt::Display, process::Command};
+use temp_dir::TempDir;
+
+const COMMIT_SEPARATOR_GIT: &str = "%x1e";
+const COMMIT_SEPARATOR_CHAR: char = '\x1e';
+const ATTRIBUTE_SEPARATOR_GIT: &str = "%x1d";
+const ATTRIBUTE_SEPARATOR_CHAR: char = '\x1d';
+const DATETIME_FORMAT: &str = "%Y-%m-%d %H:%M:%S %z";
+
+#[pyclass(str)]
+pub struct Wrapper {
+    dir: TempDir,
+    default_branch: String,
+}
+
+#[pymethods]
+impl Wrapper {
+    #[new]
+    pub fn new(repo_url: &str) -> Result<Self> {
+        let dir = TempDir::new()?;
+
+        // Get the path to the temporary directory
+        let dir_path = dir.path();
+
+        // Run git clone command
+        let output = Command::new("git")
+            .arg("clone")
+            .arg(repo_url)
+            .arg(dir_path)
+            .output()?;
+
+        // Check if the command was successful
+        if !output.status.success() {
+            let error_message = String::from_utf8_lossy(&output.stderr).to_string();
+            return Err(GitError::GitCommandErr(error_message));
+        }
+
+        // Find the default branch
+        let output = Command::new("git")
+            .arg("rev-parse")
+            .arg("--abbrev-ref")
+            .arg("HEAD")
+            .current_dir(dir.path())
+            .output()?;
+
+        match output.status.success() {
+            false => {
+                let error_message = String::from_utf8_lossy(&output.stderr).to_string();
+                Err(GitError::GitCommandErr(error_message))
+            }
+            true => {
+                let default_branch = String::from_utf8_lossy(&output.stdout)
+                    .trim_end_matches("\n")
+                    .to_string();
+                Ok(Self {
+                    dir,
+                    default_branch,
+                })
+            }
+        }
+    }
+
+    pub fn list_branches(&self) -> Result<Vec<String>> {
+        // List all remote branches
+        let output = Command::new("git")
+            .arg("branch")
+            .arg("-r")
+            .current_dir(self.dir.path())
+            .output()?;
+
+        if !output.status.success() {
+            let error_message = String::from_utf8_lossy(&output.stderr).to_string();
+            return Err(GitError::GitCommandErr(error_message));
+        }
+
+        let branches_output = String::from_utf8_lossy(&output.stdout);
+        let branches_output = branches_output.trim_end_matches("\n");
+
+        let branches: Vec<String> = branches_output
+            .lines()
+            .filter(|line| !line.is_empty())
+            .filter(|line| !line.contains("HEAD"))
+            // lines might be in the format of "origin/HEAD -> origin/master"
+            .map(|line| line.split("->").next().unwrap_or(line).trim())
+            .map(|line| line.to_string())
+            .collect();
+
+        Ok(branches)
+    }
+
+    pub fn authors_of_branch(&self, branch: &str) -> Result<Vec<Author>> {
+        let authors: Vec<Author> = self
+            .commits_of_branch(branch, Pagination::all())?
+            .into_iter()
+            .map(|commit| commit.author)
+            .collect();
+        Ok(authors)
+    }
+
+    pub fn commits_of_branch(
+        &self,
+        branch: &str,
+        pagination: Pagination,
+    ) -> Result<Vec<CommitMeta>> {
+        if branch == self.default_branch || branch == format!("origin/{}", self.default_branch) {
+            self.commits_from_git_log(vec![&self.default_branch], pagination)
+        } else {
+            let output = Command::new("git")
+                .arg("merge-base")
+                .arg(&self.default_branch)
+                .arg(branch)
+                .current_dir(self.dir.path())
+                .output()?;
+
+            // Get the commit hash of the first commit in the branch
+            if !output.status.success() {
+                let error_message = String::from_utf8_lossy(&output.stderr).to_string();
+                return Err(GitError::GitCommandErr(error_message));
+            }
+
+            let first_commit_hash = String::from_utf8_lossy(&output.stdout);
+            let first_commit_hash = first_commit_hash.trim_end_matches("\n");
+
+            self.commits_from_git_log(vec![format!("{first_commit_hash}..{branch}")], pagination)
+        }
+    }
+
+    pub fn commit_diff(&self, commit_hash: String) -> Result<String> {
+        let output = Command::new("git")
+            .arg("diff")
+            .arg(format!("{commit_hash}^ {commit_hash}"))
+            .current_dir(self.dir.path())
+            .output()?;
+
+        if !output.status.success() {
+            let error_message = String::from_utf8_lossy(&output.stderr).to_string();
+            return Err(GitError::GitCommandErr(error_message));
+        }
+
+        let diff = String::from_utf8_lossy(&output.stdout)
+            .trim_end_matches("\n")
+            .to_string();
+        Ok(diff)
+    }
+
+    pub fn commit_metadata(&self, commit_hash: &str) -> Result<CommitMeta> {
+        self.commits_from_git_log(vec!["-1", commit_hash], Pagination::first())?
+            .into_iter()
+            .next()
+            .ok_or(GitError::MalFormedData(commit_hash.to_string()))
+    }
+
+    pub fn commits_of(
+        &self,
+        author_query: AuthorQuery,
+        branch: &str,
+        pagination: Pagination,
+    ) -> Result<Vec<CommitMeta>> {
+        use AuthorQuery::*;
+        match author_query {
+            Name(query) => self.commits_from_git_log(vec![branch, "--author", &query], pagination),
+            Email(query) => self.commits_from_git_log(vec![branch, "--author", &query], pagination),
+        }
+    }
+
+    pub fn commits_between(
+        &self,
+        from: &str,
+        to: &str,
+        pagination: Pagination,
+    ) -> Result<Vec<CommitMeta>> {
+        self.commits_from_git_log(
+            vec![format!("--since={}", from), format!("--until={}", to)],
+            pagination,
+        )
+    }
+
+    pub fn commits_on_file(
+        &self,
+        file_path: &str,
+        pagination: Pagination,
+    ) -> Result<Vec<CommitMeta>> {
+        self.commits_from_git_log(vec!["--", file_path], pagination)
+    }
+}
+impl Wrapper {
+    pub fn commits_between_dates(
+        &self,
+        from: DateTime<FixedOffset>,
+        to: DateTime<FixedOffset>,
+        pagination: Pagination,
+    ) -> Result<Vec<CommitMeta>> {
+        self.commits_from_git_log(
+            vec![
+                format!("--since={}", from.format(DATETIME_FORMAT).to_string()),
+                format!("--until={}", to.format(DATETIME_FORMAT).to_string()),
+            ],
+            pagination,
+        )
+    }
+}
+
+impl Wrapper {
+    fn commits_from_git_log<S: AsRef<OsStr>>(
+        &self,
+        git_log_extra_args: Vec<S>,
+        pagination: Pagination,
+    ) -> Result<Vec<CommitMeta>> {
+        let output = git_log_formatted()
+            .args(git_log_extra_args)
+            .current_dir(self.dir.path())
+            .output()?;
+
+        if !output.status.success() {
+            let error_message = String::from_utf8_lossy(&output.stderr).to_string();
+            return Err(GitError::GitCommandErr(error_message));
+        }
+
+        let log = String::from_utf8_lossy(&output.stdout);
+        let log = log.trim_end_matches("\n");
+
+        // list all commits between the first commit and the branch
+        // using the format: %H %an %ae %ad %B to get the hash, author name, author email, date, and message
+        // in a parsable format.
+        // The separator between each commit is COMMIT_SEPARATOR_GIT
+        // The separator between each attribute is ATTRIBUTE_SEPARATOR_GIT
+        let commits: Vec<CommitMeta> = log
+            .split(COMMIT_SEPARATOR_CHAR)
+            .filter(|line| !line.is_empty())
+            .map(CommitMeta::parse)
+            .collect::<Result<_, _>>()?;
+
+        let commits: Vec<CommitMeta> = commits
+            .into_iter()
+            .skip(pagination.offset)
+            .take(pagination.limit)
+            .collect();
+        Ok(commits)
+    }
+}
+
+impl Display for Wrapper {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?} on branch {}", self.dir.path(), self.default_branch)
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+#[pyclass(str, eq)]
+pub struct Author {
+    pub name: String,
+    pub email: String,
+}
+
+#[pymethods]
+impl Author {
+    #[getter]
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+    #[getter]
+    pub fn email(&self) -> &str {
+        &self.email
+    }
+
+    fn __repr__(&self) -> String {
+        format!("{}", self)
+    }
+}
+
+impl Display for Author {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{} <{}>", self.name, self.email)
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+#[pyclass(str, eq)]
+pub struct CommitMeta {
+    pub hash: String,
+    pub author: Author,
+    pub date: DateTime<chrono::FixedOffset>,
+    pub message: String,
+}
+
+#[pymethods]
+impl CommitMeta {
+    #[getter]
+    pub fn hash(&self) -> &str {
+        &self.hash
+    }
+    #[getter]
+    pub fn author(&self) -> Author {
+        self.author.clone()
+    }
+
+    #[getter]
+    pub fn date(&self) -> String {
+        self.date.format(DATETIME_FORMAT).to_string()
+    }
+    #[getter]
+    pub fn message(&self) -> &str {
+        &self.message
+    }
+
+    fn __repr__(&self) -> String {
+        format!("{}", self)
+    }
+}
+
+impl Display for CommitMeta {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{} {} <{}> {} {}",
+            self.hash, self.author.name, self.author.email, self.date, self.message
+        )
+    }
+}
+
+impl CommitMeta {
+    fn parse(log: &str) -> Result<Self> {
+        let attributes: Vec<&str> = log.split(ATTRIBUTE_SEPARATOR_CHAR).collect();
+        if attributes.len() != 5 {
+            return Err(GitError::MalFormedData(format!(
+                "faled to parse commit metadata: [{log}]"
+            )));
+        }
+        let hash = attributes[0].to_string();
+        let author = Author {
+            name: attributes[1].to_string(),
+            email: attributes[2].to_string(),
+        };
+
+        let date = attributes[3];
+        // trim for extra quotes
+        let date = date.trim_matches('\'');
+        let date: DateTime<chrono::FixedOffset> = DateTime::parse_from_str(date, DATETIME_FORMAT)?;
+
+        let message = attributes[4].trim().to_string();
+        let commit = CommitMeta {
+            hash,
+            author,
+            date,
+            message,
+        };
+        Ok(commit)
+    }
+}
+
+fn git_log_formatted() -> Command {
+    let mut cmd = Command::new("git");
+    cmd.arg("log")
+        .arg(format!("--date=format:'{DATETIME_FORMAT}'"))
+        .arg(format!(
+            "--pretty={}{COMMIT_SEPARATOR_GIT}",
+            ["format:%H", "%an", "%ae", "%ad", "%B"].join(ATTRIBUTE_SEPARATOR_GIT)
+        ));
+    cmd
+}
+
+#[derive(Debug, Clone)]
+#[pyclass]
+pub enum AuthorQuery {
+    Name(String),
+    Email(String),
+}
+
+#[derive(Debug, Clone, Copy)]
+#[pyclass(str)]
+pub struct Pagination {
+    pub offset: usize,
+    pub limit: usize,
+}
+#[pymethods]
+impl Pagination {
+    #[new]
+    pub fn new(offset: usize, limit: usize) -> Self {
+        Self { offset, limit }
+    }
+
+    #[staticmethod]
+    pub fn all() -> Self {
+        Self::new(0, usize::MAX)
+    }
+
+    #[staticmethod]
+    pub fn first() -> Self {
+        Self::new(0, 1)
+    }
+
+    #[getter]
+    pub fn offset(&self) -> usize {
+        self.offset
+    }
+    #[getter]
+    pub fn limit(&self) -> usize {
+        self.limit
+    }
+}
+impl Display for Pagination {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "P[{}..{}]", self.offset, self.offset + self.limit)
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use std::process::Command;
+
+    use temp_dir::TempDir;
+
+    use super::Wrapper;
+    use crate::{
+        wrapper::{AuthorQuery, Pagination},
+        GitError, Result,
+    };
+    const REPO_URL: &str = "git@github.com:ArshiAAkhavan/test.git";
+
+    fn new_mock_wrapper() -> Result<Wrapper> {
+        let dir = TempDir::new()?;
+        let output = Command::new("bash")
+            .arg("./setup_test_repo.sh")
+            .arg(dir.path())
+            .output()?;
+
+        if !output.status.success() {
+            let error_message = String::from_utf8_lossy(&output.stderr).to_string();
+            return Err(GitError::GitCommandErr(error_message));
+        }
+        Ok(Wrapper {
+            dir,
+            default_branch: String::from("master"),
+        })
+    }
+
+    #[test]
+    fn list_branches() -> Result<()> {
+        let w = Wrapper::new(REPO_URL)?;
+        let branches = w.list_branches()?;
+        assert!(branches.contains(&"origin/b1".into()));
+        assert!(branches.contains(&"origin/master".into()));
+        Ok(())
+    }
+    #[test]
+    fn list_commits() -> Result<()> {
+        let w = new_mock_wrapper()?;
+        let p = Pagination::all();
+
+        let commits = w.commits_of_branch("master", p)?;
+        let commit_messages = ["sixth", "fifth", "second", "first"];
+        assert_eq!(commits.len(), commit_messages.len());
+        assert_eq!(
+            commits.iter().map(|c| &c.message).collect::<Vec<_>>(),
+            commit_messages
+        );
+
+        let commits = w.commits_of_branch("branch1", p)?;
+        assert_eq!(commits.len(), 2);
+        let commit_messages = ["fourth", "third"];
+        assert_eq!(
+            commits.iter().map(|c| &c.message).collect::<Vec<_>>(),
+            commit_messages
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn list_authors() -> Result<()> {
+        let w = new_mock_wrapper()?;
+
+        let authors = w.authors_of_branch("master")?;
+        let author_names = ["user4", "user3", "user2", "user1"];
+        assert_eq!(authors.len(), author_names.len());
+        assert_eq!(
+            authors.iter().map(|c| &c.name).collect::<Vec<_>>(),
+            author_names
+        );
+
+        let authors = w.authors_of_branch("branch1")?;
+        assert_eq!(authors.len(), 2);
+        let author_names = ["user3", "user1"];
+        assert_eq!(
+            authors.iter().map(|c| &c.name).collect::<Vec<_>>(),
+            author_names
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn commits_of_author() -> Result<()> {
+        let w = new_mock_wrapper()?;
+        let p = Pagination::all();
+
+        let commits = w.commits_of(AuthorQuery::Name("user1".into()), "master", p)?;
+        let commit_messages = ["first"];
+        assert_eq!(commits.len(), commit_messages.len());
+        assert_eq!(
+            commits.iter().map(|c| &c.message).collect::<Vec<_>>(),
+            commit_messages
+        );
+
+        let commits = w.commits_of(AuthorQuery::Email("user3@test.com".into()), "branch1", p)?;
+        let commit_messages = ["fourth"];
+        assert_eq!(commits.len(), commit_messages.len());
+        assert_eq!(
+            commits.iter().map(|c| &c.message).collect::<Vec<_>>(),
+            commit_messages
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn commits_on_file() -> Result<()> {
+        let w = new_mock_wrapper()?;
+        let p = Pagination::all();
+
+        let commits = w.commits_on_file("OTHER.md", p)?;
+        let commit_messages = ["sixth"];
+        assert_eq!(commits.len(), commit_messages.len());
+        assert_eq!(
+            commits.iter().map(|c| &c.message).collect::<Vec<_>>(),
+            commit_messages
+        );
+
+        let commits = w.commits_on_file("README.md", p)?;
+        let commit_messages = ["fifth", "second", "first"];
+        assert_eq!(commits.len(), commit_messages.len());
+        assert_eq!(
+            commits.iter().map(|c| &c.message).collect::<Vec<_>>(),
+            commit_messages
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn commits_between() -> Result<()> {
+        let w = new_mock_wrapper()?;
+        let p = Pagination::all();
+
+        // should return all commits
+        let before = (chrono::Utc::now() - chrono::Duration::hours(1))
+            .with_timezone(&chrono::FixedOffset::east_opt(0).unwrap());
+        let after = (chrono::Utc::now() + chrono::Duration::hours(1))
+            .with_timezone(&chrono::FixedOffset::east_opt(0).unwrap());
+
+        let commits = w.commits_between_dates(before, after, p)?;
+        let commit_messages = ["sixth", "fifth", "second", "first"];
+        assert_eq!(commits.len(), commit_messages.len());
+        assert_eq!(
+            commits.iter().map(|c| &c.message).collect::<Vec<_>>(),
+            commit_messages
+        );
+
+        // should return no commits
+        let before = (chrono::Utc::now() + chrono::Duration::hours(1))
+            .with_timezone(&chrono::FixedOffset::east_opt(0).unwrap());
+        let after = (chrono::Utc::now() + chrono::Duration::hours(2))
+            .with_timezone(&chrono::FixedOffset::east_opt(0).unwrap());
+
+        let commits = w.commits_between_dates(before, after, p)?;
+        assert_eq!(commits.len(), 0);
+        Ok(())
+    }
+    #[test]
+    fn pagination() -> Result<()> {
+        let w = new_mock_wrapper()?;
+        let p = Pagination::new(1, 2);
+
+        let commits = w.commits_of_branch("master", p)?;
+        let commit_messages = ["fifth", "second"];
+        assert_eq!(commits.len(), commit_messages.len());
+        assert_eq!(
+            commits.iter().map(|c| &c.message).collect::<Vec<_>>(),
+            commit_messages
+        );
+
+        Ok(())
+    }
+}
