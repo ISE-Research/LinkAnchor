@@ -1,7 +1,7 @@
 use super::{GitError, Result};
 use chrono::{DateTime, FixedOffset};
 use pyo3::{pyclass, pymethods};
-use std::{ffi::OsStr, fmt::Display, process::Command};
+use std::{collections::HashSet, ffi::OsStr, fmt::Display, process::Command};
 use temp_dir::TempDir;
 
 const COMMIT_SEPARATOR_GIT: &str = "%x1e";
@@ -92,12 +92,12 @@ impl Wrapper {
     }
 
     pub fn authors_of_branch(&self, branch: &str) -> Result<Vec<Author>> {
-        let authors: Vec<Author> = self
+        let authors: HashSet<Author> = self
             .commits_of_branch(branch, Pagination::all())?
             .into_iter()
             .map(|commit| commit.author)
             .collect();
-        Ok(authors)
+        Ok(authors.into_iter().collect())
     }
 
     pub fn commits_of_branch(
@@ -254,7 +254,7 @@ impl Display for Wrapper {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 #[pyclass(str, eq)]
 pub struct Author {
     pub name: String,
@@ -557,7 +557,7 @@ mod test {
         let after = (chrono::Utc::now() + chrono::Duration::hours(1))
             .with_timezone(&chrono::FixedOffset::east_opt(0).unwrap());
 
-        let commits = w.commits_between_dates("master",before, after, p)?;
+        let commits = w.commits_between_dates("master", before, after, p)?;
         let commit_messages = ["sixth", "fifth", "second", "first"];
         assert_eq!(commits.len(), commit_messages.len());
         assert_eq!(
@@ -571,7 +571,7 @@ mod test {
         let after = (chrono::Utc::now() + chrono::Duration::hours(2))
             .with_timezone(&chrono::FixedOffset::east_opt(0).unwrap());
 
-        let commits = w.commits_between_dates("master",before, after, p)?;
+        let commits = w.commits_between_dates("master", before, after, p)?;
         assert_eq!(commits.len(), 0);
         Ok(())
     }
