@@ -6,16 +6,25 @@ from openai.types.chat import ParsedFunctionToolCall as ToolCall
 
 
 def problem_explanation() -> SystemMessage:
+    """
+    The initial prompt that explains the role of the agent and its goals.
+    """
     return SystemMessage(role="system", content=PROBLEM_EXPLANATION_PROMPT_TEXT)
 
 
 def user_initial_prompt(issue_title: str) -> UserMessage:
+    """
+    The initial prompt that user provides to the agent.
+    """
     return UserMessage(
         role="user", content=f"{USER_INITIAL_PROMPT_TEXT}: {issue_title}"
     )
 
 
 def function_call_result(tool_call: ToolCall, result: Any) -> ToolMessage:
+    """
+    Prompt for sending the results of a tool call back to the agent.
+    """
     return ToolMessage(
         role="tool",
         tool_call_id=tool_call.id,
@@ -23,6 +32,9 @@ def function_call_result(tool_call: ToolCall, result: Any) -> ToolMessage:
     )
 
 def extract_commit_hash(content: str) -> str| None:
+    """
+    Try to extract commit_hash from the message given by the agent.
+    """
     last_line = content.split("\n")[-1]
     if last_line.startswith(COMMIT_FOUND_MESSAGE):
         commit_hash = last_line.split(f"{COMMIT_FOUND_MESSAGE}: ")[-1].strip()

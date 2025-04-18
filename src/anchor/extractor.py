@@ -14,7 +14,7 @@ class Extractor:
         self.code_wrapper = CodeWrapper(git_repo_url)
 
     def __getattr__(self, name: str) -> Any:
-        """Deligate to wrappers if avilable."""
+        """Deligate to underlying wrappers if avilable."""
         for wrapper in [self.git_wrapper, self.issue_wrapper, self.code_wrapper]:
             if hasattr(wrapper, name):
                 return getattr(wrapper, name)
