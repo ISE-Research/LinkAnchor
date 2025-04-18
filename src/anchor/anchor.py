@@ -37,6 +37,5 @@ class GitAnchor:
 
     def find_link(self) -> str:
         """Find the commit(s) that resolve(s) the issue."""
-        issue_title = self.extractor.issue_wrapper.get_issue_title()
+        issue_title = self.extractor.issue_wrapper.issue_title()
         return self.agent.find_link(issue_title, self.tools, self.extractor)
-

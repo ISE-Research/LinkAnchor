@@ -1,7 +1,7 @@
 from anchor.anchor import GitAnchor
 from schema.git import TOOLS as GIT_TOOLS
 from schema.code import TOOLS as CODE_TOOLS
-from schema.code import TOOLS as ISSUE_TOOLS
+from schema.issue import TOOLS as ISSUE_TOOLS
 import logging
 
 logging.basicConfig(

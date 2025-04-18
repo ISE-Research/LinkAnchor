@@ -1,7 +1,7 @@
 from typing import Any
 from git_wrapper import Wrapper as GitWrapper
 from code_wrapper import Wrapper as CodeWrapper
-from issue_wrapper import GitHubIssueWrapper as IssueWrapper
+import issue_wrapper
 
 
 class Extractor:
@@ -12,7 +12,7 @@ class Extractor:
             git_repo_link (str): The link to the git repository.
         """
         self.git_wrapper = GitWrapper(git_repo_url)
-        self.issue_wrapper = IssueWrapper(issue_url)
+        self.issue_wrapper = issue_wrapper.wrapper_for(issue_url)
         self.code_wrapper = CodeWrapper(git_repo_url)
 
     def __getattr__(self, name: str) -> Any:
