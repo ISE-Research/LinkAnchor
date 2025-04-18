@@ -40,6 +40,8 @@ To accomplish this goal, you will iteratively leverage the provided functions to
 
 Remember to call at least one function in each iteration. if you don't call any function, user will assume that you found the commit and searches for the commit hash in your response.
 
+YOU CAN NOT ASK QUESTIONS FROM THE USER.
+
 Repeat this iterative process systematically until you accurately pinpoint the commit hash resolving the issue.
 Maintain explicit, logical, and transparent reasoning at each step, clearly outlining your decision-making process, function selection rationale, and the insights obtained from each function's response.
 For each interaction, also provide your reasoning and the function you intend to call next.
