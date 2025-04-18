@@ -131,7 +131,8 @@ impl Wrapper {
     pub fn commit_diff(&self, commit_hash: String) -> Result<String> {
         let output = Command::new("git")
             .arg("diff")
-            .arg(format!("{commit_hash}^ {commit_hash}"))
+            .arg(format!("{commit_hash}^"))
+            .arg(commit_hash)
             .current_dir(self.dir.path())
             .output()?;
 
