@@ -84,7 +84,7 @@ class CommitsOnFile(BaseModel):
 
     def __call__(self, extractor: Extractor) -> List[CommitMeta]:
         return extractor.commits_on_file(
-            self.branch, self.file_path, self.pagination.to_wrapper_pagination()
+            self.file_path, self.branch, self.pagination.to_wrapper_pagination()
         )
 
 
@@ -106,13 +106,14 @@ class CommitsBetween(BaseModel):
             self.pagination.to_wrapper_pagination(),
         )
 
+
 class CommitDiff(BaseModel):
     """changes staged by the given commit"""
+
     commit_hash: str = Field(..., description="commit hash. could be short or long")
 
     def __call__(self, extractor: Extractor) -> str:
         return extractor.commit_diff(self.commit_hash)
-    
 
 
 TOOLS = [
