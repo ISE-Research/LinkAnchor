@@ -1,17 +1,22 @@
-[tool.poetry]
+[project]
 name = "git-anchor"
 version = "0.1.0"
 description = ""
-authors = ["ArshiAAkhavan <letmemakenewone@gmail.com>"]
+authors = [
+    {name = "ArshiAAkhavan",email = "letmemakenewone@gmail.com"}
+]
 readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "openai (>=1.70.0,<2.0.0)",
+    "pydantic (>=2.11.2,<3.0.0)",
+    "maturin (>=1.8.3,<2.0.0)"
+]
 
-[tool.poetry.dependencies]
-python = "^3.12"
-openai = "^1.66.5"
-pydantic = "^2.10.6"
-maturin = "^1.8.3"
+[tool.poetry]
+packages = [{include = "git-anchor", from = "src"}]
 
 
 [build-system]
-requires = ["poetry-core"]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
