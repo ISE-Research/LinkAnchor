@@ -30,7 +30,7 @@ class IssueCreationTimestamp(BaseModel):
     """Retrieving the issue creation timestamp"""
 
     def __call__(self, extractor: Extractor) -> datetime:
-        return extractor.issue_closed_at()
+        return extractor.issue_created_at()
 
 
 class IssueClosedTimestamp(BaseModel):
