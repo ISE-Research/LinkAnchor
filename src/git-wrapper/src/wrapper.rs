@@ -1,7 +1,7 @@
 use super::{GitError, Result};
 use chrono::{DateTime, FixedOffset};
 use pyo3::{pyclass, pymethods};
-use std::{ffi::OsStr, fmt::Display, process::Command};
+use std::{collections::HashSet, ffi::OsStr, fmt::Display, process::Command};
 use temp_dir::TempDir;
 
 const COMMIT_SEPARATOR_GIT: &str = "%x1e";
@@ -92,12 +92,12 @@ impl Wrapper {
     }
 
     pub fn authors_of_branch(&self, branch: &str) -> Result<Vec<Author>> {
-        let authors: Vec<Author> = self
+        let authors: HashSet<Author> = self
             .commits_of_branch(branch, Pagination::all())?
             .into_iter()
             .map(|commit| commit.author)
             .collect();
-        Ok(authors)
+        Ok(authors.into_iter().collect())
     }
 
     pub fn commits_of_branch(
@@ -168,12 +168,17 @@ impl Wrapper {
 
     pub fn commits_between(
         &self,
+        branch: &str,
         from: &str,
         to: &str,
         pagination: Pagination,
     ) -> Result<Vec<CommitMeta>> {
         self.commits_from_git_log(
-            vec![format!("--since={}", from), format!("--until={}", to)],
+            vec![
+                branch,
+                &format!("--since={}", from),
+                &format!("--until={}", to),
+            ],
             pagination,
         )
     }
@@ -181,23 +186,24 @@ impl Wrapper {
     pub fn commits_on_file(
         &self,
         file_path: &str,
+        branch: &str,
         pagination: Pagination,
     ) -> Result<Vec<CommitMeta>> {
-        self.commits_from_git_log(vec!["--", file_path], pagination)
+        self.commits_from_git_log(vec!["--follow", branch, "--", file_path], pagination)
     }
 }
 impl Wrapper {
     pub fn commits_between_dates(
         &self,
+        branch: &str,
         from: DateTime<FixedOffset>,
         to: DateTime<FixedOffset>,
         pagination: Pagination,
     ) -> Result<Vec<CommitMeta>> {
-        self.commits_from_git_log(
-            vec![
-                format!("--since={}", from.format(DATETIME_FORMAT).to_string()),
-                format!("--until={}", to.format(DATETIME_FORMAT).to_string()),
-            ],
+        self.commits_between(
+            branch,
+            &format!("{}", from.format(DATETIME_FORMAT)),
+            &format!("{}", to.format(DATETIME_FORMAT)),
             pagination,
         )
     }
@@ -248,7 +254,7 @@ impl Display for Wrapper {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 #[pyclass(str, eq)]
 pub struct Author {
     pub name: String,
@@ -521,7 +527,7 @@ mod test {
         let w = new_mock_wrapper()?;
         let p = Pagination::all();
 
-        let commits = w.commits_on_file("OTHER.md", p)?;
+        let commits = w.commits_on_file("OTHER.md", "master", p)?;
         let commit_messages = ["sixth"];
         assert_eq!(commits.len(), commit_messages.len());
         assert_eq!(
@@ -529,7 +535,7 @@ mod test {
             commit_messages
         );
 
-        let commits = w.commits_on_file("README.md", p)?;
+        let commits = w.commits_on_file("README.md", "master", p)?;
         let commit_messages = ["fifth", "second", "first"];
         assert_eq!(commits.len(), commit_messages.len());
         assert_eq!(
@@ -551,7 +557,7 @@ mod test {
         let after = (chrono::Utc::now() + chrono::Duration::hours(1))
             .with_timezone(&chrono::FixedOffset::east_opt(0).unwrap());
 
-        let commits = w.commits_between_dates(before, after, p)?;
+        let commits = w.commits_between_dates("master", before, after, p)?;
         let commit_messages = ["sixth", "fifth", "second", "first"];
         assert_eq!(commits.len(), commit_messages.len());
         assert_eq!(
@@ -565,7 +571,7 @@ mod test {
         let after = (chrono::Utc::now() + chrono::Duration::hours(2))
             .with_timezone(&chrono::FixedOffset::east_opt(0).unwrap());
 
-        let commits = w.commits_between_dates(before, after, p)?;
+        let commits = w.commits_between_dates("master", before, after, p)?;
         assert_eq!(commits.len(), 0);
         Ok(())
     }
