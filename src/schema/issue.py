@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import List
 from pydantic import BaseModel, Field
 from anchor.extractor import Extractor
@@ -23,6 +24,18 @@ class IssueAuthor(BaseModel):
 
     def __call__(self, extractor: Extractor) -> str:
         return extractor.get_issue_author()
+
+class IssueCreationTimestamp(BaseModel):
+    """Retrieving the issue creation timestamp"""
+
+    def __call__(self, extractor: Extractor) -> datetime:
+        return extractor.get_issue_closed_at()
+
+class IssueClosedTimestamp(BaseModel):
+    """Retrieving the issue closed timestamp"""
+
+    def __call__(self, extractor: Extractor) -> datetime:
+        return extractor.get_issue_closed_at()
 
 
 class IssueComments(BaseModel):
@@ -50,5 +63,7 @@ TOOLS = [
     IssueDescription,
     IssueAuthor,
     IssueComments,
+    IssueCreationTimestamp,
+    IssueClosedTimestamp,
 ]
 

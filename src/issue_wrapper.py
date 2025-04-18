@@ -4,6 +4,7 @@ import requests
 import abc
 from github import Github
 from pydantic import BaseModel, Field
+from datetime import datetime
 
 
 class Pagination(BaseModel):
@@ -165,6 +166,12 @@ class GitHubIssueWrapper(IssueWrapper):
 
     def get_issue_author(self) -> str:
         return self.issue_data.user.login
+
+    def get_issue_created_at(self) -> datetime:
+        return self.issue_data.created_at
+
+    def get_issue_closed_at(self) -> datetime:
+        return self.issue_data.closed_at
 
     def get_issue_comments(self, pagination: Pagination) -> List[CommentMeta]:
         comments = self.handle_pagination(pagination, self.issue_data.get_comments())
