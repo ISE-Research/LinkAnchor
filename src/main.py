@@ -4,6 +4,8 @@ from schema.code import TOOLS as CODE_TOOLS
 from schema.issue import TOOLS as ISSUE_TOOLS
 import logging
 import argparse
+from term import Color
+import term
 
 
 def parse_arguments():
@@ -52,6 +54,7 @@ def main():
     result = ga.find_link()
     print("##############")
     print(result)
+    term.log(Color.GREEN, f"Resolving commit is: {result}")
 
     return result
 

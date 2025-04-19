@@ -22,8 +22,15 @@ class GitAnchor:
             issue_link (str): The link to the issue in GitHub.
             git_repo_link (str): The link to the git repository.
         """
+
+        term.log(Color.MAGENTA, "Initializing OpenAI client...")
         self.agent = Agent(api_key)
+        term.log(Color.GREEN, "sucessfully connected to OpenAI")
+
+        term.log(Color.MAGENTA, "INitializing data Extractor...")
         self.extractor = Extractor(issue_link, git_repo_link)
+        term.log(Color.GREEN, "data source setup completed successfully")
+
         self.tools = []
 
     def register_tools(self, tools: List[type[BaseModel]]):
