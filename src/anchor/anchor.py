@@ -3,6 +3,12 @@ from pydantic import BaseModel
 import openai
 from .agent import Agent
 from .extractor import Extractor
+import logging
+from term import Color
+import term
+
+# Configure logger for this module
+logger = logging.getLogger(__name__)
 
 
 class GitAnchor:
@@ -23,12 +29,16 @@ class GitAnchor:
             git_repo_link (str): The link to the git repository.
         """
 
+        logger.info("Initializing OpenAI client...")
         term.log(Color.MAGENTA, "Initializing OpenAI client...")
         self.agent = Agent(api_key)
+        logger.info("sucessfully connected to OpenAI")
         term.log(Color.GREEN, "sucessfully connected to OpenAI")
 
+        logger.info("Initializing data Extractor...")
         term.log(Color.MAGENTA, "INitializing data Extractor...")
         self.extractor = Extractor(issue_link, git_repo_link)
+        logger.info("data source setup completed successfully")
         term.log(Color.GREEN, "data source setup completed successfully")
 
         self.tools = []
