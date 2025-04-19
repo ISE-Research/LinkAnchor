@@ -46,7 +46,7 @@ def main():
         logger.info("Debug mode enabled")
 
     if args.interactive:
-        os.environ["GIT_ANCHOR_INTERACTIVE"]
+        os.environ["GIT_ANCHOR_INTERACTIVE"] = "TRUE"
         logger.info("Interactive mode enabled")
 
     ga = GitAnchor(args.issue, args.git)
