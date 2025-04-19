@@ -314,7 +314,10 @@ impl CommitMeta {
     }
 
     fn __repr__(&self) -> String {
-        format!("{}", self)
+        format!(
+            "{} {} <{}> {} {}",
+            self.hash, self.author.name, self.author.email, self.date, self.message
+        )
     }
 }
 
@@ -322,8 +325,8 @@ impl Display for CommitMeta {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "{} {} <{}> {} {}",
-            self.hash, self.author.name, self.author.email, self.date, self.message
+            "{} {}\n{}\nMessage:\n{}",
+            self.hash, self.date, self.author, self.message
         )
     }
 }

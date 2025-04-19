@@ -15,6 +15,9 @@ class CommentMeta(BaseModel):
     body: str = Field(..., description="textual body of the comment")
     created_at: str = Field(..., description="creation date of the comment")
 
+    def __str__(self):
+        return f"{self.author} {self.created_at}\nMessage:\n{self.body})"
+
 
 class Wrapper(abc.ABC):
     @abc.abstractmethod
