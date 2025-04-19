@@ -8,6 +8,8 @@ import message
 import logging
 
 from .extractor import Extractor
+from term import Color
+import term
 
 # Configure logger for this module
 logger = logging.getLogger(__name__)
@@ -63,6 +65,10 @@ class Agent:
             response = completion.choices[0].message
             logger.info(f"Response: {response.content}")
 
+            term.clear()
+            term.log(Color.YELLOW, "Response:")
+            term.log(Color.YELLOW, response.content)
+
             # check if LLM found the link
             # no function call means that LLM found the link
             if response.tool_calls is None or len(response.tool_calls) == 0:
@@ -71,6 +77,7 @@ class Agent:
                 return commit_hash or ""
 
             logger.info(f"{len(response.tool_calls)} tool called")
+            term.log(Color.GREEN, f"{len(response.tool_calls)} tool called")
             messages.append(response)
             for tool_call in response.tool_calls:
                 functionn = tool_call.function.parsed_arguments
@@ -81,7 +88,10 @@ class Agent:
                 # just to saticfy type checking
                 function: Callable[[Extractor], Any] = functionn  # type: ignore
                 logger.info(f"LLM calling: {function.__repr__()}")
+                term.log(Color.GREEN,f"LLM calling: {function.__repr__()}")
 
                 result = function(extractor)
                 logger.info(f"Call result: {result.__repr__()}")
+                term.log(Color.BLUE,"Call result:")
+                term.log(Color.BLUE, result)
                 messages.append(message.function_call_result(tool_call, result))
