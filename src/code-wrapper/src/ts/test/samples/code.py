@@ -28,8 +28,8 @@ class Type2(Type1):
     """
     ... 
 
-# Type3 is an enum class
-class Type3(enum.Enum):
+# Enum1 is an enum class
+class Enum1(enum.Enum):
     """
     This is a docstring for Type3 class.
     """

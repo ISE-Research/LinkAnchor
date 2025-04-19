@@ -1,5 +1,6 @@
 mod go;
 mod python;
+mod java;
 #[cfg(test)]
 mod test;
 
@@ -41,12 +42,21 @@ impl Lang {
         }
     }
 
-    // Creates new instance for python Language
+    // Creates new instance for Python Language
     pub fn python() -> Self {
         Self {
             queries: python::queries(),
             language_fn: tree_sitter_python::LANGUAGE.into(),
             file_extension: "py",
+        }
+    }
+
+    // Creates new instance for Java Language
+    pub fn java() -> Self {
+        Self {
+            queries: java::queries(),
+            language_fn: tree_sitter_java::LANGUAGE.into(),
+            file_extension: "java",
         }
     }
 }

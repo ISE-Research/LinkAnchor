@@ -56,7 +56,7 @@ impl Wrapper {
                 Ok(Self {
                     dir,
                     default_branch,
-                    langs: vec![Lang::go(), Lang::python()],
+                    langs: vec![Lang::go(), Lang::python(), Lang::java()],
                 })
             }
         }
@@ -175,7 +175,7 @@ mod test {
         Ok(Wrapper {
             dir,
             default_branch: String::from("master"),
-            langs: vec![Lang::go(), Lang::python()],
+            langs: vec![Lang::go(), Lang::python(), Lang::java()],
         })
     }
 
