@@ -36,7 +36,7 @@ class GitAnchor:
         term.log(Color.GREEN, "sucessfully connected to OpenAI")
 
         logger.info("Initializing data Extractor...")
-        term.log(Color.MAGENTA, "INitializing data Extractor...")
+        term.log(Color.MAGENTA, "Initializing data Extractor...")
         self.extractor = Extractor(issue_link, git_repo_link)
         logger.info("data source setup completed successfully")
         term.log(Color.GREEN, "data source setup completed successfully")

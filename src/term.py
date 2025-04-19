@@ -1,6 +1,7 @@
 from typing import List, Any
 import enum
 import shutil
+import os
 
 
 class Color(enum.Enum):
@@ -18,6 +19,9 @@ terminal_height = shutil.get_terminal_size(fallback=(80, 24)).lines - 2
 
 
 def clear():
+    if "GIT_ANCHOR_INTERACTIVE" not in os.environ:
+        return
+
     global terminal_height
     terminal_height = shutil.get_terminal_size(fallback=(80, 24)).lines - 2
     print("\033[2J\033[H", end="")
@@ -25,7 +29,9 @@ def clear():
 
 
 def log(color: Color, obj: Any):
-    """Print text in color."""
+    if "GIT_ANCHOR_INTERACTIVE" not in os.environ:
+        return
+
     global terminal_height
     lines = []
 

@@ -2,17 +2,21 @@ from anchor.anchor import GitAnchor
 from schema.git import TOOLS as GIT_TOOLS
 from schema.code import TOOLS as CODE_TOOLS
 from schema.issue import TOOLS as ISSUE_TOOLS
-import logging
-import argparse
 from term import Color
 import term
+
+import logging
+import argparse
+import os
 
 
 def parse_arguments():
     """Parse command line arguments."""
     parser = argparse.ArgumentParser(description="Git Anchor - Link issues to commits")
 
-    parser.add_argument("--git", help="Link of the git repository", type=str, required=True)
+    parser.add_argument(
+        "--git", help="Link of the git repository", type=str, required=True
+    )
 
     parser.add_argument("--issue", help="Link of the issue", type=str, required=True)
 
@@ -42,6 +46,7 @@ def main():
         logger.info("Debug mode enabled")
 
     if args.interactive:
+        os.environ["GIT_ANCHOR_INTERACTIVE"]
         logger.info("Interactive mode enabled")
 
     ga = GitAnchor(args.issue, args.git)
@@ -52,11 +57,11 @@ def main():
 
     logger.info("Finding link between issue and code...")
     result = ga.find_link()
-    print("##############")
-    print(result)
-    term.log(Color.GREEN, f"Resolving commit is: {result}")
 
-    return result
+    if args.interactive:
+        term.log(Color.GREEN, f"Resolving commit is: {result}")
+    else:
+        print(result)
 
 
 if __name__ == "__main__":
