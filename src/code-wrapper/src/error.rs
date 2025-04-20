@@ -17,6 +17,8 @@ pub enum CodeError {
     GitCommandErr(String),
     #[error("file not found: {0}")]
     FileNotFound(PathBuf),
+    #[error("failed to copy directory: {0}")]
+    CopyDirErr(#[from] fs_extra::error::Error),
 }
 pub type Result<T, E = CodeError> = core::result::Result<T, E>;
 

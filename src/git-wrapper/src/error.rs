@@ -15,6 +15,8 @@ pub enum GitError {
     DatetimeError(#[from] chrono::ParseError),
     #[error("commit not found for hash: {0}")]
     CommitNotFound(String),
+    #[error("failed to copy directory: {0}")]
+    CopyDirErr(#[from] fs_extra::error::Error),
 }
 pub type Result<T, E = GitError> = core::result::Result<T, E>;
 

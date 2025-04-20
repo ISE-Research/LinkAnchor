@@ -14,28 +14,8 @@ pub struct Wrapper {
     langs: Vec<Lang>,
 }
 
-#[pymethods]
 impl Wrapper {
-    #[new]
-    pub fn new(repo_url: &str) -> Result<Self> {
-        let dir = TempDir::new()?;
-
-        // Get the path to the temporary directory
-        let dir_path = dir.path();
-
-        // Run git clone command
-        let output = Command::new("git")
-            .arg("clone")
-            .arg(repo_url)
-            .arg(dir_path)
-            .output()?;
-
-        // Check if the command was successful
-        if !output.status.success() {
-            let error_message = String::from_utf8_lossy(&output.stderr).to_string();
-            return Err(CodeError::GitCommandErr(error_message));
-        }
-
+    fn new_from_temp_dir(dir: TempDir) -> Result<Self> {
         // Find the default branch
         let output = Command::new("git")
             .arg("rev-parse")
@@ -60,6 +40,48 @@ impl Wrapper {
                 })
             }
         }
+    }
+}
+
+#[pymethods]
+impl Wrapper {
+    #[new]
+    pub fn new(repo_url: &str) -> Result<Self> {
+        let dir = TempDir::new()?;
+
+        // Get the path to the temporary directory
+        let dir_path = dir.path();
+
+        // Run git clone command
+        let output = Command::new("git")
+            .arg("clone")
+            .arg(repo_url)
+            .arg(dir_path)
+            .output()?;
+
+        // Check if the command was successful
+        if !output.status.success() {
+            let error_message = String::from_utf8_lossy(&output.stderr).to_string();
+            return Err(CodeError::GitCommandErr(error_message));
+        }
+
+        Self::new_from_temp_dir(dir)
+    }
+
+    #[staticmethod]
+    pub fn from_local(local_dir_path: PathBuf) -> Result<Self> {
+        let dir = TempDir::new()?;
+
+        let dir_path = dir.path();
+
+        let mut options = fs_extra::dir::CopyOptions::new();
+        options.overwrite = true; // overwrite existing files
+        options.copy_inside = true; // copy the *contents* of source_dir into dest_dir
+        options.content_only = true; // if true, you'd copy contents without creating source_dir itself
+
+        fs_extra::dir::copy(local_dir_path, dir_path, &options)?;
+
+        Self::new_from_temp_dir(dir)
     }
 
     pub fn fetch_definition(
