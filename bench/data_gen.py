@@ -10,9 +10,10 @@ import requests
 
 # Configure logging
 logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+    level=logging.WARNING, format="%(asctime)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 
 def download_ealink_dataset():
@@ -109,7 +110,7 @@ def create_dataset(file_path):
 
     dataset = pd.DataFrame(
         {
-            "issu_url": data["issue_id"].apply(
+            "issue_url": data["issue_id"].apply(
                 lambda key: f"https://issues.apache.org/jira/rest/api/2/issue/{key}"
             ),
             "commit_hash": data["commitid"],
@@ -129,7 +130,10 @@ def prepare_ealink_dataset():
     dataset_path = download_and_extract_dataset()
 
     output_dir = os.path.join(
-        os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "ealink"
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+        "data",
+        "ealink",
+        "csv",
     )
     os.makedirs(output_dir, exist_ok=True)
 
