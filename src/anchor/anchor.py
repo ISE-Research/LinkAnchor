@@ -1,11 +1,12 @@
 from typing import List
 from pydantic import BaseModel
 import openai
-from .agent import Agent
-from .extractor import Extractor
 import logging
-from term import Color
-import term
+from src.anchor.agent import Agent
+from src.anchor.extractor import Extractor
+from src.anchor.extractor import GitSourceType
+from src.term import Color
+from src import term
 
 # Configure logger for this module
 logger = logging.getLogger(__name__)

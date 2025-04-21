@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from anchor.extractor import Extractor
+from src.anchor.extractor import Extractor
 
 
 class FetchFunctionDefinition(BaseModel):

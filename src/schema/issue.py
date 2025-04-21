@@ -1,8 +1,8 @@
 from datetime import datetime
 from typing import List
 from pydantic import BaseModel, Field
-from anchor.extractor import Extractor
-from issue_wrapper.wrapper import Pagination, CommentMeta
+from src.anchor.extractor import Extractor
+from src.issue_wrapper.wrapper import Pagination, CommentMeta
 
 
 class IssueTitle(BaseModel):

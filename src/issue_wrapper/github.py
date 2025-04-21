@@ -2,7 +2,8 @@ import re
 from typing import List
 from github import Github
 from datetime import datetime
-from issue_wrapper.wrapper import Wrapper, Pagination, CommentMeta
+
+from src.issue_wrapper.wrapper import Wrapper, Pagination, CommentMeta
 
 
 class GitHubIssueWrapper(Wrapper):

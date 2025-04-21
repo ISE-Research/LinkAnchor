@@ -2,7 +2,7 @@ from typing import List
 from enum import Enum
 from pydantic import BaseModel, Field
 from git_wrapper import Author, CommitMeta, AuthorQuery, Pagination as wrapperPagination
-from anchor.extractor import Extractor
+from src.anchor.extractor import Extractor
 
 
 class AuthorQueryType(str, Enum):

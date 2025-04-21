@@ -1,6 +1,6 @@
-from .wrapper import Wrapper
-from .jira import JiraIssueWrapper
-from .github import GitHubIssueWrapper
+from src.issue_wrapper.wrapper import Wrapper
+from src.issue_wrapper.jira import JiraIssueWrapper
+from src.issue_wrapper.github import GitHubIssueWrapper
 
 
 def wrapper_for(url: str) -> Wrapper:

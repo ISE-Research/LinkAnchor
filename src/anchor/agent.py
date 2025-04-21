@@ -4,12 +4,12 @@ from openai.types.chat import ChatCompletionMessageParam as Message
 from openai.types.chat import ParsedChatCompletion
 from openai import NotGiven, NOT_GIVEN
 import openai
-import message
 import logging
 
-from .extractor import Extractor
-from term import Color
-import term
+from src import message
+from src.anchor.extractor import Extractor
+from src.term import Color
+from src import term
 
 # Configure logger for this module
 logger = logging.getLogger(__name__)

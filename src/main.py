@@ -1,9 +1,9 @@
-from anchor.anchor import GitAnchor
-from schema.git import TOOLS as GIT_TOOLS
-from schema.code import TOOLS as CODE_TOOLS
-from schema.issue import TOOLS as ISSUE_TOOLS
-from term import Color
-import term
+from src.anchor.anchor import GitAnchor
+from src.schema.git import TOOLS as GIT_TOOLS
+from src.schema.code import TOOLS as CODE_TOOLS
+from src.schema.issue import TOOLS as ISSUE_TOOLS
+from src.term import Color
+from src import term
 
 import logging
 import argparse
