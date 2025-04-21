@@ -6,12 +6,7 @@ import gdown
 import py7zr
 import logging
 import pandas as pd
-import requests
 
-# Configure logging
-logging.basicConfig(
-    level=logging.WARNING, format="%(asctime)s - %(levelname)s - %(message)s"
-)
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 

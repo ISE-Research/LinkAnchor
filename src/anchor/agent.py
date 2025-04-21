@@ -1,4 +1,4 @@
-from typing import Any, Callable, List
+from typing import Any, Callable, List, Tuple
 from openai.types.chat import ChatCompletionToolParam as Tool
 from openai.types.chat import ChatCompletionMessageParam as Message
 from openai.types.chat import ParsedChatCompletion
@@ -40,20 +40,24 @@ class Agent:
         """Communicate with the OpenAI API."""
 
         return self.client.beta.chat.completions.parse(
-            model="gpt-4o",
+            # model="gpt-4o",
+            # model="gpt-4.1-nano",
+            model="gpt-4o-mini",
             messages=messages,
             tools=tools,
         )
 
     def find_link(
         self, issue_title: str, tools: List[Tool], extractor: Extractor
-    ) -> str:
+    ) -> Tuple[str, int]:
         """Find the commit(s) that resolve(s) the issue.
         Args:
             issue_title (str): The title of the issue.
             tools (List[Tool]): List of tools to use.
             extractor (Extractor): Extractor instance to extract information for the LLM.
         """
+
+        total_tokens = 0
 
         messages = [
             message.problem_explanation(),
@@ -62,6 +66,8 @@ class Agent:
 
         while True:
             completion = self.communicate(messages, tools)
+            if completion.usage:
+                total_tokens += completion.usage.total_tokens or 0
             response = completion.choices[0].message
             logger.info(f"Response: {response.content}")
 
@@ -74,7 +80,7 @@ class Agent:
             if response.tool_calls is None or len(response.tool_calls) == 0:
                 content = response.content or ""
                 commit_hash = message.extract_commit_hash(content)
-                return commit_hash or ""
+                return (commit_hash or "",total_tokens)
 
             logger.info(f"{len(response.tool_calls)} tool called")
             term.log(Color.GREEN, f"{len(response.tool_calls)} tool called")
@@ -88,10 +94,10 @@ class Agent:
                 # just to saticfy type checking
                 function: Callable[[Extractor], Any] = functionn  # type: ignore
                 logger.info(f"LLM calling: {function.__repr__()}")
-                term.log(Color.GREEN,f"LLM calling: {function.__repr__()}")
+                term.log(Color.GREEN, f"LLM calling: {function.__repr__()}")
 
                 result = function(extractor)
-                logger.info(f"Call result: {result.__repr__()}")
-                term.log(Color.BLUE,"Call result:")
+                logger.debug(f"Call result: {result.__repr__()}")
+                term.log(Color.BLUE, "Call result:")
                 term.log(Color.BLUE, result)
                 messages.append(message.function_call_result(tool_call, result))

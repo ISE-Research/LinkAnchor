@@ -56,12 +56,15 @@ def main():
     ga.register_tools(ISSUE_TOOLS)
 
     logger.info("Finding link between issue and code...")
-    result = ga.find_link()
+    (result, token_used) = ga.find_link()
 
     if args.interactive:
-        term.log(Color.GREEN, f"Resolving commit is: {result}")
+        term.log(
+            Color.GREEN, f"found resolving commit: {result} with {token_used} tokens"
+        )
     else:
         print(result)
+        print(token_used)
 
 
 if __name__ == "__main__":

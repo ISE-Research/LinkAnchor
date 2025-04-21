@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Tuple
 from pydantic import BaseModel
 import openai
 import logging
@@ -61,7 +61,7 @@ class GitAnchor:
             they also should implement that takes Anchor as the only argument."""
         self.tools.extend([openai.pydantic_function_tool(tool) for tool in tools])
 
-    def find_link(self) -> str:
+    def find_link(self) -> Tuple[str, int]:
         """Find the commit(s) that resolve(s) the issue."""
         issue_title = self.extractor.issue_wrapper.issue_title()
         return self.agent.find_link(issue_title, self.tools, self.extractor)

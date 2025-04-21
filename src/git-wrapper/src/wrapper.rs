@@ -100,6 +100,30 @@ impl Wrapper {
         let branches_output = String::from_utf8_lossy(&output.stdout);
         let branches_output = branches_output.trim_end_matches("\n");
 
+        // track all branches
+        for branch in branches_output
+            .lines()
+            .filter(|line| !line.is_empty())
+            .filter(|line| !line.contains("HEAD"))
+            // alreay tracked
+            .filter(|line| !line.contains("->"))
+            .map(|line| line.trim())
+        {
+            let local = branch.trim_start_matches("origin/");
+            Command::new("git")
+                .arg("branch")
+                .arg("--track")
+                .arg(local)
+                .arg(branch)
+                .current_dir(self.dir.path())
+                .output()?;
+
+            if !output.status.success() {
+                let error_message = String::from_utf8_lossy(&output.stderr).to_string();
+                return Err(GitError::GitCommandErr(error_message));
+            }
+        }
+
         let branches: Vec<String> = branches_output
             .lines()
             .filter(|line| !line.is_empty())
