@@ -64,9 +64,9 @@ class CommitsOfAuthor(BaseModel):
 
     def __call__(self, extractor: Extractor) -> List[CommitMeta]:
         if self.query_type == AuthorQueryType.NAME:
-            query = AuthorQuery.name(self.query)
+            query = AuthorQuery.Name(self.query)
         else:
-            query = AuthorQuery.email(self.query)
+            query = AuthorQuery.Email(self.query)
 
         return extractor.commits_of_author(
             query, self.branch, self.pagination.to_wrapper_pagination()
