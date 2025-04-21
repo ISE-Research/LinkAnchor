@@ -14,7 +14,7 @@ class Pagination(BaseModel):
     """pagination for listing commits"""
 
     offset: int = Field(..., description="offset starts from 0")
-    limit: int = Field(..., description="limit of number of items to return")
+    limit: int = Field(..., description="limit of number of items to return. limit should not be less than 10")
 
     def to_wrapper_pagination(self) -> wrapperPagination:
         return wrapperPagination(offset=self.offset, limit=self.limit)

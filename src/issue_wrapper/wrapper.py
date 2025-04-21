@@ -4,10 +4,10 @@ from pydantic import BaseModel, Field
 from datetime import datetime
 
 class Pagination(BaseModel):
-    """pagination for listing commits"""
+    """pagination for listing comments"""
 
     offset: int = Field(..., description="offset starts from 0")
-    limit: int = Field(..., description="limit of number of items to return")
+    limit: int = Field(..., description="limit of number of items to return. limit should not be less than 10")
 
 
 class CommentMeta(BaseModel):
