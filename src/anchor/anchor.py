@@ -22,14 +22,22 @@ class GitAnchor:
         issue_agent : IssueAgent instance for accessing issue data.
     """
 
-    def __init__(self, issue_link: str, git_repo_link: str, api_key: str = ""):
+    def __init__(
+        self,
+        issue_url: str,
+        git_repo_source: str,
+        source_type: GitSourceType = GitSourceType.REMOTE,
+        api_key: str = "",
+    ):
         """Initialize the GitAnchor instance.
         Args:
             api_key (str): OpenAI API key. if not provided, the default OpenAI client will be used.
-            issue_link (str): The link to the issue in GitHub.
-            git_repo_link (str): The link to the git repository.
+            issue_url (str): The link to the issue in GitHub.
+            git_repo_source (str): the source git repository.
+            source_type (GitSourceType): The type of git source (remote or local).
+            when using local, the git_repo_source should be a path to the local directory.
+            when using remote, the git_repo_source should be a url to the remote repository.
         """
-
         logger.info("Initializing OpenAI client...")
         term.log(Color.MAGENTA, "Initializing OpenAI client...")
         self.agent = Agent(api_key)
@@ -38,7 +46,7 @@ class GitAnchor:
 
         logger.info("Initializing data Extractor...")
         term.log(Color.MAGENTA, "Initializing data Extractor...")
-        self.extractor = Extractor(issue_link, git_repo_link)
+        self.extractor = Extractor(issue_url, git_repo_source, source_type)
         logger.info("data source setup completed successfully")
         term.log(Color.GREEN, "data source setup completed successfully")
 
