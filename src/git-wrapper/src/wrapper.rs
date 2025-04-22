@@ -101,11 +101,10 @@ impl Wrapper {
     }
 
     fn has_branch(&self, branch: &str) -> bool {
-        self.branches
-            .iter()
-            .any(|b| branch == b || branch == format!("origin/{}", b))
-            || branch == self.default_branch
-            || branch == format!("origin/{}", self.default_branch)
+        self.branches.iter().any(|remote_branch| {
+            remote_branch == branch || remote_branch == &format!("origin/{}", branch)
+        }) || self.default_branch == branch
+            || self.default_branch == format!("origin/{}", branch)
     }
 }
 
