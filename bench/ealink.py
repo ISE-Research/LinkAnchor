@@ -2,6 +2,7 @@ import os
 import time
 import logging
 import pandas as pd
+from typing import Tuple
 
 from src.anchor.anchor import GitAnchor
 from src.anchor.extractor import GitSourceType
@@ -57,6 +58,21 @@ def ensure_repositories_cloned():
                         logger.info(f"{repo_name} already cloned at {repo_path}")
 
 
+def bench_row(issue_url: str, repo_url: str) -> Tuple[str, int]:
+    repo_name = repo_url.split("/")[-1].replace(".git", "")
+    repo_path = os.path.join(repos_dir, repo_name)
+    anchor = GitAnchor(
+        issue_url=issue_url,
+        git_repo_source=repo_path,
+        source_type=GitSourceType.LOCAL,
+    )
+    anchor.register_tools(GIT_TOOLS)
+    anchor.register_tools(CODE_TOOLS)
+    anchor.register_tools(ISSUE_TOOLS)
+    commit_hash, token_used = anchor.find_link()
+    return (commit_hash, token_used)
+
+
 def do_bench_mark():
     os.makedirs(results_dir, exist_ok=True)
     all_token_used = 0
@@ -69,47 +85,29 @@ def do_bench_mark():
             logger.info(f"Running benchmark for {csv_file}")
             data = pd.read_csv(os.path.join(csv_dir, csv_file))
             # iterate over all rows in the dataframe
-            # Process data in batches of 100
-            batch_size = 2
-            for batch_start in range(0, len(data), batch_size):
-                batch_end = min(batch_start + batch_size, len(data))
-                logger.info("######################################################")
-                logger.info(f"Processing batch from {batch_start} to {batch_end - 1}")
+            # Persist data every 10 rows
+            batch_size = 10
+            for i, (index, row) in enumerate(data.iterrows()):
+                issue_url: str = row["issue_url"]  # type: ignore
+                repo_url: str = row["repo_url"]  # type: ignore
+                logger.info(f"Processing {index}'th row...")
+                try:
+                    (commit_hash, tokens) = bench_row(issue_url, repo_url)
+                    all_token_used += tokens
+                    data.at[index, "result"] = commit_hash
+                except Exception as e:
+                    logger.error(f"Error processing {issue_url}: {e}")
+                    data.at[index, "error"] = str(e)
 
-                for index in range(batch_start, batch_end):
-                    row = data.iloc[index]
-                    repo_url: str = row["repo_url"]  # type: ignore
-                    repo_name = repo_url.split("/")[-1].replace(".git", "")
-                    repo_path = os.path.join(repos_dir, repo_name)
-                    issue_url: str = row["issue_url"]  # type: ignore
-                    anchor = GitAnchor(
-                        issue_url=issue_url,
-                        git_repo_source=repo_path,
-                        source_type=GitSourceType.LOCAL,
-                    )
-                    anchor.register_tools(GIT_TOOLS)
-                    anchor.register_tools(CODE_TOOLS)
-                    anchor.register_tools(ISSUE_TOOLS)
-                    try:
-                        logger.info(f"Processing {index}'th row...")
-                        commit_hash, token_used = anchor.find_link()
-                        all_token_used += token_used
-                        if all_token_used > 200 * 1000:
-                            logger.info(
-                                "Token limit reached, cooling down for 30 seconds."
-                            )
-                            time.sleep(30)
-                            all_token_used = 0
+                if all_token_used > 200 * 1000:
+                    logger.info("Token limit reached, cooling down for 30 seconds.")
+                    time.sleep(30)
+                    all_token_used = 0
 
-                        data.at[index, "result"] = commit_hash
-                    except Exception as e:
-                        logger.error(f"Error processing {issue_url}: {e}")
-                        data.at[index, "error"] = str(e)
-                data.to_csv(os.path.join(results_dir, csv_file), index=True)
-                logger.info(f"Batch results saved for {batch_start}_{batch_end - 1}")
-            logger.info(
-                f"Benchmark results saved to {os.path.join(results_dir, csv_file)}"
-            )
+                if i % batch_size == 0:
+                    data.to_csv(os.path.join(results_dir, csv_file), index=True)
+                    logger.info(f"results saved up to {index} rows")
+            logger.info(f"results saved to {os.path.join(results_dir, csv_file)}")
 
 
 ensure_dataset_available()
