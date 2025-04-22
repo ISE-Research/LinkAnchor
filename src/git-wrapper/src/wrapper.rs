@@ -151,8 +151,8 @@ impl Wrapper {
         Self::new_from_temp_dir(dir)
     }
 
-    pub fn default_branch(&self) -> String {
-        self.default_branch.clone()
+    pub fn default_branch(&self) -> &str {
+        &self.default_branch
     }
 
     pub fn list_branches(&self) -> Vec<String> {
