@@ -18,6 +18,7 @@ pub struct Wrapper {
 }
 
 impl Wrapper {
+    // Create a new Wrapper from a TempDir already containing a git repo
     fn new_from_temp_dir(dir: TempDir) -> Result<Self> {
         // Find the default branch
         let output = Command::new("git")
@@ -48,6 +49,7 @@ impl Wrapper {
         }
     }
 
+    // Fetch, track and return names of all remote branches
     fn fetch_branches(&self) -> Result<Vec<String>> {
         // List all remote branches
         let output = Command::new("git")
@@ -100,6 +102,7 @@ impl Wrapper {
         Ok(branches)
     }
 
+    // Check if the branch exists in the repo
     fn has_branch(&self, branch: &str) -> bool {
         self.branches.iter().any(|remote_branch| {
             remote_branch == branch || remote_branch == &format!("origin/{}", branch)
