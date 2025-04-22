@@ -56,7 +56,7 @@ Repeat this iterative process systematically until you accurately pinpoint the c
 Maintain explicit, logical, and transparent reasoning at each step, clearly outlining your decision-making process, function selection rationale, and the insights obtained from each function's response.
 For each interaction, also provide your reasoning and the function you intend to call next.
 
-Note that the iterative process only lasts for at most {MAX_ITERATIONS} iterations. If you reach the last iteration and you are not sure about the commit hash, use the "FFFFFFFFFFFF" as a hash represnting an unsupported commit hash.
+Note that the iterative process only lasts for at most {MAX_ITERATIONS} iterations. If you reach the last iteration and you have not provided any commit_hash, the user assumes that you can not find the link
 
 Whenever you are assured that you found the commit that resolves the issue, have the following line as the last line of your response where <commit_hash> is the commit hash of the commit you found:
 {COMMIT_FOUND_MESSAGE}: <commit_hash>
