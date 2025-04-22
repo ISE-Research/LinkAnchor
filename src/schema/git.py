@@ -68,7 +68,7 @@ class CommitsOfAuthor(BaseModel):
         else:
             query = AuthorQuery.Email(self.query)
 
-        return extractor.commits_of_author(
+        return extractor.commits_of(
             query, self.branch, self.pagination.to_wrapper_pagination()
         )
 
