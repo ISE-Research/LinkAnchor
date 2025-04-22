@@ -96,7 +96,10 @@ class Agent:
                 logger.info(f"LLM calling: {function.__repr__()}")
                 term.log(Color.GREEN, f"LLM calling: {function.__repr__()}")
 
-                result = function(extractor)
+                try: 
+                    result = function(extractor)
+                except Exception as e:
+                    result = f"encountered the following error: {e}"
                 logger.debug(f"Call result: {result.__repr__()}")
                 term.log(Color.BLUE, "Call result:")
                 term.log(Color.BLUE, result)
