@@ -14,8 +14,11 @@ def parse_arguments():
     """Parse command line arguments."""
     parser = argparse.ArgumentParser(description="Git Anchor - Link issues to commits")
 
-    parser.add_argument(
-        "--git", help="Link of the git repository", type=str, required=True
+    # Create a mutually exclusive group for repository source
+    repo_group = parser.add_mutually_exclusive_group(required=True)
+    repo_group.add_argument("--git", help="Link of the git repository", type=str)
+    repo_group.add_argument(
+        "--from-local", help="Path to local git repository", type=str
     )
 
     parser.add_argument("--issue", help="Link of the issue", type=str, required=True)
@@ -49,7 +52,10 @@ def main():
         os.environ["GIT_ANCHOR_INTERACTIVE"] = "TRUE"
         logger.info("Interactive mode enabled")
 
-    ga = GitAnchor(args.issue, args.git)
+    if args.from_local:
+        ga = GitAnchor(args.issue, args.from_local, source_type=GitSourceType.LOCAL)
+    else:
+        ga = GitAnchor(args.issue, args.git, source_type=GitSourceType.REMOTE)
 
     ga.register_tools(GIT_TOOLS)
     ga.register_tools(CODE_TOOLS)
