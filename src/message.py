@@ -42,6 +42,8 @@ def extract_commit_hash(content: str) -> str| None:
 
 COMMIT_FOUND_MESSAGE = "found commit resolving this issue"
 
+MAX_ITERATIONS = 20
+
 PROBLEM_EXPLANATION_PROMPT_TEXT = f"""
 Role & Goals:
 You are an intelligent agent specialized in identifying and linking software issues directly to the specific commit hashes that resolve them. Your primary objective is to determine and provide the exact commit hash responsible for resolving a given issue.
@@ -57,6 +59,8 @@ YOU CAN NOT ASK QUESTIONS FROM THE USER.
 Repeat this iterative process systematically until you accurately pinpoint the commit hash resolving the issue.
 Maintain explicit, logical, and transparent reasoning at each step, clearly outlining your decision-making process, function selection rationale, and the insights obtained from each function's response.
 For each interaction, also provide your reasoning and the function you intend to call next.
+
+Note that the iterative process only lasts for at most {MAX_ITERATIONS} iterations. If you reach the last iteration and you are not sure about the commit hash, use the "FFFFFFFFFFFF" as a hash represnting an unsupported commit hash
 
 Whenever you are assured that you found the commit that resolves the issue, have the following line as the last line of your response where <commit_hash> is the commit hash of the commit you found:
 {COMMIT_FOUND_MESSAGE}: <commit_hash>

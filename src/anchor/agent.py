@@ -64,7 +64,7 @@ class Agent:
             message.user_initial_prompt(issue_title),
         ]
 
-        while True:
+        for _ in range(message.MAX_ITERATIONS):
             completion = self.communicate(messages, tools)
             if completion.usage:
                 total_tokens += completion.usage.total_tokens or 0
@@ -101,3 +101,5 @@ class Agent:
                 term.log(Color.BLUE, "Call result:")
                 term.log(Color.BLUE, result)
                 messages.append(message.function_call_result(tool_call, result))
+
+        return ("FFFFFFFFFFFFF", total_tokens)
