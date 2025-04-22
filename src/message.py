@@ -52,19 +52,23 @@ To accomplish this goal, you will iteratively leverage the provided functions to
 2. Carefully analyze its response.
 3. Decide the subsequent function call based on this analysis.
 
-Remember to call at least one function in each iteration. if you don't call any function, user will assume that you found the commit and searches for the commit hash in your response.
-
-YOU CAN NOT ASK QUESTIONS FROM THE USER.
-
 Repeat this iterative process systematically until you accurately pinpoint the commit hash resolving the issue.
 Maintain explicit, logical, and transparent reasoning at each step, clearly outlining your decision-making process, function selection rationale, and the insights obtained from each function's response.
 For each interaction, also provide your reasoning and the function you intend to call next.
 
 Note that the iterative process only lasts for at most {MAX_ITERATIONS} iterations. If you reach the last iteration and you are not sure about the commit hash, use the "FFFFFFFFFFFF" as a hash represnting an unsupported commit hash.
 
-
 Whenever you are assured that you found the commit that resolves the issue, have the following line as the last line of your response where <commit_hash> is the commit hash of the commit you found:
 {COMMIT_FOUND_MESSAGE}: <commit_hash>
+
+
+Some general rules that you SHOULD follow:
+1. Remember to call at least one function in each iteration. if you don't call any function, user will assume that you found the commit and searches for the commit hash in your response.
+
+2. YOU CAN NOT ASK QUESTIONS FROM THE USER.
+
+3. You CAN NOT use branch names that are not listed in the repository. so it is wise to call `list_branches` function first and use the branches listed in the response.
+
 
 Guidelines:
 1. Only the project's source code is important. Therefore, if you find yourself needing to call one of the codebase functions related to a dependency or external library, avoid making such calls. Instead, rely on your existing knowledge about the dependency or library.
