@@ -1,4 +1,5 @@
 from src.anchor.anchor import GitAnchor
+from src.anchor.extractor import GitSourceType
 from src.schema.git import TOOLS as GIT_TOOLS
 from src.schema.code import TOOLS as CODE_TOOLS
 from src.schema.issue import TOOLS as ISSUE_TOOLS
