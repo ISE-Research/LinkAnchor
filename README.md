@@ -33,12 +33,13 @@ source venv/bin/activate
 # install dependencies
 poetry install --no-root
 ```
-### install git-wrapper development use:
+### install git-wrapper and code-wrapper development use:
 ```bash
 (cd src/git-wrapper && maturin develop)
+(cd src/code-wrapper && maturin develop)
 ```
 ### Run
 ```bash 
 export OPENAI_API_KEY=<YOUR_OPEN_API_KEY>
-python3 src/main.py
+python3 -m src.main
 ```
