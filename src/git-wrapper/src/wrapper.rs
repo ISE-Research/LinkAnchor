@@ -266,6 +266,69 @@ impl Wrapper {
         )
     }
 
+    // Returns the number of commits that are between two given commits
+    pub fn ancestral_distance(&self, from_commit: &str, to_commit: &str) -> Result<usize> {
+        if from_commit == to_commit {
+            return Ok(0);
+        }
+
+        // Get the commit hash of the first mutual ancestor commit
+        let output = Command::new("git")
+            .arg("merge-base")
+            .arg(from_commit)
+            .arg(to_commit)
+            .current_dir(self.dir.path())
+            .output()?;
+
+        if !output.status.success() {
+            let error_message = String::from_utf8_lossy(&output.stderr).to_string();
+            return Err(GitError::GitCommandErr(error_message));
+        }
+
+        let ancestor = String::from_utf8_lossy(&output.stdout);
+        let ancestor = ancestor.trim_end_matches("\n");
+
+        // Get distance of the from_commit from ancestor
+        let output = Command::new("git")
+            .arg("rev-list")
+            .arg("--count")
+            .arg(format!("{ancestor}..{from_commit}"))
+            .current_dir(self.dir.path())
+            .output()?;
+
+        if !output.status.success() {
+            let error_message = String::from_utf8_lossy(&output.stderr).to_string();
+            return Err(GitError::GitCommandErr(error_message));
+        }
+
+        let count1 = String::from_utf8_lossy(&output.stdout);
+        let count1 = count1.trim_end_matches("\n");
+        let count1: usize = count1.parse().map_err(|_| {
+            GitError::GitCommandErr(format!("Failed to parse commit count: {count1}"))
+        })?;
+
+        // Get distance of the to_commit from ancestor
+        let output = Command::new("git")
+            .arg("rev-list")
+            .arg("--count")
+            .arg(format!("{ancestor}..{to_commit}"))
+            .current_dir(self.dir.path())
+            .output()?;
+
+        if !output.status.success() {
+            let error_message = String::from_utf8_lossy(&output.stderr).to_string();
+            return Err(GitError::GitCommandErr(error_message));
+        }
+
+        let count2 = String::from_utf8_lossy(&output.stdout);
+        let count2 = count2.trim_end_matches("\n");
+        let count2: usize = count2.parse().map_err(|_| {
+            GitError::GitCommandErr(format!("Failed to parse commit count: {count2}"))
+        })?;
+
+        Ok(count1 + count2)
+    }
+
     pub fn commits_on_file(
         &self,
         file_path: &str,
@@ -681,6 +744,13 @@ mod test {
             commit_messages
         );
 
+        Ok(())
+    }
+    #[test]
+    fn commit_distance() -> Result<()> {
+        let w = new_mock_wrapper()?;
+        let distance = w.ancestral_distance("master", "branch1")?;
+        assert_eq!(distance, 4);
         Ok(())
     }
 }
