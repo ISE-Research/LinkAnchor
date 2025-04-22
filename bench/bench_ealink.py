@@ -17,6 +17,8 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
+# Silence src.anchor.agent logging
+logging.getLogger("src.anchor.agent").setLevel(logging.WARNING)
 
 data_dir = os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data"
@@ -62,24 +64,24 @@ def do_bench_mark():
     for csv_file in os.listdir(csv_dir):
         if "calcite" not in csv_file:
             continue
-            
+
         if csv_file.endswith(".csv"):
             logger.info(f"Running benchmark for {csv_file}")
             data = pd.read_csv(os.path.join(csv_dir, csv_file))
             # iterate over all rows in the dataframe
             # Process data in batches of 100
-            batch_size = 10
+            batch_size = 2
             for batch_start in range(0, len(data), batch_size):
                 batch_end = min(batch_start + batch_size, len(data))
                 logger.info("######################################################")
-                logger.info(f"Processing batch from {batch_start} to {batch_end-1}")
-                
+                logger.info(f"Processing batch from {batch_start} to {batch_end - 1}")
+
                 for index in range(batch_start, batch_end):
                     row = data.iloc[index]
                     repo_url: str = row["repo_url"]  # type: ignore
                     repo_name = repo_url.split("/")[-1].replace(".git", "")
                     repo_path = os.path.join(repos_dir, repo_name)
-                    issue_url:str = row["issue_url"] # type: ignore
+                    issue_url: str = row["issue_url"]  # type: ignore
                     anchor = GitAnchor(
                         issue_url=issue_url,
                         git_repo_source=repo_path,
@@ -89,22 +91,22 @@ def do_bench_mark():
                     anchor.register_tools(CODE_TOOLS)
                     anchor.register_tools(ISSUE_TOOLS)
                     try:
-                        logger.info(f"Processing {batch_size*batch_start+index}'th row...")
-                        commit_hash,token_used = anchor.find_link()
+                        logger.info(f"Processing {index}'th row...")
+                        commit_hash, token_used = anchor.find_link()
                         all_token_used += token_used
-                        if all_token_used > 200*1000:
-                            logger.info("Token limit reached, cooling down for 30 seconds.")
+                        if all_token_used > 200 * 1000:
+                            logger.info(
+                                "Token limit reached, cooling down for 30 seconds."
+                            )
                             time.sleep(30)
                             all_token_used = 0
-                            
+
                         data.at[index, "result"] = commit_hash
                     except Exception as e:
                         logger.error(f"Error processing {issue_url}: {e}")
                         data.at[index, "error"] = str(e)
-                data.to_csv(
-                    os.path.join(results_dir, f"{csv_file}_{batch_start}_{batch_end-1}.csv"),
-                    index=False,
-                )
+                data.to_csv(os.path.join(results_dir, csv_file), index=True)
+                logger.info(f"Batch results saved for {batch_start}_{batch_end - 1}")
             logger.info(
                 f"Benchmark results saved to {os.path.join(results_dir, csv_file)}"
             )
