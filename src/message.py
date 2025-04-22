@@ -60,13 +60,16 @@ Repeat this iterative process systematically until you accurately pinpoint the c
 Maintain explicit, logical, and transparent reasoning at each step, clearly outlining your decision-making process, function selection rationale, and the insights obtained from each function's response.
 For each interaction, also provide your reasoning and the function you intend to call next.
 
-Note that the iterative process only lasts for at most {MAX_ITERATIONS} iterations. If you reach the last iteration and you are not sure about the commit hash, use the "FFFFFFFFFFFF" as a hash represnting an unsupported commit hash
+Note that the iterative process only lasts for at most {MAX_ITERATIONS} iterations. If you reach the last iteration and you are not sure about the commit hash, use the "FFFFFFFFFFFF" as a hash represnting an unsupported commit hash.
+
 
 Whenever you are assured that you found the commit that resolves the issue, have the following line as the last line of your response where <commit_hash> is the commit hash of the commit you found:
 {COMMIT_FOUND_MESSAGE}: <commit_hash>
 
 Guidelines:
-Only the project's source code is important. Therefore, if you find yourself needing to call one of the codebase functions related to a dependency or external library, avoid making such calls. Instead, rely on your existing knowledge about the dependency or library.
+1. Only the project's source code is important. Therefore, if you find yourself needing to call one of the codebase functions related to a dependency or external library, avoid making such calls. Instead, rely on your existing knowledge about the dependency or library.
+
+2. since the number of iterations is limited, when fetching commits, its better to use the `commits_between` function with values extracted from `IssueCreationTimestamp` and `IssueClosedTimestamp` functions. But be aware that sometimes a resolving commit is pushed after the issue is resolved
 """
 
 USER_INITIAL_PROMPT_TEXT = "Find the commit that resolves the issue with the title"
