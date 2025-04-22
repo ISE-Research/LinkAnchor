@@ -1,5 +1,11 @@
-use pyo3::{PyErr, exceptions::PyValueError};
+use pyo3::{
+    create_exception,
+    exceptions::{PyException, PyValueError},
+    PyErr,
+};
 use thiserror::Error;
+
+create_exception!(git_wrapper, BranchNotFoundErr, PyException);
 
 #[derive(Error, Debug)]
 pub enum GitError {
@@ -24,6 +30,11 @@ pub type Result<T, E = GitError> = core::result::Result<T, E>;
 
 impl From<GitError> for PyErr {
     fn from(value: GitError) -> Self {
-        PyValueError::new_err(value.to_string())
+        match value {
+            GitError::BranchNotFound(branch) => {
+                BranchNotFoundErr::new_err(format!("Branch not found: {}", branch))
+            }
+            _ => PyValueError::new_err(value.to_string()),
+        }
     }
 }

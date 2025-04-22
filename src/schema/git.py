@@ -1,7 +1,13 @@
 from typing import List
 from enum import Enum
 from pydantic import BaseModel, Field
-from git_wrapper import Author, CommitMeta, AuthorQuery, Pagination as wrapperPagination
+from git_wrapper import (
+    Author,
+    CommitMeta,
+    AuthorQuery,
+    Pagination as wrapperPagination,
+    BranchNotFoundErr,
+)
 from src.anchor.extractor import Extractor
 
 
@@ -14,7 +20,10 @@ class Pagination(BaseModel):
     """pagination for listing commits"""
 
     offset: int = Field(..., description="offset starts from 0")
-    limit: int = Field(..., description="limit of number of items to return. limit should not be less than 10")
+    limit: int = Field(
+        ...,
+        description="limit of number of items to return. limit should not be less than 10",
+    )
 
     def to_wrapper_pagination(self) -> wrapperPagination:
         return wrapperPagination(offset=self.offset, limit=self.limit)
@@ -36,9 +45,14 @@ class CommitsOfBranch(BaseModel):
     )
 
     def __call__(self, extractor: Extractor) -> List[CommitMeta]:
-        return extractor.commits_of_branch(
-            self.branch, self.pagination.to_wrapper_pagination()
-        )
+        try:
+            return extractor.commits_of_branch(
+                self.branch, self.pagination.to_wrapper_pagination()
+            )
+        except BranchNotFoundErr:
+            return extractor.commits_of_branch(
+                extractor.default_branch(), self.pagination.to_wrapper_pagination()
+            )
 
 
 class AuthorsOfBranch(BaseModel):
@@ -47,7 +61,10 @@ class AuthorsOfBranch(BaseModel):
     branch: str = Field(..., description="branch name")
 
     def __call__(self, extractor: Extractor) -> List[Author]:
-        return extractor.authors_of_branch(self.branch)
+        try:
+            return extractor.authors_of_branch(self.branch)
+        except BranchNotFoundErr:
+            return extractor.authors_of_branch(extractor.default_branch())
 
 
 class CommitsOfAuthor(BaseModel):
@@ -68,9 +85,16 @@ class CommitsOfAuthor(BaseModel):
         else:
             query = AuthorQuery.Email(self.query)
 
-        return extractor.commits_of(
-            query, self.branch, self.pagination.to_wrapper_pagination()
-        )
+        try:
+            return extractor.commits_of(
+                query, self.branch, self.pagination.to_wrapper_pagination()
+            )
+        except BranchNotFoundErr:
+            return extractor.commits_of(
+                query,
+                extractor.default_branch(),
+                self.pagination.to_wrapper_pagination(),
+            )
 
 
 class CommitsOnFile(BaseModel):
@@ -83,9 +107,16 @@ class CommitsOnFile(BaseModel):
     )
 
     def __call__(self, extractor: Extractor) -> List[CommitMeta]:
-        return extractor.commits_on_file(
-            self.file_path, self.branch, self.pagination.to_wrapper_pagination()
-        )
+        try:
+            return extractor.commits_on_file(
+                self.file_path, self.branch, self.pagination.to_wrapper_pagination()
+            )
+        except BranchNotFoundErr:
+            return extractor.commits_on_file(
+                self.file_path,
+                extractor.default_branch(),
+                self.pagination.to_wrapper_pagination(),
+            )
 
 
 class CommitsBetween(BaseModel):
@@ -99,12 +130,20 @@ class CommitsBetween(BaseModel):
     )
 
     def __call__(self, extractor: Extractor) -> List[CommitMeta]:
-        return extractor.commits_between(
-            self.branch,
-            self.start_date,
-            self.end_date,
-            self.pagination.to_wrapper_pagination(),
-        )
+        try:
+            return extractor.commits_between(
+                self.branch,
+                self.start_date,
+                self.end_date,
+                self.pagination.to_wrapper_pagination(),
+            )
+        except BranchNotFoundErr:
+            return extractor.commits_between(
+                extractor.default_branch(),
+                self.start_date,
+                self.end_date,
+                self.pagination.to_wrapper_pagination(),
+            )
 
 
 class CommitDiff(BaseModel):

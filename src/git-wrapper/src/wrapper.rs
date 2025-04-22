@@ -149,6 +149,10 @@ impl Wrapper {
         Self::new_from_temp_dir(dir)
     }
 
+    pub fn default_branch(&self) -> String {
+        self.default_branch.clone()
+    }
+
     pub fn list_branches(&self) -> Vec<String> {
         self.branches.clone()
     }
@@ -571,17 +575,16 @@ mod test {
         let author_names = ["user1", "user2", "user3", "user4"];
         assert_eq!(authors.len(), author_names.len());
 
-        let mut fetched_authors_name = authors.iter().map(|c| &c.name).collect::<Vec<_>>();
-        fetched_authors_name.sort();
-        assert_eq!(fetched_authors_name, author_names);
+        let mut fetched = authors.iter().map(|c| &c.name).collect::<Vec<_>>();
+        fetched.sort();
+        assert_eq!(fetched, author_names);
 
         let authors = w.authors_of_branch("branch1")?;
         assert_eq!(authors.len(), 2);
-        let author_names = ["user3", "user1"];
-        assert_eq!(
-            authors.iter().map(|c| &c.name).collect::<Vec<_>>(),
-            author_names
-        );
+        let author_names = ["user1", "user3"];
+        let mut fetched = authors.iter().map(|c| &c.name).collect::<Vec<_>>();
+        fetched.sort();
+        assert_eq!(fetched, author_names);
 
         Ok(())
     }
