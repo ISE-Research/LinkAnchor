@@ -14,6 +14,7 @@ const DATETIME_FORMAT: &str = "%Y-%m-%d %H:%M:%S %z";
 pub struct Wrapper {
     dir: TempDir,
     default_branch: String,
+    branches: Vec<String>,
 }
 
 impl Wrapper {
@@ -35,56 +36,19 @@ impl Wrapper {
                 let default_branch = String::from_utf8_lossy(&output.stdout)
                     .trim_end_matches("\n")
                     .to_string();
-                Ok(Self {
+
+                let mut w = Self {
                     dir,
                     default_branch,
-                })
+                    branches: vec![],
+                };
+                w.branches = w.fetch_branches()?;
+                Ok(w)
             }
         }
     }
-}
 
-#[pymethods]
-impl Wrapper {
-    #[new]
-    pub fn new(repo_url: &str) -> Result<Self> {
-        let dir = TempDir::new()?;
-
-        let dir_path = dir.path();
-
-        // Run git clone command
-        let output = Command::new("git")
-            .arg("clone")
-            .arg(repo_url)
-            .arg(dir_path)
-            .output()?;
-
-        // Check if the command was successful
-        if !output.status.success() {
-            let error_message = String::from_utf8_lossy(&output.stderr).to_string();
-            return Err(GitError::GitCommandErr(error_message));
-        }
-
-        Self::new_from_temp_dir(dir)
-    }
-
-    #[staticmethod]
-    pub fn from_local(local_dir_path: PathBuf) -> Result<Self> {
-        let dir = TempDir::new()?;
-
-        let dir_path = dir.path();
-
-        let mut options = fs_extra::dir::CopyOptions::new();
-        options.overwrite = true; // overwrite existing files
-        options.copy_inside = true; // copy the *contents* of source_dir into dest_dir
-        options.content_only = true; // if true, you'd copy contents without creating source_dir itself
-
-        fs_extra::dir::copy(local_dir_path, dir_path, &options)?;
-
-        Self::new_from_temp_dir(dir)
-    }
-
-    pub fn list_branches(&self) -> Result<Vec<String>> {
+    fn fetch_branches(&self) -> Result<Vec<String>> {
         // List all remote branches
         let output = Command::new("git")
             .arg("branch")
@@ -136,7 +100,64 @@ impl Wrapper {
         Ok(branches)
     }
 
+    fn has_branch(&self, branch: &str) -> bool {
+        self.branches
+            .iter()
+            .any(|b| branch == b || branch == format!("origin/{}", b))
+            || branch == self.default_branch
+            || branch == format!("origin/{}", self.default_branch)
+    }
+}
+
+#[pymethods]
+impl Wrapper {
+    #[new]
+    pub fn new(repo_url: &str) -> Result<Self> {
+        let dir = TempDir::new()?;
+
+        let dir_path = dir.path();
+
+        // Run git clone command
+        let output = Command::new("git")
+            .arg("clone")
+            .arg(repo_url)
+            .arg(dir_path)
+            .output()?;
+
+        // Check if the command was successful
+        if !output.status.success() {
+            let error_message = String::from_utf8_lossy(&output.stderr).to_string();
+            return Err(GitError::GitCommandErr(error_message));
+        }
+
+        Self::new_from_temp_dir(dir)
+    }
+
+    #[staticmethod]
+    pub fn from_local(local_dir_path: PathBuf) -> Result<Self> {
+        let dir = TempDir::new()?;
+
+        let dir_path = dir.path();
+
+        let mut options = fs_extra::dir::CopyOptions::new();
+        options.overwrite = true; // overwrite existing files
+        options.copy_inside = true; // copy the *contents* of source_dir into dest_dir
+        options.content_only = true; // if true, you'd copy contents without creating source_dir itself
+
+        fs_extra::dir::copy(local_dir_path, dir_path, &options)?;
+
+        Self::new_from_temp_dir(dir)
+    }
+
+    pub fn list_branches(&self) -> Vec<String> {
+        self.branches.clone()
+    }
+
     pub fn authors_of_branch(&self, branch: &str) -> Result<Vec<Author>> {
+        if !self.has_branch(branch) {
+            return Err(GitError::BranchNotFound(branch.to_string()));
+        }
+
         let authors: HashSet<Author> = self
             .commits_of_branch(branch, Pagination::all())?
             .into_iter()
@@ -150,6 +171,10 @@ impl Wrapper {
         branch: &str,
         pagination: Pagination,
     ) -> Result<Vec<CommitMeta>> {
+        if !self.has_branch(branch) {
+            return Err(GitError::BranchNotFound(branch.to_string()));
+        }
+
         if branch == self.default_branch || branch == format!("origin/{}", self.default_branch) {
             self.commits_from_git_log(vec![&self.default_branch], pagination)
         } else {
@@ -205,6 +230,9 @@ impl Wrapper {
         branch: &str,
         pagination: Pagination,
     ) -> Result<Vec<CommitMeta>> {
+        if !self.has_branch(branch) {
+            return Err(GitError::BranchNotFound(branch.to_string()));
+        }
         use AuthorQuery::*;
         match author_query {
             Name(query) => self.commits_from_git_log(vec![branch, "--author", &query], pagination),
@@ -219,6 +247,9 @@ impl Wrapper {
         to: &str,
         pagination: Pagination,
     ) -> Result<Vec<CommitMeta>> {
+        if !self.has_branch(branch) {
+            return Err(GitError::BranchNotFound(branch.to_string()));
+        }
         self.commits_from_git_log(
             vec![
                 branch,
@@ -235,6 +266,9 @@ impl Wrapper {
         branch: &str,
         pagination: Pagination,
     ) -> Result<Vec<CommitMeta>> {
+        if !self.has_branch(branch) {
+            return Err(GitError::BranchNotFound(branch.to_string()));
+        }
         self.commits_from_git_log(vec!["--follow", branch, "--", file_path], pagination)
     }
 }
@@ -247,6 +281,9 @@ impl Wrapper {
         to: DateTime<FixedOffset>,
         pagination: Pagination,
     ) -> Result<Vec<CommitMeta>> {
+        if !self.has_branch(branch) {
+            return Err(GitError::BranchNotFound(branch.to_string()));
+        }
         self.commits_between(
             branch,
             &format!("{}", from.format(DATETIME_FORMAT)),
@@ -490,13 +527,14 @@ mod test {
         Ok(Wrapper {
             dir,
             default_branch: String::from("master"),
+            branches: vec!["master".into(), "branch1".into()],
         })
     }
 
     #[test]
     fn list_branches() -> Result<()> {
         let w = Wrapper::new(REPO_URL)?;
-        let branches = w.list_branches()?;
+        let branches = w.list_branches();
         assert!(branches.contains(&"origin/b1".into()));
         assert!(branches.contains(&"origin/master".into()));
         Ok(())
@@ -530,12 +568,12 @@ mod test {
         let w = new_mock_wrapper()?;
 
         let authors = w.authors_of_branch("master")?;
-        let author_names = ["user4", "user3", "user2", "user1"];
+        let author_names = ["user1", "user2", "user3", "user4"];
         assert_eq!(authors.len(), author_names.len());
-        assert_eq!(
-            authors.iter().map(|c| &c.name).collect::<Vec<_>>(),
-            author_names
-        );
+
+        let mut fetched_authors_name = authors.iter().map(|c| &c.name).collect::<Vec<_>>();
+        fetched_authors_name.sort();
+        assert_eq!(fetched_authors_name, author_names);
 
         let authors = w.authors_of_branch("branch1")?;
         assert_eq!(authors.len(), 2);

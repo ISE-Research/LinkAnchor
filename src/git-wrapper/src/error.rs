@@ -17,6 +17,8 @@ pub enum GitError {
     CommitNotFound(String),
     #[error("failed to copy directory: {0}")]
     CopyDirErr(#[from] fs_extra::error::Error),
+    #[error("branch not found: {0}")]
+    BranchNotFound(String),
 }
 pub type Result<T, E = GitError> = core::result::Result<T, E>;
 
