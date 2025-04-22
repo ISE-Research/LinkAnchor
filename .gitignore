@@ -9,6 +9,9 @@ __pycache__/
 # data dir
 data/
 
+# nvim 
+.nvim/
+
 # Distribution / packaging
 .Python
 build/
