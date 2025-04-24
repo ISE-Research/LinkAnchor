@@ -73,7 +73,7 @@ def bench_row(issue_url: str, repo_url: str) -> Tuple[str, int]:
     return (commit_hash, token_used)
 
 
-def do_bench_mark():
+def run_bench():
     os.makedirs(results_dir, exist_ok=True)
     all_token_used = 0
 
@@ -112,4 +112,4 @@ def do_bench_mark():
 
 ensure_dataset_available()
 ensure_repositories_cloned()
-do_bench_mark()
+run_bench()
