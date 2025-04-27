@@ -2,10 +2,11 @@ import os
 import time
 import logging
 import pandas as pd
-from typing import Tuple
 
 from src.anchor.anchor import GitAnchor
 from src.anchor.extractor import GitSourceType
+from src.anchor.extractor import Extractor
+from src import issue_wrapper
 from src.schema.git import TOOLS as GIT_TOOLS
 from src.schema.code import TOOLS as CODE_TOOLS
 from src.schema.issue import TOOLS as ISSUE_TOOLS
@@ -58,24 +59,20 @@ def ensure_repositories_cloned():
                         logger.info(f"{repo_name} already cloned at {repo_path}")
 
 
-def bench_row(issue_url: str, repo_url: str) -> Tuple[str, int]:
-    repo_name = repo_url.split("/")[-1].replace(".git", "")
-    repo_path = os.path.join(repos_dir, repo_name)
-    anchor = GitAnchor(
-        issue_url=issue_url,
-        git_repo_source=repo_path,
-        source_type=GitSourceType.LOCAL,
-    )
-    anchor.register_tools(GIT_TOOLS)
-    anchor.register_tools(CODE_TOOLS)
-    anchor.register_tools(ISSUE_TOOLS)
-    commit_hash, token_used = anchor.find_link()
-    return (commit_hash, token_used)
-
-
 def run_bench():
     os.makedirs(results_dir, exist_ok=True)
     all_token_used = 0
+
+    logger.info("setup extractors...")
+    extractors: dict[str, Extractor] = {}
+    for repo in os.listdir(repos_dir):
+        repo_dir = os.path.join(repos_dir, repo)
+        extractors[f"https://github.com/apache/{repo}"] = Extractor.new_for_repo(
+            repo_dir, source_type=GitSourceType.LOCAL
+        )
+        logger.info(f"setup extractor for {repo} completed")
+
+    logger.info("extractors setup completed successfully")
 
     for csv_file in os.listdir(csv_dir):
         if "calcite" not in csv_file:
@@ -90,11 +87,23 @@ def run_bench():
             for i, (index, row) in enumerate(data.iterrows()):
                 issue_url: str = row["issue_url"]  # type: ignore
                 repo_url: str = row["repo_url"]  # type: ignore
+                expected_commit: str = row["commit_hash"]  # type: ignore
+                extractor: Extractor = extractors.get(repo_url)  # type: ignore
+                extractor.issue_wrapper = issue_wrapper.wrapper_for(issue_url)
+                ga = GitAnchor(extractor)
+                ga.register_tools(GIT_TOOLS)
+                ga.register_tools(CODE_TOOLS)
+                ga.register_tools(ISSUE_TOOLS)
+
                 logger.info(f"Processing {index}'th row...")
                 try:
-                    (commit_hash, tokens) = bench_row(issue_url, repo_url)
+                    ga.extractor.issue_wrapper = issue_wrapper.wrapper_for(issue_url)
+                    commit_hash, tokens = ga.find_link()
                     all_token_used += tokens
                     data.at[index, "result"] = commit_hash
+
+                    distance=ga.extractor.ancestral_distance(commit_hash, expected_commit)
+                    data.at[index, "ancestral_distance"] = distance
                 except Exception as e:
                     logger.error(f"Error processing {issue_url}: {e}")
                     data.at[index, "error"] = str(e)

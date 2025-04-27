@@ -54,9 +54,11 @@ def main():
         logger.info("Interactive mode enabled")
 
     if args.from_local:
-        ga = GitAnchor(args.issue, args.from_local, source_type=GitSourceType.LOCAL)
+        ga = GitAnchor.from_urls(
+            args.issue, args.from_local, source_type=GitSourceType.LOCAL
+        )
     else:
-        ga = GitAnchor(args.issue, args.git, source_type=GitSourceType.REMOTE)
+        ga = GitAnchor.from_urls(args.issue, args.git, source_type=GitSourceType.REMOTE)
 
     ga.register_tools(GIT_TOOLS)
     ga.register_tools(CODE_TOOLS)

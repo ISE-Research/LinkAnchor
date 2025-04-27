@@ -22,8 +22,24 @@ class GitAnchor:
         issue_agent : IssueAgent instance for accessing issue data.
     """
 
-    def __init__(
-        self,
+    def __init__(self, extractor: Extractor, api_key: str = ""):
+        """Initialize the GitAnchor instance.
+        Args:
+            api_key (str): OpenAI API key. if not provided, the default OpenAI client will be used.
+            extractor (Extractor): Extractor instance for extracting data from the issue.
+        """
+        logger.info("Initializing OpenAI client...")
+        term.log(Color.MAGENTA, "Initializing OpenAI client...")
+        self.agent = Agent(api_key)
+        logger.info("sucessfully connected to OpenAI")
+        term.log(Color.GREEN, "sucessfully connected to OpenAI")
+
+        self.extractor = extractor
+        self.tools = []
+
+    @classmethod
+    def from_urls(
+        cls,
         issue_url: str,
         git_repo_source: str,
         source_type: GitSourceType = GitSourceType.REMOTE,
@@ -38,21 +54,13 @@ class GitAnchor:
             when using local, the git_repo_source should be a path to the local directory.
             when using remote, the git_repo_source should be a url to the remote repository.
         """
-        logger.info("Initializing OpenAI client...")
-        term.log(Color.MAGENTA, "Initializing OpenAI client...")
-        self.agent = Agent(api_key)
-        logger.info("sucessfully connected to OpenAI")
-        term.log(Color.GREEN, "sucessfully connected to OpenAI")
-
         logger.info("Initializing data Extractor...")
         term.log(Color.MAGENTA, "Initializing data Extractor...")
-        self.extractor = Extractor.new_for_issue(
-            issue_url, git_repo_source, source_type
-        )
+        extractor = Extractor.new_for_issue(issue_url, git_repo_source, source_type)
         logger.info("data source setup completed successfully")
         term.log(Color.GREEN, "data source setup completed successfully")
 
-        self.tools = []
+        return cls(extractor, api_key)
 
     def register_tools(self, tools: List[type[BaseModel]]):
         """Register tools for the agent.
