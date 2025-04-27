@@ -7,6 +7,7 @@ from src.anchor.anchor import GitAnchor
 from src.anchor.extractor import GitSourceType
 from src.anchor.extractor import Extractor
 from src import issue_wrapper
+from src.anchor.metrics import Metrics
 from src.schema.git import TOOLS as GIT_TOOLS
 from src.schema.code import TOOLS as CODE_TOOLS
 from src.schema.issue import TOOLS as ISSUE_TOOLS
@@ -64,11 +65,12 @@ def run_bench():
     all_token_used = 0
 
     logger.info("setup extractors...")
+    metrics = Metrics()
     extractors: dict[str, Extractor] = {}
     for repo in os.listdir(repos_dir):
         repo_dir = os.path.join(repos_dir, repo)
         extractors[f"https://github.com/apache/{repo}"] = Extractor.new_for_repo(
-            repo_dir, source_type=GitSourceType.LOCAL
+            repo_dir, source_type=GitSourceType.LOCAL, metrics=metrics
         )
         logger.info(f"setup extractor for {repo} completed")
 
@@ -99,12 +101,17 @@ def run_bench():
                 try:
                     ga.extractor.issue_wrapper = issue_wrapper.wrapper_for(issue_url)
                     commit_hash, tokens = ga.find_link()
+                    metrics.flush()
                     all_token_used += tokens
                     data.at[index, "result"] = commit_hash
 
-                    distance=ga.extractor.ancestral_distance(commit_hash, expected_commit)
+                    distance = ga.extractor.ancestral_distance(
+                        commit_hash, expected_commit
+                    )
+                    metrics.reset()
                     data.at[index, "ancestral_distance"] = distance
                 except Exception as e:
+                    metrics.reset()
                     logger.error(f"Error processing {issue_url}: {e}")
                     data.at[index, "error"] = str(e)
 
@@ -116,6 +123,8 @@ def run_bench():
                 if i % batch_size == 0:
                     data.to_csv(os.path.join(results_dir, csv_file), index=True)
                     logger.info(f"results saved up to {index} rows")
+                    metrics.dump( os.path.join(results_dir, "metrics.json"))
+                    logger.info(f"metrics saved up to {index} rows")
             logger.info(f"results saved to {os.path.join(results_dir, csv_file)}")
 
 

@@ -5,6 +5,7 @@ import logging
 from src.anchor.agent import Agent
 from src.anchor.extractor import Extractor
 from src.anchor.extractor import GitSourceType
+from src.anchor.metrics import Metrics
 from src.term import Color
 from src import term
 
@@ -44,6 +45,8 @@ class GitAnchor:
         git_repo_source: str,
         source_type: GitSourceType = GitSourceType.REMOTE,
         api_key: str = "",
+        metrics: Metrics|None=None,
+
     ):
         """Initialize the GitAnchor instance.
         Args:
@@ -56,7 +59,9 @@ class GitAnchor:
         """
         logger.info("Initializing data Extractor...")
         term.log(Color.MAGENTA, "Initializing data Extractor...")
-        extractor = Extractor.new_for_issue(issue_url, git_repo_source, source_type)
+        extractor = Extractor.new_for_issue(
+            issue_url, git_repo_source, source_type, metrics
+        )
         logger.info("data source setup completed successfully")
         term.log(Color.GREEN, "data source setup completed successfully")
 
