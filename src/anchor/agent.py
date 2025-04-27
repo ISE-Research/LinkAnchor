@@ -71,6 +71,7 @@ class Agent:
             response = completion.choices[0].message
             logger.info(f"Response: {response.content}")
 
+            term.wait()
             term.clear()
             term.log(Color.YELLOW, "Response:")
             term.log(Color.YELLOW, response.content)

@@ -2,6 +2,9 @@ from typing import List, Any
 import enum
 import shutil
 import os
+import threading
+import time
+import sys
 
 
 class Color(enum.Enum):
@@ -26,6 +29,29 @@ def clear():
     terminal_height = shutil.get_terminal_size(fallback=(80, 24)).lines - 2
     print("\033[2J\033[H", end="")
     clog(Color.RED, "#" * terminal_width)
+
+
+def wait():
+    if "GIT_ANCHOR_INTERACTIVE" not in os.environ:
+        return
+
+    q = []
+    t = threading.Thread(target=lambda: q.append(input()), daemon=True)
+    t.start()
+    i = 0
+    while True:
+        print("\r\033[K", end="")
+        if len(q) > 0:
+            break
+        print(
+            f"\033[2K\033[1G{Color.YELLOW.value}Enter any key to continue{'.' * (i)}\033[0m",
+            end="",
+        )
+        sys.stdout.flush()
+        time.sleep(0.5)
+        i = (i + 1) % 4
+
+    t.join()
 
 
 def log(color: Color, obj: Any):

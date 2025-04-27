@@ -46,7 +46,9 @@ class GitAnchor:
 
         logger.info("Initializing data Extractor...")
         term.log(Color.MAGENTA, "Initializing data Extractor...")
-        self.extractor = Extractor(issue_url, git_repo_source, source_type)
+        self.extractor = Extractor.new_for_issue(
+            issue_url, git_repo_source, source_type
+        )
         logger.info("data source setup completed successfully")
         term.log(Color.GREEN, "data source setup completed successfully")
 
