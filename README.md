@@ -41,5 +41,13 @@ poetry install --no-root
 ### Run
 ```bash 
 export OPENAI_API_KEY=<YOUR_OPEN_API_KEY>
-python3 -m src.main
+
+# default mode
+python3 -m src.main --git <GIT_REPO_URL> --issue <ISSUE_URL>
+
+# interactive mode
+python3 -m src.main --git <GIT_REPO_URL> --issue <ISSUE_URL> --interactive
+
+# debug logs enabled
+python3 -m src.main --git <GIT_REPO_URL> --issue <ISSUE_URL> --debug
 ```

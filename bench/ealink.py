@@ -77,7 +77,7 @@ def run_bench():
     logger.info("extractors setup completed successfully")
 
     for csv_file in os.listdir(csv_dir):
-        if "calcite" not in csv_file:
+        if "calcite" in csv_file:
             continue
 
         if csv_file.endswith(".csv"):
