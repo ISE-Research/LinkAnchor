@@ -123,7 +123,7 @@ def run_bench():
                 if i % batch_size == 0:
                     data.to_csv(os.path.join(results_dir, csv_file), index=True)
                     logger.info(f"results saved up to {index} rows")
-                    metrics.dump( os.path.join(results_dir, "metrics.json"))
+                    metrics.dump(os.path.join(results_dir, "metrics.json"))
                     logger.info(f"metrics saved up to {index} rows")
             logger.info(f"results saved to {os.path.join(results_dir, csv_file)}")
 
