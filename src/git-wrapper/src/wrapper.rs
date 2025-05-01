@@ -14,7 +14,7 @@ const DATETIME_FORMAT: &str = "%Y-%m-%d %H:%M:%S %z";
 pub struct Wrapper {
     dir: TempDir,
     default_branch: String,
-    branches: Vec<String>,
+    pub branches: Vec<String>,
 }
 
 impl Wrapper {
@@ -483,6 +483,17 @@ impl Display for CommitMeta {
     }
 }
 
+impl Ord for CommitMeta {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.date.cmp(&other.date)
+    }
+}
+impl PartialOrd for CommitMeta {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
 impl CommitMeta {
     fn parse(log: &str) -> Result<Self> {
         let attributes: Vec<&str> = log.split(ATTRIBUTE_SEPARATOR_CHAR).collect();
@@ -568,6 +579,21 @@ impl Display for Pagination {
         write!(f, "P[{}..{}]", self.offset, self.offset + self.limit)
     }
 }
+
+pub trait PaginationExt: IntoIterator {
+    fn with_pagination(self, pagination: Pagination) -> impl Iterator<Item = Self::Item>;
+}
+
+impl<T> PaginationExt for T 
+    where T: IntoIterator
+{
+    fn with_pagination(self, pagination: Pagination) -> impl Iterator<Item = T::Item> {
+        self.into_iter()
+            .skip(pagination.offset)
+            .take(pagination.limit)
+    }
+}
+    
 
 #[cfg(test)]
 mod test {
