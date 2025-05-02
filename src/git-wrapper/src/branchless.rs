@@ -64,11 +64,11 @@ impl Branchless {
             })
     }
 
-    pub fn list_commits(&self, pagination: Pagination) -> Result<Vec<CommitMeta>> {
+    pub fn list_commits(&self, pagination: Pagination) -> Result<(usize, Vec<CommitMeta>)> {
         let res = self.commits_on_all_branchs(|branch| {
             self.wrapper.commits_of_branch(branch, Pagination::all())
         });
-        res.map(|commits| commits.with_pagination(pagination).collect())
+        res.map(|commits| (commits.len(), commits.with_pagination(pagination).collect()))
     }
 
     pub fn commit_diff(&self, commit_hash: String) -> Result<String> {
@@ -83,12 +83,12 @@ impl Branchless {
         &self,
         author_query: AuthorQuery,
         pagination: Pagination,
-    ) -> Result<Vec<CommitMeta>> {
+    ) -> Result<(usize, Vec<CommitMeta>)> {
         let res = self.commits_on_all_branchs(|branch| {
             self.wrapper
                 .commits_of(author_query.clone(), branch, Pagination::all())
         });
-        res.map(|commits| commits.with_pagination(pagination).collect())
+        res.map(|commits| (commits.len(), commits.with_pagination(pagination).collect()))
     }
 
     pub fn commits_between(
@@ -96,12 +96,12 @@ impl Branchless {
         from: &str,
         to: &str,
         pagination: Pagination,
-    ) -> Result<Vec<CommitMeta>> {
+    ) -> Result<(usize, Vec<CommitMeta>)> {
         let res = self.commits_on_all_branchs(|branch| {
             self.wrapper
                 .commits_between(branch, from, to, Pagination::all())
         });
-        res.map(|commits| commits.with_pagination(pagination).collect())
+        res.map(|commits| (commits.len(), commits.with_pagination(pagination).collect()))
     }
 
     pub fn ancestral_distance(&self, from_commit: &str, to_commit: &str) -> Result<usize> {
@@ -111,11 +111,11 @@ impl Branchless {
         &self,
         file_path: &str,
         pagination: Pagination,
-    ) -> Result<Vec<CommitMeta>> {
+    ) -> Result<(usize, Vec<CommitMeta>)> {
         let res = self.commits_on_all_branchs(|branch| {
             self.wrapper
                 .commits_on_file(file_path, branch, Pagination::all())
         });
-        res.map(|commits| commits.with_pagination(pagination).collect())
+        res.map(|commits| (commits.len(), commits.with_pagination(pagination).collect()))
     }
 }
