@@ -1,5 +1,6 @@
 mod error;
 mod wrapper;
+mod branchless;
 
 use error::BranchNotFoundErr;
 use pyo3::prelude::*;
@@ -15,6 +16,7 @@ fn git_wrapper(py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<wrapper::Author>()?;
     m.add_class::<wrapper::AuthorQuery>()?;
     m.add_class::<wrapper::Pagination>()?;
+    m.add_class::<branchless::Branchless>()?;
     m.add("BranchNotFoundErr", py.get_type::<BranchNotFoundErr>())?;
 
     Ok(())

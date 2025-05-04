@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Tuple
 from enum import Enum
 from pydantic import BaseModel, Field
 from git_wrapper import (
@@ -6,7 +6,6 @@ from git_wrapper import (
     CommitMeta,
     AuthorQuery,
     Pagination as wrapperPagination,
-    BranchNotFoundErr,
 )
 from src.anchor.extractor import Extractor
 
@@ -29,48 +28,31 @@ class Pagination(BaseModel):
         return wrapperPagination(offset=self.offset, limit=self.limit)
 
 
-class ListBranches(BaseModel):
-    """listing all branches in a Git repository"""
+class ListCommits(BaseModel):
+    """listing all commits in the repo.
+    Returns a paginated list of commits as well as the total number of commits
+    """
 
-    def __call__(self, extractor: Extractor) -> List[str]:
-        return extractor.list_branches()
-
-
-class CommitsOfBranch(BaseModel):
-    """listing all commits in a branch"""
-
-    branch: str = Field(..., description="branch name")
     pagination: Pagination = Field(
         ..., description="pagination from offset to atleast offset + limit"
     )
 
-    def __call__(self, extractor: Extractor) -> List[CommitMeta]:
-        try:
-            return extractor.commits_of_branch(
-                self.branch, self.pagination.to_wrapper_pagination()
-            )
-        except BranchNotFoundErr:
-            return extractor.commits_of_branch(
-                extractor.default_branch(), self.pagination.to_wrapper_pagination()
-            )
+    def __call__(self, extractor: Extractor) -> Tuple[int, List[CommitMeta]]:
+        return extractor.list_commits(self.pagination.to_wrapper_pagination())
 
 
-class AuthorsOfBranch(BaseModel):
-    """listing all authors in a branch"""
-
-    branch: str = Field(..., description="branch name")
+class ListAuthors(BaseModel):
+    """listing all authors in the repo"""
 
     def __call__(self, extractor: Extractor) -> List[Author]:
-        try:
-            return extractor.authors_of_branch(self.branch)
-        except BranchNotFoundErr:
-            return extractor.authors_of_branch(extractor.default_branch())
+        return extractor.list_authors()
 
 
 class CommitsOfAuthor(BaseModel):
-    """listing all commits of an author in a branch"""
+    """listing all commits of an author in the repo.
+    Returns a paginated list of commits as well as the total number of commits
+    """
 
-    branch: str = Field(..., description="branch name")
     query_type: AuthorQueryType = Field(
         ..., description="weather search by name or email"
     )
@@ -79,71 +61,47 @@ class CommitsOfAuthor(BaseModel):
         ..., description="pagination from offset to atleast offset + limit"
     )
 
-    def __call__(self, extractor: Extractor) -> List[CommitMeta]:
+    def __call__(self, extractor: Extractor) -> Tuple[int, List[CommitMeta]]:
         if self.query_type == AuthorQueryType.NAME:
             query = AuthorQuery.Name(self.query)
         else:
             query = AuthorQuery.Email(self.query)
-
-        try:
-            return extractor.commits_of(
-                query, self.branch, self.pagination.to_wrapper_pagination()
-            )
-        except BranchNotFoundErr:
-            return extractor.commits_of(
-                query,
-                extractor.default_branch(),
-                self.pagination.to_wrapper_pagination(),
-            )
+        return extractor.commits_of(query, self.pagination.to_wrapper_pagination())
 
 
 class CommitsOnFile(BaseModel):
-    """listing all commits on a file in a branch"""
+    """listing all commits on a file path.
+    Returns a paginated list of commits as well as the total number of commits
+    """
 
-    branch: str = Field(..., description="branch name")
     file_path: str = Field(..., description="file path")
     pagination: Pagination = Field(
         ..., description="pagination from offset to atleast offset + limit"
     )
 
-    def __call__(self, extractor: Extractor) -> List[CommitMeta]:
-        try:
-            return extractor.commits_on_file(
-                self.file_path, self.branch, self.pagination.to_wrapper_pagination()
-            )
-        except BranchNotFoundErr:
-            return extractor.commits_on_file(
-                self.file_path,
-                extractor.default_branch(),
-                self.pagination.to_wrapper_pagination(),
-            )
+    def __call__(self, extractor: Extractor) -> Tuple[int, List[CommitMeta]]:
+        return extractor.commits_on_file(
+            self.file_path, self.pagination.to_wrapper_pagination()
+        )
 
 
 class CommitsBetween(BaseModel):
-    """listing all commits between two timestamp in a branch"""
+    """listing all commits between two timestamps.
+    Returns a paginated list of commits as well as the total number of commits
+    """
 
-    branch: str = Field(..., description="branch name")
     start_date: str = Field(..., description="start date in 'Y-m-d H:M:S z' format")
     end_date: str = Field(..., description="end date in 'Y-m-d H:M:S z' format")
     pagination: Pagination = Field(
         ..., description="pagination from offset to atleast offset + limit"
     )
 
-    def __call__(self, extractor: Extractor) -> List[CommitMeta]:
-        try:
-            return extractor.commits_between(
-                self.branch,
-                self.start_date,
-                self.end_date,
-                self.pagination.to_wrapper_pagination(),
-            )
-        except BranchNotFoundErr:
-            return extractor.commits_between(
-                extractor.default_branch(),
-                self.start_date,
-                self.end_date,
-                self.pagination.to_wrapper_pagination(),
-            )
+    def __call__(self, extractor: Extractor) -> Tuple[int, List[CommitMeta]]:
+        return extractor.commits_between(
+            self.start_date,
+            self.end_date,
+            self.pagination.to_wrapper_pagination(),
+        )
 
 
 class CommitDiff(BaseModel):
@@ -156,10 +114,9 @@ class CommitDiff(BaseModel):
 
 
 TOOLS = [
-    ListBranches,
-    AuthorsOfBranch,
+    ListAuthors,
     CommitsOfAuthor,
-    CommitsOfBranch,
+    ListCommits,
     CommitsBetween,
     CommitsOnFile,
     CommitDiff,

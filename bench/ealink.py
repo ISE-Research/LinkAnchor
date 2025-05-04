@@ -77,7 +77,7 @@ def run_bench():
     logger.info("extractors setup completed successfully")
 
     for csv_file in os.listdir(csv_dir):
-        if "calcite" in csv_file:
+        if "netbeans" not in csv_file:
             continue
 
         if csv_file.endswith(".csv"):
@@ -115,7 +115,7 @@ def run_bench():
                     logger.error(f"Error processing {issue_url}: {e}")
                     data.at[index, "error"] = str(e)
 
-                if all_token_used > 200 * 1000:
+                if all_token_used > 2000 * 1000:
                     logger.info("Token limit reached, cooling down for 30 seconds.")
                     time.sleep(30)
                     all_token_used = 0

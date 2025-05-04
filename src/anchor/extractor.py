@@ -1,7 +1,7 @@
 from typing import Any
 from enum import Enum
 
-from git_wrapper import Wrapper as GitWrapper
+from git_wrapper import Branchless as GitWrapper
 from code_wrapper import Wrapper as CodeWrapper
 
 from src import issue_wrapper

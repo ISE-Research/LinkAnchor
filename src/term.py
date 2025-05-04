@@ -91,6 +91,12 @@ def repr(obj: Any, max_width: int = 80, max_lines: int = 20) -> List[str]:
     """pretty print object based on its type"""
     if isinstance(obj, list):
         return repr_arr(obj, max_width=max_width, max_lines=min(20, max_lines))
+    elif isinstance(obj, tuple):
+        if len(obj) == 0:
+            return []
+        return repr(obj[0], max_width=max_width, max_lines=min(20, max_lines)) + repr(
+            obj[1:], max_width=max_width, max_lines=min(20, max_lines)
+        )
     else:
         return repr_str(obj, max_width=max_width, max_lines=min(20, max_lines))
 
