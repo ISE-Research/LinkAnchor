@@ -124,6 +124,11 @@ impl Branchless {
     pub fn ancestral_distance(&self, from_commit: &str, to_commit: &str) -> Result<usize> {
         self.wrapper.ancestral_distance(from_commit, to_commit)
     }
+
+    pub fn has_commit(&self, commit_hash: &str) -> bool {
+        self.commits.iter().any(|c| c.hash == commit_hash)
+    }
+
     pub fn commits_on_file(
         &self,
         file_path: &str,

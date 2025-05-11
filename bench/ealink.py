@@ -1,18 +1,17 @@
+import logging
 import os
 import time
-import logging
 import pandas as pd
 from dateutil.parser import parse
 
-from src.anchor.anchor import GitAnchor
-from src.anchor.extractor import GitSourceType
-from src.anchor.extractor import Extractor
-from src import issue_wrapper
-from src.anchor.metrics import Metrics
-from src.schema.git import TOOLS as GIT_TOOLS
-from src.schema.code import TOOLS as CODE_TOOLS
-from src.schema.issue import TOOLS as ISSUE_TOOLS
 from bench import data_gen
+from src import issue_wrapper
+from src.anchor.anchor import GitAnchor
+from src.anchor.extractor import Extractor, GitSourceType
+from src.anchor.metrics import Metrics
+from src.schema.code import TOOLS as CODE_TOOLS
+from src.schema.git import TOOLS as GIT_TOOLS
+from src.schema.issue import TOOLS as ISSUE_TOOLS
 
 # Configure logging
 logging.basicConfig(
@@ -64,30 +63,31 @@ def ensure_repositories_cloned():
 def calculage_issue_age(extractor: Extractor):
     start = extractor.issue_wrapper.issue_created_at()
     end = extractor.issue_wrapper.issue_closed_at()
-    start=parse(start) # type: ignore
-    end=parse(end) # type: ignore
-    return end-start
-    
+    start = parse(start)  # type: ignore
+    end = parse(end)  # type: ignore
+    return end - start
+
+
+def extractor_for_repo(repo_url: str, metrics: Metrics) -> Extractor:
+    repo = repo_url.split("/")[-1].replace(".git", "")
+    repo_dir = os.path.join(repos_dir, repo)
+    logger.info(f"setting up extractor for {repo}...")
+    e = Extractor.new_for_repo(
+        repo_dir, source_type=GitSourceType.LOCAL, metrics=metrics
+    )
+    logger.info(f"setup extractor for {repo} completed")
+    return e
+
 
 def run_bench():
     os.makedirs(results_dir, exist_ok=True)
     all_token_used = 0
 
-    logger.info("setup extractors...")
     metrics = Metrics()
     extractors: dict[str, Extractor] = {}
-    for repo in os.listdir(repos_dir):
-        repo_dir = os.path.join(repos_dir, repo)
-        logger.info(f"setting up extractor for {repo}...")
-        extractors[f"https://github.com/apache/{repo}"] = Extractor.new_for_repo(
-            repo_dir, source_type=GitSourceType.LOCAL, metrics=metrics
-        )
-        logger.info(f"setup extractor for {repo} completed")
-
-    logger.info("extractors setup completed successfully")
 
     for csv_file in os.listdir(csv_dir):
-        if "calcite" not in csv_file:
+        if "groovy" not in csv_file:
             continue
 
         if csv_file.endswith(".csv"):
@@ -100,6 +100,9 @@ def run_bench():
                 issue_url: str = row["issue_url"]  # type: ignore
                 repo_url: str = row["repo_url"]  # type: ignore
                 expected_commit: str = row["commit_hash"]  # type: ignore
+                if repo_url not in extractors:
+                    extractors[repo_url] = extractor_for_repo(repo_url, metrics)
+
                 extractor: Extractor = extractors.get(repo_url)  # type: ignore
                 extractor.issue_wrapper = issue_wrapper.wrapper_for(issue_url)
                 ga = GitAnchor(extractor)
@@ -111,27 +114,32 @@ def run_bench():
                 try:
                     ga.extractor.issue_wrapper = issue_wrapper.wrapper_for(issue_url)
                     commit_hash, tokens = ga.find_link()
-                    metrics.flush()
                     all_token_used += tokens
+                    metrics.flush()
+
                     data.at[index, "result"] = commit_hash
+                    data.at[index, "old"] = calculage_issue_age(ga.extractor).days > 365
+                    if not ga.extractor.has_commit(commit_hash):
+                        data.at[index, "error"] = "Commit not found"
+                        metrics.reset()
+                        break
+                    issue_key = ga.extractor.issue_key()
+                    data.at[index, "issue_key_present"] = (
+                        issue_key in ga.extractor.commit_metadata(commit_hash).message
+                    )
+                    # when the expected commit in dataset is not present in the repo
+                    if not ga.extractor.has_commit(expected_commit):
+                        expected_commit = commit_hash
 
                     distance = ga.extractor.ancestral_distance(
                         commit_hash, expected_commit
                     )
-                    metrics.reset()
                     data.at[index, "ancestral_distance"] = distance
-                    issue_key = ga.extractor.issue_key()
-                    data.at[index, "issue_key_present"] = (
-                        issue_key in ga.extractor.commit_metadata(commit_hash).message
-                        and issue_key
-                        in ga.extractor.commit_metadata(expected_commit).message
-                    )
-                    data.at[index,"old"] = (calculage_issue_age(ga.extractor).days>365)
-
                 except Exception as e:
-                    metrics.reset()
                     logger.error(f"Error processing {issue_url}: {e}")
                     data.at[index, "error"] = str(e)
+                finally:
+                    metrics.reset()
 
                 if all_token_used > 2000 * 1000:
                     logger.info("Token limit reached, cooling down for 30 seconds.")

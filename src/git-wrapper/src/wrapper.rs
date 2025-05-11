@@ -516,10 +516,10 @@ impl CommitMeta {
                 "faled to parse commit metadata: [{log}]"
             )));
         }
-        let hash = attributes[0].to_string();
+        let hash = attributes[0].trim().to_string();
         let author = Author {
-            name: attributes[1].to_string(),
-            email: attributes[2].to_string(),
+            name: attributes[1].trim().to_string(),
+            email: attributes[2].trim().to_string(),
         };
 
         let date = attributes[3];
