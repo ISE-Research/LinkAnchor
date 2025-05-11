@@ -192,15 +192,23 @@ impl Wrapper {
                 .output()?;
 
             // Get the commit hash of the first commit in the branch
-            if !output.status.success() {
-                let error_message = String::from_utf8_lossy(&output.stderr).to_string();
-                return Err(GitError::GitCommandErr(error_message));
+            match output.status.code() {
+                Some(0) => {
+                    let first_commit_hash = String::from_utf8_lossy(&output.stdout);
+                    let first_commit_hash = first_commit_hash.trim_end_matches("\n");
+
+                    self.commits_from_git_log(
+                        vec![format!("{first_commit_hash}..{branch}")],
+                        pagination,
+                    )
+                }
+                // case of unreleated branches (i.e. manipulated history)
+                Some(1) => self.commits_from_git_log(vec![format!("{branch}")], pagination),
+                _ => {
+                    let error_message = String::from_utf8_lossy(&output.stderr).to_string();
+                    Err(GitError::GitCommandErr(error_message))
+                }
             }
-
-            let first_commit_hash = String::from_utf8_lossy(&output.stdout);
-            let first_commit_hash = first_commit_hash.trim_end_matches("\n");
-
-            self.commits_from_git_log(vec![format!("{first_commit_hash}..{branch}")], pagination)
         }
     }
 
@@ -436,7 +444,7 @@ impl Display for Author {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, Eq)]
 #[pyclass(str, eq)]
 pub struct CommitMeta {
     pub hash: String,
@@ -480,6 +488,12 @@ impl Display for CommitMeta {
             "{} {}\n{}\nMessage:\n{}",
             self.hash, self.date, self.author, self.message
         )
+    }
+}
+
+impl PartialEq for CommitMeta {
+    fn eq(&self, other: &Self) -> bool {
+        self.hash == other.hash
     }
 }
 
@@ -530,7 +544,7 @@ fn git_log_formatted() -> Command {
         .arg(format!("--date=format:'{DATETIME_FORMAT}'"))
         .arg(format!(
             "--pretty={}{COMMIT_SEPARATOR_GIT}",
-            ["format:%H", "%an", "%ae", "%ad", "%B"].join(ATTRIBUTE_SEPARATOR_GIT)
+            ["format:%H", "%an", "%ae", "%cd", "%B"].join(ATTRIBUTE_SEPARATOR_GIT)
         ));
     cmd
 }
@@ -540,6 +554,15 @@ fn git_log_formatted() -> Command {
 pub enum AuthorQuery {
     Name(String),
     Email(String),
+}
+
+impl AuthorQuery {
+    pub fn matches(&self, commit: &CommitMeta) -> bool {
+        match self {
+            AuthorQuery::Name(name) => commit.author.name == *name,
+            AuthorQuery::Email(email) => commit.author.email == *email,
+        }
+    }
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -580,20 +603,18 @@ impl Display for Pagination {
     }
 }
 
-pub trait PaginationExt: IntoIterator {
+pub trait PaginationExt: Iterator {
     fn with_pagination(self, pagination: Pagination) -> impl Iterator<Item = Self::Item>;
 }
 
-impl<T> PaginationExt for T 
-    where T: IntoIterator
+impl<T> PaginationExt for T
+where
+    T: Iterator,
 {
     fn with_pagination(self, pagination: Pagination) -> impl Iterator<Item = T::Item> {
-        self.into_iter()
-            .skip(pagination.offset)
-            .take(pagination.limit)
+        self.skip(pagination.offset).take(pagination.limit)
     }
 }
-    
 
 #[cfg(test)]
 mod test {

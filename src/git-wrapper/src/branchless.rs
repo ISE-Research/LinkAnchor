@@ -7,9 +7,12 @@ use crate::wrapper::{Author, AuthorQuery, CommitMeta, Pagination, Wrapper};
 use crate::Result;
 use pyo3::{pyclass, pymethods};
 
+const DATETIME_FORMAT: &str = "%Y-%m-%d %H:%M:%S %z";
+
 #[pyclass(str)]
 pub struct Branchless {
     wrapper: Wrapper,
+    commits: Vec<CommitMeta>,
 }
 impl Display for Branchless {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -18,15 +21,17 @@ impl Display for Branchless {
 }
 
 impl Branchless {
-    fn commits_on_all_branchs<F>(&self, commits_retriever: F) -> Result<Vec<CommitMeta>>
-    where
-        F: Fn(&str) -> Result<Vec<CommitMeta>>,
-    {
-        self.list_branches()
+    fn commits_on_all_branchs(wrapper: &Wrapper) -> Result<Vec<CommitMeta>> {
+        wrapper
+            .list_branches()
             .iter()
-            .map(|branch| commits_retriever(branch))
+            .map(|branch| wrapper.commits_of_branch(branch, Pagination::all()))
             .try_fold(Vec::new(), |acc, commits| {
-                Ok(acc.into_iter().merge(commits?.into_iter().rev()).collect())
+                Ok(acc
+                    .into_iter()
+                    .merge(commits?.into_iter().rev())
+                    .dedup()
+                    .collect())
             })
             .map(|commits| commits.into_iter().rev().collect())
     }
@@ -37,13 +42,16 @@ impl Branchless {
     #[new]
     pub fn new(repo_url: &str) -> Result<Self> {
         let wrapper = Wrapper::new(repo_url)?;
-        Ok(Branchless { wrapper })
+        let commits = Self::commits_on_all_branchs(&wrapper)?;
+
+        Ok(Branchless { wrapper, commits })
     }
 
     #[staticmethod]
     pub fn from_local(local_dir_path: PathBuf) -> Result<Self> {
         let wrapper = Wrapper::from_local(local_dir_path)?;
-        Ok(Branchless { wrapper })
+        let commits = Self::commits_on_all_branchs(&wrapper)?;
+        Ok(Branchless { wrapper, commits })
     }
 
     pub fn default_branch(&self) -> &str {
@@ -64,11 +72,15 @@ impl Branchless {
             })
     }
 
-    pub fn list_commits(&self, pagination: Pagination) -> Result<(usize, Vec<CommitMeta>)> {
-        let res = self.commits_on_all_branchs(|branch| {
-            self.wrapper.commits_of_branch(branch, Pagination::all())
-        });
-        res.map(|commits| (commits.len(), commits.with_pagination(pagination).collect()))
+    pub fn list_commits(&self, pagination: Pagination) -> (usize, Vec<CommitMeta>) {
+        (
+            self.commits.len(),
+            self.commits
+                .iter()
+                .with_pagination(pagination)
+                .cloned()
+                .collect(),
+        )
     }
 
     pub fn commit_diff(&self, commit_hash: String) -> Result<String> {
@@ -83,12 +95,12 @@ impl Branchless {
         &self,
         author_query: AuthorQuery,
         pagination: Pagination,
-    ) -> Result<(usize, Vec<CommitMeta>)> {
-        let res = self.commits_on_all_branchs(|branch| {
-            self.wrapper
-                .commits_of(author_query.clone(), branch, Pagination::all())
-        });
-        res.map(|commits| (commits.len(), commits.with_pagination(pagination).collect()))
+    ) -> (usize, Vec<CommitMeta>) {
+        let iter = self.commits.iter().filter(|c| author_query.matches(c));
+        (
+            iter.clone().count(),
+            iter.with_pagination(pagination).cloned().collect(),
+        )
     }
 
     pub fn commits_between(
@@ -97,11 +109,16 @@ impl Branchless {
         to: &str,
         pagination: Pagination,
     ) -> Result<(usize, Vec<CommitMeta>)> {
-        let res = self.commits_on_all_branchs(|branch| {
-            self.wrapper
-                .commits_between(branch, from, to, Pagination::all())
-        });
-        res.map(|commits| (commits.len(), commits.with_pagination(pagination).collect()))
+        let from = chrono::DateTime::parse_from_str(from, DATETIME_FORMAT)?;
+        let to = chrono::DateTime::parse_from_str(to, DATETIME_FORMAT)?;
+        let iter = self
+            .commits
+            .iter()
+            .filter(|c| c.date >= from && c.date <= to);
+        Ok((
+            iter.clone().count(),
+            iter.with_pagination(pagination).cloned().collect(),
+        ))
     }
 
     pub fn ancestral_distance(&self, from_commit: &str, to_commit: &str) -> Result<usize> {
@@ -112,10 +129,30 @@ impl Branchless {
         file_path: &str,
         pagination: Pagination,
     ) -> Result<(usize, Vec<CommitMeta>)> {
-        let res = self.commits_on_all_branchs(|branch| {
-            self.wrapper
-                .commits_on_file(file_path, branch, Pagination::all())
-        });
-        res.map(|commits| (commits.len(), commits.with_pagination(pagination).collect()))
+        let commits: Vec<CommitMeta> = self
+            .wrapper
+            .list_branches()
+            .iter()
+            .map(|branch| {
+                self.wrapper
+                    .commits_on_file(file_path, branch, Pagination::all())
+            })
+            .try_fold(Vec::new(), |acc, commits| {
+                Result::<Vec<CommitMeta>>::Ok(
+                    acc.into_iter()
+                        .merge(commits?.into_iter().rev())
+                        .dedup()
+                        .collect(),
+                )
+            })?;
+
+        Ok((
+            commits.len(),
+            commits
+                .into_iter()
+                .rev()
+                .with_pagination(pagination)
+                .collect(),
+        ))
     }
 }

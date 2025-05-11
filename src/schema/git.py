@@ -1,5 +1,6 @@
 from typing import List, Tuple
 from enum import Enum
+from dateutil.parser import parse as date_parse
 from pydantic import BaseModel, Field
 from git_wrapper import (
     Author,
@@ -97,10 +98,10 @@ class CommitsBetween(BaseModel):
     )
 
     def __call__(self, extractor: Extractor) -> Tuple[int, List[CommitMeta]]:
+        start = date_parse(self.start_date).strftime("%Y-%m-%d %H:%M:%S %z")
+        end = date_parse(self.end_date).strftime("%Y-%m-%d %H:%M:%S %z")
         return extractor.commits_between(
-            self.start_date,
-            self.end_date,
-            self.pagination.to_wrapper_pagination(),
+            start, end, self.pagination.to_wrapper_pagination()
         )
 
 
@@ -116,7 +117,7 @@ class CommitDiff(BaseModel):
 TOOLS = [
     ListAuthors,
     CommitsOfAuthor,
-    ListCommits,
+    # ListCommits,
     CommitsBetween,
     CommitsOnFile,
     CommitDiff,

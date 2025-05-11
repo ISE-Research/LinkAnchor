@@ -69,30 +69,32 @@ Some general rules that you SHOULD follow:
 2. YOU CAN NOT ASK QUESTIONS FROM THE USER.
 
 
+
 Guidelines:
 1. Only the project's source code is important. Therefore, if you find yourself needing to call one of the codebase functions related to a dependency or external library, avoid making such calls. Instead, rely on your existing knowledge about the dependency or library.
 
 2. since the number of iterations is limited, when fetching commits, its better to use the `commits_between` function with values extracted from `IssueCreationTimestamp` and `IssueClosedTimestamp` functions. But be aware that sometimes a resolving commit is pushed after the issue is resolved
 
-3. Sometimes the difference between `IssueCreationTimestamp` and `IssueClosedTimestamp` is very large (more than a year). In these cases Issue was probably resolved close to the `IssueCreationTimestamp` but it was marked as closed years later. In these cases, First call `commits_between` with smallests pagination possible just to get the total number of commits in the time period, then, using pagination, start iterating over commits from the `IssueCreationTimestamp` end of the range. 
-For example, lets say after calling: 
-`commits_between(start_date=IssueCreationTimestamp, end_date=IssueClosedTimestamp, pagination=Pagination(offset=0, limit=1))`
-you get the following response:
-`
-12345
-<first commit metadata>
-`
-you can then call:
-`commits_between(start_date=IssueCreationTimestamp, end_date=IssueClosedTimestamp, pagination=Pagination(offset=12245, limit=100))`
-to fetch the first 10 commits that were pushed after the `IssueCreationTimestamp`.
-if you didn't find the commit in the first 10 commits, you can call:
-`commits_between(start_date=IssueCreationTimestamp, end_date=IssueClosedTimestamp, pagination=Pagination(offset=12145, limit=100))`
-and so on until you find the commit or reach the last iteration.
+3. Some functions have a pagination parameter. You can use it to limit the number of results returned by the function. You can use limits upto 100 in the pagination.
 
-
-4. Some functions have a pagination parameter. You can use it to limit the number of results returned by the function. You can use limits upto 100 in the pagination.
+4. sometimes the description in issue title is not enough, make sure to incorporate the issue description and comments in your reasoning. You can use the `IssueDescription` and `IssueComments` function to get the description and comments of the issue.
 
 """
+# 3. Sometimes the difference between `IssueCreationTimestamp` and `IssueClosedTimestamp` is very large (more than a year). In these cases Issue was probably resolved close to the `IssueCreationTimestamp` but it was marked as closed years later. In these cases, First call `commits_between` with smallests pagination possible just to get the total number of commits in the time period, then, using pagination, start iterating over commits from the `IssueCreationTimestamp` end of the range. 
+# For example, lets say after calling: 
+# `commits_between(start_date=IssueCreationTimestamp, end_date=IssueClosedTimestamp, pagination=Pagination(offset=0, limit=1))`
+# you get the following response:
+# `
+# 12345
+# <first commit metadata>
+# `
+# you can then call:
+# `commits_between(start_date=IssueCreationTimestamp, end_date=IssueClosedTimestamp, pagination=Pagination(offset=12245, limit=100))`
+# to fetch the first 10 commits that were pushed after the `IssueCreationTimestamp`.
+# if you didn't find the commit in the first 10 commits, you can call:
+# `commits_between(start_date=IssueCreationTimestamp, end_date=IssueClosedTimestamp, pagination=Pagination(offset=12145, limit=100))`
+# and so on until you find the commit or reach the last iteration.
+
 
 USER_INITIAL_PROMPT_TEXT = "Find the commit that resolves the issue with the title"
 

@@ -13,6 +13,9 @@ class JiraIssueWrapper(Wrapper):
 
     def issue_title(self) -> str:
         return self.issue_data["fields"]["summary"]
+    
+    def issue_key(self) -> str:
+        return self.issue_data["key"]
 
     def issue_description(self) -> str:
         return self.issue_data["fields"]["description"]

@@ -7,6 +7,11 @@ use pyo3::prelude::*;
 
 pub use error::Result;
 pub use error::GitError;
+pub use branchless::Branchless;
+pub use wrapper::Wrapper;
+pub use wrapper::Pagination;
+pub use wrapper::PaginationExt;
+pub use wrapper::CommitMeta;
 
 /// A Python module implemented in Rust.
 #[pymodule]

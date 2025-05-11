@@ -6,6 +6,7 @@ import gdown
 import py7zr
 import logging
 import pandas as pd
+from dateutil.parser import parse
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -93,6 +94,14 @@ def download_and_extract_dataset():
     extract_path = extract_dataset(file_path)
     return extract_path
 
+def is_issue_old(row):
+    created_at = parse(row['create_date'])
+    closed_at = parse(row[ 'update_date'])
+    return (closed_at - created_at).days > 365
+
+def is_issue_new(row):
+    return not is_issue_old(row)
+
 
 def create_dataset(file_path):
     data = pd.read_csv(file_path, encoding="utf-8")
@@ -101,7 +110,7 @@ def create_dataset(file_path):
     data = data[data["label"] == 1]
 
     # Drop unnecessary columns
-    data = data[["issue_id", "repo", "commitid", "label"]]
+    data = data[["issue_id", "repo", "commitid", "label","create_date", "update_date" ]]
 
     dataset = pd.DataFrame(
         {
@@ -112,9 +121,12 @@ def create_dataset(file_path):
             "repo_url": data["repo"].apply(
                 lambda key: f"https://github.com/apache/{key}"
             ),
+            "create_date": data["create_date"],
+            "update_date": data["update_date"],
         }
     )
-    return dataset
+    # return dataset
+    return dataset.loc[dataset.apply(is_issue_new,axis=1)]
 
 
 def prepare_ealink_dataset():

@@ -2,6 +2,7 @@ import os
 import time
 import logging
 import pandas as pd
+from dateutil.parser import parse
 
 from src.anchor.anchor import GitAnchor
 from src.anchor.extractor import GitSourceType
@@ -60,6 +61,14 @@ def ensure_repositories_cloned():
                         logger.info(f"{repo_name} already cloned at {repo_path}")
 
 
+def calculage_issue_age(extractor: Extractor):
+    start = extractor.issue_wrapper.issue_created_at()
+    end = extractor.issue_wrapper.issue_closed_at()
+    start=parse(start) # type: ignore
+    end=parse(end) # type: ignore
+    return end-start
+    
+
 def run_bench():
     os.makedirs(results_dir, exist_ok=True)
     all_token_used = 0
@@ -69,6 +78,7 @@ def run_bench():
     extractors: dict[str, Extractor] = {}
     for repo in os.listdir(repos_dir):
         repo_dir = os.path.join(repos_dir, repo)
+        logger.info(f"setting up extractor for {repo}...")
         extractors[f"https://github.com/apache/{repo}"] = Extractor.new_for_repo(
             repo_dir, source_type=GitSourceType.LOCAL, metrics=metrics
         )
@@ -77,7 +87,7 @@ def run_bench():
     logger.info("extractors setup completed successfully")
 
     for csv_file in os.listdir(csv_dir):
-        if "netbeans" not in csv_file:
+        if "calcite" not in csv_file:
             continue
 
         if csv_file.endswith(".csv"):
@@ -110,6 +120,14 @@ def run_bench():
                     )
                     metrics.reset()
                     data.at[index, "ancestral_distance"] = distance
+                    issue_key = ga.extractor.issue_key()
+                    data.at[index, "issue_key_present"] = (
+                        issue_key in ga.extractor.commit_metadata(commit_hash).message
+                        and issue_key
+                        in ga.extractor.commit_metadata(expected_commit).message
+                    )
+                    data.at[index,"old"] = (calculage_issue_age(ga.extractor).days>365)
+
                 except Exception as e:
                     metrics.reset()
                     logger.error(f"Error processing {issue_url}: {e}")
