@@ -11,7 +11,7 @@ from src import prompt
 from src.anchor.extractor import Extractor
 from src.term import Color
 from src import term
-from src.schema.control import Control, Finish, Next
+from src.schema.control import Control, Finish, Next,GiveUp
 
 # Configure logger for this module
 logger = logging.getLogger(__name__)
@@ -112,16 +112,23 @@ class Agent:
                 logger.info(f"LLM calling: {function.__repr__()}")
                 term.log(Color.GREEN, f"LLM calling: {function.__repr__()}")
 
+                result=""
                 if isinstance(function, Control):
-                    if isinstance(function, Finish):
+                    if isinstance(function, Finish) or isinstance(function, GiveUp):
                         commit_hash = function(extractor)
                         return (commit_hash, total_tokens)
                     elif isinstance(function, Next):
-                        current_commits = next(commits_iterator)
-                try:
-                    result = function(extractor)
-                except Exception as e:
-                    result = f"encountered the following error: {e}"
+                        try:
+                            current_commits = next(commits_iterator)
+                            result = function(extractor)
+                        except StopIteration:
+                            term.log(Color.YELLOW, "No more commits to show")
+                            result = "iterator exhausted"
+                else:
+                    try:
+                        result = function(extractor)
+                    except Exception as e:
+                        result = f"encountered the following error: {e}"
                 logger.debug(f"Call result: {result.__repr__()}")
                 term.log(Color.BLUE, "Call result:")
                 term.log(Color.BLUE, result)
