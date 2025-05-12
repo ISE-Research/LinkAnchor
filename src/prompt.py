@@ -107,6 +107,10 @@ Rules you SHOULD follow:
 
 6. sometimes the description in issue title is not enough, make sure to incorporate the issue description and comments in your reasoning. You can use the `IssueDescription` and `IssueComments` function to get the description and comments of the issue.
 
+7. When calling the `CommitsOnFile` function, if the result was empty, you can call the `ListFiles` function to ensure that you passed the correct file name.
+
+Note: 
+If you are unable to find the commit hash, and you are sure that no more attempts will yield results, you can call the `GiveUp` function.
 """
 # 3. Sometimes the difference between `IssueCreationTimestamp` and `IssueClosedTimestamp` is very large (more than a year). In these cases Issue was probably resolved close to the `IssueCreationTimestamp` but it was marked as closed years later. In these cases, First call `commits_between` with smallests pagination possible just to get the total number of commits in the time period, then, using pagination, start iterating over commits from the `IssueCreationTimestamp` end of the range.
 # For example, lets say after calling:

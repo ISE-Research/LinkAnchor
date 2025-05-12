@@ -21,6 +21,13 @@ class Finish(BaseModel, Control):
         return self.commit_hash
 
 
+class GiveUp(BaseModel, Control):
+    """Finishes the process by returning None"""
+
+    def __call__(self, _: Extractor) -> str:
+        return "LLM gave up, no commit hash found"
+
+
 class Next(BaseModel, Control):
     """Returns the next batch of commits to be analyzed"""
 
@@ -28,4 +35,4 @@ class Next(BaseModel, Control):
         return "next system message would contain the next batch of commits"
 
 
-TOOLS = [Finish, Next]
+TOOLS = [Finish, Next, GiveUp]
