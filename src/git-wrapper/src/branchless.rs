@@ -5,6 +5,7 @@ use std::process::Command;
 
 use crate::wrapper::{PaginationExt, TimePeriodExt};
 use crate::wrapper::{Author, AuthorQuery, CommitMeta, Pagination, Wrapper};
+use crate::GitError;
 use crate::Result;
 use pyo3::{pyclass, pymethods};
 
@@ -35,6 +36,36 @@ impl Branchless {
                     .collect())
             })
             .map(|commits| commits.into_iter().rev().collect())
+    }
+
+    pub fn dir(&self) -> &Path {
+        self.wrapper.dir()
+    }
+
+    pub fn list_files_on_commit(&self, commit: &str, pattern: &str) -> Result<Vec<String>> {
+        let output = Command::new("git")
+            .arg("ls-tree")
+            .arg("-r")
+            .arg("--name-only")
+            .arg(commit)
+            .current_dir(self.dir())
+            .output()?;
+
+        match output.status.success() {
+            false => {
+                let error_message = String::from_utf8_lossy(&output.stderr).to_string();
+                Err(GitError::GitCommandErr(error_message))
+            }
+            true => {
+                let files = String::from_utf8_lossy(&output.stdout)
+                    .lines()
+                    .filter(|s| s.contains(pattern))
+                    .map(|s| s.trim().to_string())
+                    .sorted()
+                    .collect();
+                Ok(files)
+            }
+        }
     }
 }
 
@@ -166,5 +197,19 @@ impl Branchless {
             .within_period(from, to)
             .with_pagination(pagination)
             .collect())
+    }
+
+    pub fn list_files(&self, pattern: &str, interval: (String, String)) -> Result<Vec<String>> {
+        let (from, to) = interval;
+        self.commits_between(&from, &to, Pagination::all())?
+            .iter()
+            .map(|c| self.list_files_on_commit(&c.hash, pattern))
+            .try_fold(Vec::new(), |acc, paths| {
+                Ok(acc
+                    .into_iter()
+                    .merge(paths?.into_iter().rev())
+                    .dedup()
+                    .collect())
+            })
     }
 }
