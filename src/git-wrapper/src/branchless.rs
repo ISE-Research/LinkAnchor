@@ -1,13 +1,14 @@
 use itertools::Itertools;
+use pyo3::{pyclass, pymethods};
+use rayon::prelude::*;
 use std::fmt::Display;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
-use crate::wrapper::{PaginationExt, TimePeriodExt};
 use crate::wrapper::{Author, AuthorQuery, CommitMeta, Pagination, Wrapper};
+use crate::wrapper::{PaginationExt, TimePeriodExt};
 use crate::GitError;
 use crate::Result;
-use pyo3::{pyclass, pymethods};
 
 const DATETIME_FORMAT: &str = "%Y-%m-%d %H:%M:%S %z";
 
@@ -202,12 +203,12 @@ impl Branchless {
     pub fn list_files(&self, pattern: &str, interval: (String, String)) -> Result<Vec<String>> {
         let (from, to) = interval;
         self.commits_between(&from, &to, Pagination::all())?
-            .iter()
+            .par_iter()
             .map(|c| self.list_files_on_commit(&c.hash, pattern))
-            .try_fold(Vec::new(), |acc, paths| {
+            .try_reduce(Vec::new, |acc, paths| {
                 Ok(acc
                     .into_iter()
-                    .merge(paths?.into_iter().rev())
+                    .merge(paths.into_iter().rev())
                     .dedup()
                     .collect())
             })
