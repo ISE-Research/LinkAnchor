@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-use pyo3::{PyErr, exceptions::PyValueError};
+use pyo3::{exceptions::PyValueError, PyErr};
 use thiserror::Error;
 
 #[derive(Error, Debug)]
@@ -27,4 +27,3 @@ impl From<CodeError> for PyErr {
         PyValueError::new_err(value.to_string())
     }
 }
-

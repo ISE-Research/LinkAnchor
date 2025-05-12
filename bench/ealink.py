@@ -12,6 +12,7 @@ from src.anchor.metrics import Metrics
 from src.schema.code import TOOLS as CODE_TOOLS
 from src.schema.git import TOOLS as GIT_TOOLS
 from src.schema.issue import TOOLS as ISSUE_TOOLS
+from src.schema.control import TOOLS as CONTROL_TOOLS
 
 # Configure logging
 logging.basicConfig(
@@ -109,6 +110,7 @@ def run_bench():
                 ga.register_tools(GIT_TOOLS)
                 ga.register_tools(CODE_TOOLS)
                 ga.register_tools(ISSUE_TOOLS)
+                ga.register_tools(CONTROL_TOOLS)
 
                 logger.info(f"Processing {index}'th row...")
                 try:
