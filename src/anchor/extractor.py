@@ -1,7 +1,8 @@
-from typing import Any
+from typing import Any, List, Iterator
 from enum import Enum
+from dateutil.parser import parse as date_parse
 
-from git_wrapper import Branchless as GitWrapper
+from git_wrapper import Branchless as GitWrapper, CommitMeta, Pagination
 from code_wrapper import Wrapper as CodeWrapper
 
 from src import issue_wrapper
@@ -96,3 +97,18 @@ class Extractor:
                 if self.metrics:
                     self.metrics.call(name)
                 return getattr(wrapper, name)
+
+    def commit_iterator(self) -> Iterator[List[CommitMeta]]:
+        start_date = self.issue_wrapper.issue_created_at()
+        end_date = self.issue_wrapper.issue_closed_at()
+        start_date = date_parse(start_date)
+        start_str = start_date.strftime("%Y-%m-%d %H:%M:%S %z")
+        end_date = date_parse(end_date)
+        end_str = end_date.strftime("%Y-%m-%d %H:%M:%S %z")
+        commits: List[CommitMeta] = self.git_wrapper.commits_between(
+            start_str, end_str, Pagination.all()
+        )
+        if (end_date - start_date).days > 365:
+            commits.reverse()
+        for i in range(0, len(commits), 100):
+            yield commits[i : i + 100]

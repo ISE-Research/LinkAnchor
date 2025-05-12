@@ -67,7 +67,16 @@ class CommitsOfAuthor(BaseModel):
             query = AuthorQuery.Name(self.query)
         else:
             query = AuthorQuery.Email(self.query)
-        return extractor.commits_of(query, self.pagination.to_wrapper_pagination())
+
+        start_date = extractor.issue_created_at()
+        end_date = extractor.issue_closed_at()
+        start_date = date_parse(start_date)
+        start_str = start_date.strftime("%Y-%m-%d %H:%M:%S %z")
+        end_date = date_parse(end_date)
+        end_str = end_date.strftime("%Y-%m-%d %H:%M:%S %z")
+        return extractor.commits_of(
+            query, (start_str, end_str), self.pagination.to_wrapper_pagination()
+        )
 
 
 class CommitsOnFile(BaseModel):
@@ -81,8 +90,17 @@ class CommitsOnFile(BaseModel):
     )
 
     def __call__(self, extractor: Extractor) -> Tuple[int, List[CommitMeta]]:
+        start_date = extractor.issue_created_at()
+        end_date = extractor.issue_closed_at()
+        start_date = date_parse(start_date)
+        start_str = start_date.strftime("%Y-%m-%d %H:%M:%S %z")
+        end_date = date_parse(end_date)
+        end_str = end_date.strftime("%Y-%m-%d %H:%M:%S %z")
+
         return extractor.commits_on_file(
-            self.file_path, self.pagination.to_wrapper_pagination()
+            self.file_path,
+            (start_str, end_str),
+            self.pagination.to_wrapper_pagination(),
         )
 
 
@@ -118,7 +136,7 @@ TOOLS = [
     ListAuthors,
     CommitsOfAuthor,
     # ListCommits,
-    CommitsBetween,
+    # CommitsBetween,
     CommitsOnFile,
     CommitDiff,
 ]

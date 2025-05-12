@@ -3,6 +3,7 @@ from src.anchor.extractor import GitSourceType
 from src.schema.git import TOOLS as GIT_TOOLS
 from src.schema.code import TOOLS as CODE_TOOLS
 from src.schema.issue import TOOLS as ISSUE_TOOLS
+from src.schema.control import TOOLS as CONTROL_TOOLS
 from src.term import Color
 from src import term
 
@@ -63,6 +64,7 @@ def main():
     ga.register_tools(GIT_TOOLS)
     ga.register_tools(CODE_TOOLS)
     ga.register_tools(ISSUE_TOOLS)
+    ga.register_tools(CONTROL_TOOLS)
 
     logger.info("Finding link between issue and code...")
     (result, token_used) = ga.find_link()
