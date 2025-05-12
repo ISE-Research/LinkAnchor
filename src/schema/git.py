@@ -68,14 +68,10 @@ class CommitsOfAuthor(BaseModel):
         else:
             query = AuthorQuery.Email(self.query)
 
-        start_date = extractor.issue_created_at()
-        end_date = extractor.issue_closed_at()
-        start_date = date_parse(start_date)
-        start_str = start_date.strftime("%Y-%m-%d %H:%M:%S %z")
-        end_date = date_parse(end_date)
-        end_str = end_date.strftime("%Y-%m-%d %H:%M:%S %z")
         return extractor.commits_of(
-            query, (start_str, end_str), self.pagination.to_wrapper_pagination()
+            query,
+            extractor.issue_lifespan_safe(),
+            self.pagination.to_wrapper_pagination(),
         )
 
 
@@ -90,16 +86,9 @@ class CommitsOnFile(BaseModel):
     )
 
     def __call__(self, extractor: Extractor) -> Tuple[int, List[CommitMeta]]:
-        start_date = extractor.issue_created_at()
-        end_date = extractor.issue_closed_at()
-        start_date = date_parse(start_date)
-        start_str = start_date.strftime("%Y-%m-%d %H:%M:%S %z")
-        end_date = date_parse(end_date)
-        end_str = end_date.strftime("%Y-%m-%d %H:%M:%S %z")
-
         return extractor.commits_on_file(
             self.file_path,
-            (start_str, end_str),
+            extractor.issue_lifespan_safe(),
             self.pagination.to_wrapper_pagination(),
         )
 
@@ -132,11 +121,24 @@ class CommitDiff(BaseModel):
         return extractor.commit_diff(self.commit_hash)
 
 
+class ListFiles(BaseModel):
+    """List all files in the codebase with their paths.
+    Use this when you are not sure about the file path of the file you want to fetch.
+    """
+
+    pattern: str = Field(
+        ...,
+        description="pattern to match the file names. Use '' (empty string) to match all files. Try using the file name without the extension. For example, if you want to match all files with the name 'SomeClass.java', use 'SomeClass' as the pattern.",
+    )
+
+    def __call__(self, extractor: Extractor) -> List[str]:
+        return extractor.list_files(self.pattern, extractor.issue_lifespan_safe())
+
+
 TOOLS = [
     ListAuthors,
     CommitsOfAuthor,
-    # ListCommits,
-    # CommitsBetween,
     CommitsOnFile,
     CommitDiff,
+    ListFiles,
 ]

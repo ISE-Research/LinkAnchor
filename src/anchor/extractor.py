@@ -1,6 +1,7 @@
-from typing import Any, List, Iterator
+from typing import Any, List, Iterator, Tuple
 from enum import Enum
 from dateutil.parser import parse as date_parse
+from datetime import timedelta
 
 from git_wrapper import Branchless as GitWrapper, CommitMeta, Pagination
 from code_wrapper import Wrapper as CodeWrapper
@@ -99,16 +100,22 @@ class Extractor:
                 return getattr(wrapper, name)
 
     def commit_iterator(self) -> Iterator[List[CommitMeta]]:
-        start_date = self.issue_wrapper.issue_created_at()
-        end_date = self.issue_wrapper.issue_closed_at()
-        start_date = date_parse(start_date)
-        start_str = start_date.strftime("%Y-%m-%d %H:%M:%S %z")
-        end_date = date_parse(end_date)
-        end_str = end_date.strftime("%Y-%m-%d %H:%M:%S %z")
+        (start, end) = self.issue_lifespan_safe()
         commits: List[CommitMeta] = self.git_wrapper.commits_between(
-            start_str, end_str, Pagination.all()
+            start, end, Pagination.all()
         )
-        if (end_date - start_date).days > 365:
+        if (date_parse(end) - date_parse(start)).days > 365:
             commits.reverse()
         for i in range(0, len(commits), 100):
             yield commits[i : i + 100]
+
+    def issue_lifespan_safe(self) -> Tuple[str, str]:
+        start_date = self.issue_wrapper.issue_created_at()
+        end_date = self.issue_wrapper.issue_closed_at()
+        start_date = date_parse(start_date)
+        end_date = date_parse(end_date)
+        start_date += timedelta(days=-7)
+        end_date += timedelta(days=7)
+        start_str = start_date.strftime("%Y-%m-%d %H:%M:%S %z")
+        end_str = end_date.strftime("%Y-%m-%d %H:%M:%S %z")
+        return (start_str, end_str)
