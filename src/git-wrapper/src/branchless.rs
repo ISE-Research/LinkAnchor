@@ -174,15 +174,15 @@ impl Branchless {
         let commits: Vec<CommitMeta> = self
             .wrapper
             .list_branches()
-            .iter()
+            .par_iter()
             .map(|branch| {
                 self.wrapper
                     .commits_on_file(file_path, branch, Pagination::all())
             })
-            .try_fold(Vec::new(), |acc, commits| {
+            .try_reduce(Vec::new, |acc, commits| {
                 Result::<Vec<CommitMeta>>::Ok(
                     acc.into_iter()
-                        .merge(commits?.into_iter().rev())
+                        .merge(commits.into_iter().rev())
                         .dedup()
                         .collect(),
                 )
