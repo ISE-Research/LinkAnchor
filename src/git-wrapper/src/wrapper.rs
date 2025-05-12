@@ -616,6 +616,47 @@ where
     }
 }
 
+pub trait Time {
+    fn as_date_time(&self) -> &DateTime<FixedOffset>;
+}
+impl Time for CommitMeta {
+    fn as_date_time(&self) -> &DateTime<FixedOffset> {
+        &self.date
+    }
+}
+
+impl Time for &CommitMeta {
+    fn as_date_time(&self) -> &DateTime<FixedOffset> {
+        &self.date
+    }
+}
+
+pub trait TimePeriodExt: Iterator {
+    fn within_period(
+        self,
+        from: DateTime<FixedOffset>,
+        to: DateTime<FixedOffset>,
+    ) -> std::iter::Filter<Self, impl FnMut(&<Self as Iterator>::Item) -> bool>
+    where
+        Self: Sized;
+}
+impl<I> TimePeriodExt for I
+where
+    I: Iterator,
+    <I as Iterator>::Item: Time,
+{
+    fn within_period(
+        self,
+        from: DateTime<FixedOffset>,
+        to: DateTime<FixedOffset>,
+    ) -> std::iter::Filter<Self, impl FnMut(&I::Item) -> bool> {
+        self.filter(move |item| {
+            let dt = item.as_date_time();
+            dt >= &from && dt <= &to
+        })
+    }
+}
+
 #[cfg(test)]
 mod test {
     use std::process::Command;

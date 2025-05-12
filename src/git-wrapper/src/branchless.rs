@@ -3,6 +3,7 @@ use std::fmt::Display;
 use std::path::PathBuf;
 
 use crate::wrapper::PaginationExt;
+use crate::wrapper::TimePeriodExt;
 use crate::wrapper::{Author, AuthorQuery, CommitMeta, Pagination, Wrapper};
 use crate::Result;
 use pyo3::{pyclass, pymethods};
@@ -72,15 +73,12 @@ impl Branchless {
             })
     }
 
-    pub fn list_commits(&self, pagination: Pagination) -> (usize, Vec<CommitMeta>) {
-        (
-            self.commits.len(),
-            self.commits
-                .iter()
-                .with_pagination(pagination)
-                .cloned()
-                .collect(),
-        )
+    pub fn list_commits(&self, pagination: Pagination) -> Vec<CommitMeta> {
+        self.commits
+            .iter()
+            .with_pagination(pagination)
+            .cloned()
+            .collect()
     }
 
     pub fn commit_diff(&self, commit_hash: String) -> Result<String> {
@@ -94,13 +92,21 @@ impl Branchless {
     pub fn commits_of(
         &self,
         author_query: AuthorQuery,
+        interval: (String, String),
         pagination: Pagination,
-    ) -> (usize, Vec<CommitMeta>) {
-        let iter = self.commits.iter().filter(|c| author_query.matches(c));
-        (
-            iter.clone().count(),
-            iter.with_pagination(pagination).cloned().collect(),
-        )
+    ) -> Result<Vec<CommitMeta>> {
+        let (from, to) = interval;
+        let from = chrono::DateTime::parse_from_str(&from, DATETIME_FORMAT)?;
+        let to = chrono::DateTime::parse_from_str(&to, DATETIME_FORMAT)?;
+
+        Ok(self
+            .commits
+            .iter()
+            .within_period(from, to)
+            .filter(|c| author_query.matches(c))
+            .with_pagination(pagination)
+            .cloned()
+            .collect())
     }
 
     pub fn commits_between(
@@ -108,17 +114,16 @@ impl Branchless {
         from: &str,
         to: &str,
         pagination: Pagination,
-    ) -> Result<(usize, Vec<CommitMeta>)> {
+    ) -> Result<Vec<CommitMeta>> {
         let from = chrono::DateTime::parse_from_str(from, DATETIME_FORMAT)?;
         let to = chrono::DateTime::parse_from_str(to, DATETIME_FORMAT)?;
-        let iter = self
+        Ok(self
             .commits
             .iter()
-            .filter(|c| c.date >= from && c.date <= to);
-        Ok((
-            iter.clone().count(),
-            iter.with_pagination(pagination).cloned().collect(),
-        ))
+            .within_period(from, to)
+            .with_pagination(pagination)
+            .cloned()
+            .collect())
     }
 
     pub fn ancestral_distance(&self, from_commit: &str, to_commit: &str) -> Result<usize> {
@@ -132,8 +137,9 @@ impl Branchless {
     pub fn commits_on_file(
         &self,
         file_path: &str,
+        interval: (String, String),
         pagination: Pagination,
-    ) -> Result<(usize, Vec<CommitMeta>)> {
+    ) -> Result<Vec<CommitMeta>> {
         let commits: Vec<CommitMeta> = self
             .wrapper
             .list_branches()
@@ -151,13 +157,15 @@ impl Branchless {
                 )
             })?;
 
-        Ok((
-            commits.len(),
-            commits
-                .into_iter()
-                .rev()
-                .with_pagination(pagination)
-                .collect(),
-        ))
+        let (from, to) = interval;
+        let from = chrono::DateTime::parse_from_str(&from, DATETIME_FORMAT)?;
+        let to = chrono::DateTime::parse_from_str(&to, DATETIME_FORMAT)?;
+
+        Ok(commits
+            .into_iter()
+            .rev()
+            .within_period(from, to)
+            .with_pagination(pagination)
+            .collect())
     }
 }
