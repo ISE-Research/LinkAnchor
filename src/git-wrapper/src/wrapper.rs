@@ -1,7 +1,14 @@
 use super::{GitError, Result};
 use chrono::{DateTime, FixedOffset};
 use pyo3::{pyclass, pymethods};
-use std::{collections::HashSet, ffi::OsStr, fmt::Display, path::PathBuf, process::Command};
+use std::{
+    collections::HashSet,
+    ffi::OsStr,
+    fmt::Display,
+    path::{Path, PathBuf},
+    process::Command,
+};
+use itertools::Itertools;
 use temp_dir::TempDir;
 
 const COMMIT_SEPARATOR_GIT: &str = "%x1e";
@@ -109,6 +116,10 @@ impl Wrapper {
         }) || self.default_branch == branch
             || self.default_branch == format!("origin/{}", branch)
     }
+
+    pub fn dir(&self) -> &Path {
+        self.dir.path()
+    }
 }
 
 #[pymethods]
@@ -169,7 +180,7 @@ impl Wrapper {
             .into_iter()
             .map(|commit| commit.author)
             .collect();
-        Ok(authors.into_iter().collect())
+        Ok(authors.into_iter().sorted().collect())
     }
 
     pub fn commits_of_branch(
@@ -415,7 +426,7 @@ impl Display for Wrapper {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Ord, PartialOrd)]
 #[pyclass(str, eq)]
 pub struct Author {
     pub name: String,

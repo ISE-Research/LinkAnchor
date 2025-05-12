@@ -1,9 +1,9 @@
 use itertools::Itertools;
 use std::fmt::Display;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
+use std::process::Command;
 
-use crate::wrapper::PaginationExt;
-use crate::wrapper::TimePeriodExt;
+use crate::wrapper::{PaginationExt, TimePeriodExt};
 use crate::wrapper::{Author, AuthorQuery, CommitMeta, Pagination, Wrapper};
 use crate::Result;
 use pyo3::{pyclass, pymethods};
@@ -67,9 +67,8 @@ impl Branchless {
         self.list_branches()
             .iter()
             .map(|branch| self.wrapper.authors_of_branch(branch))
-            .try_fold(Vec::new(), |mut acc, authors| {
-                acc.extend(authors?);
-                Ok(acc)
+            .try_fold(Vec::new(), |acc, authors| {
+                Result::<Vec<Author>>::Ok(acc.into_iter().merge(authors?).dedup().collect())
             })
     }
 
