@@ -98,6 +98,12 @@ def run_bench():
             # Persist data every 10 rows
             batch_size = 10
             for i, (index, row) in enumerate(data.iterrows()):
+                if i % batch_size == 0:
+                    data.to_csv(os.path.join(results_dir, csv_file), index=True)
+                    logger.info(f"results saved up to {index} rows")
+                    metrics.dump(os.path.join(results_dir, "metrics.json"))
+                    logger.info(f"metrics saved up to {index} rows")
+
                 issue_url: str = row["issue_url"]  # type: ignore
                 repo_url: str = row["repo_url"]  # type: ignore
                 expected_commit: str = row["commit_hash"]  # type: ignore
@@ -122,9 +128,9 @@ def run_bench():
                     data.at[index, "result"] = commit_hash
                     data.at[index, "old"] = calculage_issue_age(ga.extractor).days > 365
                     if not ga.extractor.has_commit(commit_hash):
-                        data.at[index, "error"] = "Commit not found"
+                        data.at[index, "error"] = f"Commit not found {commit_hash}"
                         metrics.reset()
-                        break
+                        continue
                     issue_key = ga.extractor.issue_key()
                     data.at[index, "issue_key_present"] = (
                         issue_key in ga.extractor.commit_metadata(commit_hash).message
@@ -148,12 +154,10 @@ def run_bench():
                     time.sleep(30)
                     all_token_used = 0
 
-                if i % batch_size == 0:
-                    data.to_csv(os.path.join(results_dir, csv_file), index=True)
-                    logger.info(f"results saved up to {index} rows")
-                    metrics.dump(os.path.join(results_dir, "metrics.json"))
-                    logger.info(f"metrics saved up to {index} rows")
+            data.to_csv(os.path.join(results_dir, csv_file), index=True)
+            metrics.dump(os.path.join(results_dir, "metrics.json"))
             logger.info(f"results saved to {os.path.join(results_dir, csv_file)}")
+
 
 
 ensure_dataset_available()
