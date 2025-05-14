@@ -9,6 +9,9 @@ from src.anchor.metrics import Metrics
 from src.term import Color
 from src import term
 
+
+MAX_TRIES = 3
+
 # Configure logger for this module
 logger = logging.getLogger(__name__)
 
@@ -45,8 +48,7 @@ class GitAnchor:
         git_repo_source: str,
         source_type: GitSourceType = GitSourceType.REMOTE,
         api_key: str = "",
-        metrics: Metrics|None=None,
-
+        metrics: Metrics | None = None,
     ):
         """Initialize the GitAnchor instance.
         Args:
@@ -79,4 +81,13 @@ class GitAnchor:
     def find_link(self) -> Tuple[str, int]:
         """Find the commit(s) that resolve(s) the issue."""
         issue_title = self.extractor.issue_wrapper.issue_title()
-        return self.agent.find_link(issue_title, self.tools, self.extractor)
+        for _ in range(0, MAX_TRIES - 1):
+            try:
+                result, tokens = self.agent.find_link(
+                    issue_title, self.tools, self.extractor
+                )
+                return result, tokens
+            except Exception as e:
+                logger.error(f"Error finding link: {e}")
+        else: # Finaly found a way to use for-else!
+            return self.agent.find_link(issue_title, self.tools, self.extractor)

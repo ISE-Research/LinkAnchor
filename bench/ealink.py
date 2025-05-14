@@ -1,6 +1,8 @@
 import logging
 import os
+import sys
 import time
+
 import pandas as pd
 from dateutil.parser import parse
 
@@ -10,9 +12,9 @@ from src.anchor.anchor import GitAnchor
 from src.anchor.extractor import Extractor, GitSourceType
 from src.anchor.metrics import Metrics
 from src.schema.code import TOOLS as CODE_TOOLS
+from src.schema.control import TOOLS as CONTROL_TOOLS
 from src.schema.git import TOOLS as GIT_TOOLS
 from src.schema.issue import TOOLS as ISSUE_TOOLS
-from src.schema.control import TOOLS as CONTROL_TOOLS
 
 # Configure logging
 logging.basicConfig(
@@ -80,7 +82,7 @@ def extractor_for_repo(repo_url: str, metrics: Metrics) -> Extractor:
     return e
 
 
-def run_bench():
+def run_bench(bench_name: str = ""):
     os.makedirs(results_dir, exist_ok=True)
     all_token_used = 0
 
@@ -88,66 +90,23 @@ def run_bench():
     extractors: dict[str, Extractor] = {}
 
     for csv_file in os.listdir(csv_dir):
-        if "groovy" not in csv_file:
+        metrics.drop()
+        if bench_name not in csv_file:
             continue
 
         if csv_file.endswith(".csv"):
             logger.info(f"Running benchmark for {csv_file}")
             data = pd.read_csv(os.path.join(csv_dir, csv_file))
-            # iterate over all rows in the dataframe
-            # Persist data every 10 rows
             batch_size = 10
             for i, (index, row) in enumerate(data.iterrows()):
                 if i % batch_size == 0:
                     data.to_csv(os.path.join(results_dir, csv_file), index=True)
                     logger.info(f"results saved up to {index} rows")
-                    metrics.dump(os.path.join(results_dir, "metrics.json"))
+                    metrics.dump(os.path.join(results_dir, f"metrics-{csv_file}.json"))
                     logger.info(f"metrics saved up to {index} rows")
 
-                issue_url: str = row["issue_url"]  # type: ignore
-                repo_url: str = row["repo_url"]  # type: ignore
-                expected_commit: str = row["commit_hash"]  # type: ignore
-                if repo_url not in extractors:
-                    extractors[repo_url] = extractor_for_repo(repo_url, metrics)
-
-                extractor: Extractor = extractors.get(repo_url)  # type: ignore
-                extractor.issue_wrapper = issue_wrapper.wrapper_for(issue_url)
-                ga = GitAnchor(extractor)
-                ga.register_tools(GIT_TOOLS)
-                ga.register_tools(CODE_TOOLS)
-                ga.register_tools(ISSUE_TOOLS)
-                ga.register_tools(CONTROL_TOOLS)
-
-                logger.info(f"Processing {index}'th row...")
-                try:
-                    ga.extractor.issue_wrapper = issue_wrapper.wrapper_for(issue_url)
-                    commit_hash, tokens = ga.find_link()
-                    all_token_used += tokens
-                    metrics.flush()
-
-                    data.at[index, "result"] = commit_hash
-                    data.at[index, "old"] = calculage_issue_age(ga.extractor).days > 365
-                    if not ga.extractor.has_commit(commit_hash):
-                        data.at[index, "error"] = f"Commit not found {commit_hash}"
-                        metrics.reset()
-                        continue
-                    issue_key = ga.extractor.issue_key()
-                    data.at[index, "issue_key_present"] = (
-                        issue_key in ga.extractor.commit_metadata(commit_hash).message
-                    )
-                    # when the expected commit in dataset is not present in the repo
-                    if not ga.extractor.has_commit(expected_commit):
-                        expected_commit = commit_hash
-
-                    distance = ga.extractor.ancestral_distance(
-                        commit_hash, expected_commit
-                    )
-                    data.at[index, "ancestral_distance"] = distance
-                except Exception as e:
-                    logger.error(f"Error processing {issue_url}: {e}")
-                    data.at[index, "error"] = str(e)
-                finally:
-                    metrics.reset()
+                tokens = bench_single_row(row, index, data, extractors, metrics)
+                all_token_used += tokens
 
                 if all_token_used > 2000 * 1000:
                     logger.info("Token limit reached, cooling down for 30 seconds.")
@@ -155,11 +114,96 @@ def run_bench():
                     all_token_used = 0
 
             data.to_csv(os.path.join(results_dir, csv_file), index=True)
-            metrics.dump(os.path.join(results_dir, "metrics.json"))
+            metrics.dump(os.path.join(results_dir, f"metrics-{csv_file}.json"))
             logger.info(f"results saved to {os.path.join(results_dir, csv_file)}")
 
+
+def repair(bench_name):
+    all_token_used = 0
+    metrics = Metrics()
+    extractors: dict[str, Extractor] = {}
+
+    for csv_file in os.listdir(results_dir):
+        metrics.drop()
+        if bench_name not in csv_file:
+            continue
+
+        if csv_file.endswith(".csv"):
+            logger.info(f"Running benchmark for {csv_file}")
+            data = pd.read_csv(os.path.join(results_dir, csv_file))
+            for index, row in data.iterrows():
+                if pd.isna(data.loc[index, "error"]):
+                    continue
+
+                logger.info(f"Repairing {index}'th row...")
+
+                tokens = bench_single_row(row, index, data, extractors, metrics)
+                all_token_used += tokens
+                if all_token_used > 2000 * 1000:
+                    logger.info("Token limit reached, cooling down for 30 seconds.")
+                    time.sleep(30)
+                    all_token_used = 0
+
+            data.to_csv(os.path.join(results_dir, csv_file))
+            logger.info(f"results saved to {os.path.join(results_dir, csv_file)}")
+
+
+def bench_single_row(row, index, data, extractors, metrics) -> int:
+    tokens = 0
+    issue_url: str = row["issue_url"]  # type: ignore
+    repo_url: str = row["repo_url"]  # type: ignore
+    expected_commit: str = row["commit_hash"]  # type: ignore
+    if repo_url not in extractors:
+        extractors[repo_url] = extractor_for_repo(repo_url, metrics)
+
+    extractor: Extractor = extractors.get(repo_url)  # type: ignore
+    extractor.issue_wrapper = issue_wrapper.wrapper_for(issue_url)
+    ga = GitAnchor(extractor)
+    ga.register_tools(GIT_TOOLS)
+    ga.register_tools(CODE_TOOLS)
+    ga.register_tools(ISSUE_TOOLS)
+    ga.register_tools(CONTROL_TOOLS)
+
+    logger.info(f"Processing {index}'th row...")
+    try:
+        ga.extractor.issue_wrapper = issue_wrapper.wrapper_for(issue_url)
+        commit_hash, tokens = ga.find_link()
+        metrics.flush()
+
+        data.at[index, "result"] = commit_hash
+        data.at[index, "error"] = ""
+        data.at[index, "old"] = calculage_issue_age(ga.extractor).days > 365
+        if not ga.extractor.has_commit(commit_hash):
+            data.at[index, "error"] = f"Commit not found {commit_hash}"
+            metrics.reset()
+            return tokens
+        issue_key = ga.extractor.issue_key()
+        data.at[index, "issue_key_present"] = (
+            issue_key in ga.extractor.commit_metadata(commit_hash).message
+        )
+        # when the expected commit in dataset is not present in the repo
+        if not ga.extractor.has_commit(expected_commit):
+            expected_commit = commit_hash
+
+        distance = ga.extractor.ancestral_distance(commit_hash, expected_commit)
+        data.at[index, "ancestral_distance"] = distance
+    except Exception as e:
+        logger.error(f"Error processing {issue_url}: {e}")
+        data.at[index, "error"] = str(e)
+    finally:
+        metrics.reset()
+    return tokens
 
 
 ensure_dataset_available()
 ensure_repositories_cloned()
-run_bench()
+
+# get first arg from command lin
+bench_name = ""
+if len(sys.argv) > 1:
+    bench_name = sys.argv[1]
+
+run_bench(bench_name)
+# run repair twice to account for any rate limit issues posed by OpenAI API
+repair(bench_name)
+repair(bench_name)
