@@ -112,8 +112,6 @@ class Extractor:
     def issue_lifespan_safe(self) -> Tuple[str, str]:
         start_date = self.issue_wrapper.issue_created_at()
         end_date = self.issue_wrapper.issue_closed_at()
-        start_date = date_parse(start_date)
-        end_date = date_parse(end_date)
         if end_date - start_date > timedelta(days=365):
             end_date = start_date + timedelta(days=365)
         start_date += timedelta(days=-7)
