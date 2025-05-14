@@ -105,7 +105,9 @@ def run_bench(bench_name: str = ""):
                     metrics.dump(os.path.join(results_dir, f"metrics-{csv_file}.json"))
                     logger.info(f"metrics saved up to {index} rows")
 
-                tokens = bench_single_row(row, index, data, extractors, metrics)
+                tokens = bench_single_row(
+                    row, index, data, extractors, metrics, csv_file
+                )
                 all_token_used += tokens
 
                 if all_token_used > 2000 * 1000:
@@ -137,7 +139,9 @@ def repair(bench_name):
 
                 logger.info(f"Repairing {index}'th row...")
 
-                tokens = bench_single_row(row, index, data, extractors, metrics)
+                tokens = bench_single_row(
+                    row, index, data, extractors, metrics, csv_file
+                )
                 all_token_used += tokens
                 if all_token_used > 2000 * 1000:
                     logger.info("Token limit reached, cooling down for 30 seconds.")
@@ -148,7 +152,7 @@ def repair(bench_name):
             logger.info(f"results saved to {os.path.join(results_dir, csv_file)}")
 
 
-def bench_single_row(row, index, data, extractors, metrics) -> int:
+def bench_single_row(row, index, data, extractors, metrics, project_name) -> int:
     tokens = 0
     issue_url: str = row["issue_url"]  # type: ignore
     repo_url: str = row["repo_url"]  # type: ignore
@@ -178,6 +182,12 @@ def bench_single_row(row, index, data, extractors, metrics) -> int:
             metrics.reset()
             return tokens
         issue_key = ga.extractor.issue_key()
+        # ISIS issue keys have various formats, some of which being:
+        # 1. CAUSEWAY-<NUM>
+        # 2. ISIS-<NUM>
+        # But this format is not consistent with the commits as they mostly use the second format.
+        if "isis" in project_name:
+            issue_key = issue_key.split("-")[1]
         data.at[index, "issue_key_present"] = (
             issue_key in ga.extractor.commit_metadata(commit_hash).message
         )
@@ -203,7 +213,7 @@ bench_name = ""
 if len(sys.argv) > 1:
     bench_name = sys.argv[1]
 
-run_bench(bench_name)
+# run_bench(bench_name)
 # run repair twice to account for any rate limit issues posed by OpenAI API
 repair(bench_name)
 repair(bench_name)
