@@ -100,7 +100,7 @@ def run_bench(bench_name: str = ""):
             batch_size = 10
             for i, (index, row) in enumerate(data.iterrows()):
                 if i % batch_size == 0:
-                    data.to_csv(os.path.join(results_dir, csv_file), index=True)
+                    data.to_csv(os.path.join(results_dir, csv_file), index=False)
                     logger.info(f"results saved up to {index} rows")
                     metrics.dump(os.path.join(results_dir, f"metrics-{csv_file}.json"))
                     logger.info(f"metrics saved up to {index} rows")
@@ -115,7 +115,7 @@ def run_bench(bench_name: str = ""):
                     time.sleep(30)
                     all_token_used = 0
 
-            data.to_csv(os.path.join(results_dir, csv_file), index=True)
+            data.to_csv(os.path.join(results_dir, csv_file), index=False)
             metrics.dump(os.path.join(results_dir, f"metrics-{csv_file}.json"))
             logger.info(f"results saved to {os.path.join(results_dir, csv_file)}")
 

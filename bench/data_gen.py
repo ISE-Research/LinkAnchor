@@ -94,10 +94,12 @@ def download_and_extract_dataset():
     extract_path = extract_dataset(file_path)
     return extract_path
 
+
 def is_issue_old(row):
-    created_at = parse(row['create_date'])
-    closed_at = parse(row[ 'update_date'])
+    created_at = parse(row["create_date"])
+    closed_at = parse(row["update_date"])
     return (closed_at - created_at).days > 365
+
 
 def is_issue_new(row):
     return not is_issue_old(row)
@@ -110,7 +112,7 @@ def create_dataset(file_path):
     data = data[data["label"] == 1]
 
     # Drop unnecessary columns
-    data = data[["issue_id", "repo", "commitid", "label","create_date", "update_date" ]]
+    data = data[["issue_id", "repo", "commitid", "label", "create_date", "update_date"]]
 
     dataset = pd.DataFrame(
         {
@@ -126,7 +128,7 @@ def create_dataset(file_path):
         }
     )
     # return dataset
-    return dataset.loc[dataset.apply(is_issue_new,axis=1)]
+    return dataset.loc[dataset.apply(is_issue_new, axis=1)]
 
 
 def prepare_ealink_dataset():
@@ -156,7 +158,8 @@ def prepare_ealink_dataset():
 
             output_file = os.path.join(output_dir, file)
             # persist to csv with the headers
-            ds.to_csv(output_file, index=False, header=True)
+            ds.index.name = "index"
+            ds.to_csv(output_file, header=True)
             logger.info(f"Processed dataset saved to {output_file}")
 
     return output_dir
