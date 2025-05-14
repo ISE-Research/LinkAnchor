@@ -20,10 +20,17 @@ class Metrics:
         self.current_pattern: Pattern = Pattern(tools=[])
 
     def reset(self):
+        """ Reset the current pattern without flushing it for metric aggregation"""
         self.current_pattern = Pattern(tools=[])
 
+    def drop(self):
+        """ Drop all metrics"""
+        self.current_pattern = Pattern(tools=[])
+        self.patterns = {}
+        self.tools = {}
+
     def flush(self):
-        # increment tool call count
+        """ Flush the current pattern and aggregate metrics"""
         for tool in self.current_pattern.tools:
             if tool not in self.tools:
                 self.tools[tool] = 0

@@ -128,7 +128,7 @@ class ListFiles(BaseModel):
 
     pattern: str = Field(
         ...,
-        description="pattern to match the file names. Use '' (empty string) to match all files. Try using the file name without the extension. For example, if you want to match all files with the name 'SomeClass.java', use 'SomeClass' as the pattern.",
+        description="pattern to match the file names. Use '' (empty string) to match all files. Try using the file name WITHOUT the extension. For example, if you want to match all files with the name 'SomeClass.java', use 'SomeClass' as the pattern. Make sure that your pattern is not too generic so that you can minimize the result",
     )
 
     def __call__(self, extractor: Extractor) -> List[str]:

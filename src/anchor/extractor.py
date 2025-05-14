@@ -114,6 +114,8 @@ class Extractor:
         end_date = self.issue_wrapper.issue_closed_at()
         start_date = date_parse(start_date)
         end_date = date_parse(end_date)
+        if end_date - start_date > timedelta(days=365):
+            end_date = start_date + timedelta(days=365)
         start_date += timedelta(days=-7)
         end_date += timedelta(days=7)
         start_str = start_date.strftime("%Y-%m-%d %H:%M:%S %z")

@@ -1,6 +1,6 @@
 from typing import List
 import requests
-from datetime import datetime
+from datetime import datetime,timezone
 
 from src.issue_wrapper.wrapper import Wrapper, Pagination, CommentMeta
 
@@ -13,7 +13,7 @@ class JiraIssueWrapper(Wrapper):
 
     def issue_title(self) -> str:
         return self.issue_data["fields"]["summary"]
-    
+
     def issue_key(self) -> str:
         return self.issue_data["key"]
 
@@ -24,7 +24,9 @@ class JiraIssueWrapper(Wrapper):
         return self.issue_data["fields"]["created"]
 
     def issue_closed_at(self) -> datetime:
-        return self.issue_data["fields"].get("resolutiondate")
+        return self.issue_data["fields"].get(
+            "resolutiondate"
+        ) or datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S %Z")
 
     def issue_author(self) -> str:
         return self.issue_data["fields"]["creator"].get(
