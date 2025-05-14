@@ -120,6 +120,14 @@ class CommitDiff(BaseModel):
     def __call__(self, extractor: Extractor) -> str:
         return extractor.commit_diff(self.commit_hash)
 
+class CommitMetadata(BaseModel):
+    """retrieves the metadata of a commit given its hash"""
+
+    commit_hash: str = Field(..., description="commit hash. could be short or long")
+
+    def __call__(self, extractor: Extractor) -> str:
+        return extractor.commit_metadata(self.commit_hash)
+
 
 class ListFiles(BaseModel):
     """List all files in the codebase with their paths.
@@ -140,5 +148,6 @@ TOOLS = [
     CommitsOfAuthor,
     CommitsOnFile,
     CommitDiff,
+    CommitMetadata,
     ListFiles,
 ]

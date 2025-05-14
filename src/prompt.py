@@ -109,6 +109,9 @@ Rules you SHOULD follow:
 
 7. When calling the `CommitsOnFile` function, if the result was empty, you can call the `ListFiles` function to ensure that you passed the correct file name.
 
+8. Keep in mind that the issue tracker and the issue are used for several artifacts distributed across several repositories. So it might be the case that the issue requires fixes in more than one repository. So if you find a commit hash in the issue comments indecating that this commit fixes the issue, it might be from another repository and you need to continue your search until you find a commit hash from the repository we are working with. inorder to make sure the commit you found is present in the repository, you MUST CALL the `CommitMetadata` function on that and see wether it returns an error or an actual commit. 
+If you found out that the commit is from another repository, you can try to find a similar commit or a commit from the same author from the commit batch already provided to you or from the next batches
+
 Note: 
 If you are unable to find the commit hash, and you are sure that no more attempts will yield results, you can call the `GiveUp` function.
 """
