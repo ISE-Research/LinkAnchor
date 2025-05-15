@@ -1,6 +1,6 @@
 from typing import List
 import requests
-from datetime import datetime,timezone
+from datetime import datetime, timezone
 from dateutil.parser import parse as date_parse
 
 from src.issue_wrapper.wrapper import Wrapper, Pagination, CommentMeta
@@ -22,11 +22,11 @@ class JiraIssueWrapper(Wrapper):
         return self.issue_data["fields"]["description"]
 
     def issue_created_at(self) -> datetime:
-        return self.issue_data["fields"]["created"]
+        return date_parse(self.issue_data["fields"]["created"])
 
     def issue_closed_at(self) -> datetime:
-        date_str=self.issue_data["fields"].get( "resolutiondate") 
-        if date_str in None:
+        date_str = self.issue_data["fields"].get("resolutiondate")
+        if date_str is None:
             return datetime.now(timezone.utc)
         else:
             return date_parse(date_str)

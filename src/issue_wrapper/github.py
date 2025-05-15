@@ -23,6 +23,9 @@ class GitHubIssueWrapper(Wrapper):
     def issue_title(self) -> str:
         return self.issue_data.title
 
+    def issue_key(self) -> str:
+        return str(self.issue_data.number)
+
     def issue_description(self) -> str:
         return self.issue_data.body
 

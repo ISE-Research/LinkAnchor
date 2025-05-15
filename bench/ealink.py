@@ -1,10 +1,9 @@
 import logging
 import os
-import sys
 import time
+import argparse
 
 import pandas as pd
-from dateutil.parser import parse
 
 from bench import data_gen
 from src import issue_wrapper
@@ -66,8 +65,6 @@ def ensure_repositories_cloned():
 def calculage_issue_age(extractor: Extractor):
     start = extractor.issue_wrapper.issue_created_at()
     end = extractor.issue_wrapper.issue_closed_at()
-    start = parse(start)  # type: ignore
-    end = parse(end)  # type: ignore
     return end - start
 
 
@@ -97,8 +94,10 @@ def run_bench(bench_name: str = ""):
         if csv_file.endswith(".csv"):
             logger.info(f"Running benchmark for {csv_file}")
             data = pd.read_csv(os.path.join(csv_dir, csv_file))
-            batch_size = 10
+            batch_size = 1
             for i, (index, row) in enumerate(data.iterrows()):
+                if i < 10:
+                    continue
                 if i % batch_size == 0:
                     data.to_csv(os.path.join(results_dir, csv_file), index=False)
                     logger.info(f"results saved up to {index} rows")
@@ -131,7 +130,7 @@ def repair(bench_name):
             continue
 
         if csv_file.endswith(".csv"):
-            logger.info(f"Running benchmark for {csv_file}")
+            logger.info(f"Running repair for {csv_file}")
             data = pd.read_csv(os.path.join(results_dir, csv_file))
             for index, row in data.iterrows():
                 if pd.isna(data.loc[index, "error"]):
@@ -205,15 +204,20 @@ def bench_single_row(row, index, data, extractors, metrics, project_name) -> int
     return tokens
 
 
+parser = argparse.ArgumentParser(description="EALink benchmark script")
+parser.add_argument("bench_name", help="Name of the benchmark to run", default="")
+parser.add_argument(
+    "--repair", "-r", action="store_true", help="run repair on the benchmark"
+)
+args = parser.parse_args()
+
 ensure_dataset_available()
 ensure_repositories_cloned()
 
-# get first arg from command lin
-bench_name = ""
-if len(sys.argv) > 1:
-    bench_name = sys.argv[1]
 
-# run_bench(bench_name)
-# run repair twice to account for any rate limit issues posed by OpenAI API
-repair(bench_name)
-repair(bench_name)
+if args.repair:
+    # run repair twice to account for any rate limit issues posed by OpenAI API
+    repair(args.bench_name)
+    repair(args.bench_name)
+else:
+    run_bench(args.bench_name)
