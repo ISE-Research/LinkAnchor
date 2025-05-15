@@ -79,7 +79,7 @@ def extractor_for_repo(repo_url: str, metrics: Metrics) -> Extractor:
     return e
 
 
-def run_bench(bench_name: str = ""):
+def run_bench(bench_name: str = "",count: int = 100):
     os.makedirs(results_dir, exist_ok=True)
     all_token_used = 0
 
@@ -96,8 +96,8 @@ def run_bench(bench_name: str = ""):
             data = pd.read_csv(os.path.join(csv_dir, csv_file))
             batch_size = 1
             for i, (index, row) in enumerate(data.iterrows()):
-                if i < 10:
-                    continue
+                if i > count:
+                    break
                 if i % batch_size == 0:
                     data.to_csv(os.path.join(results_dir, csv_file), index=False)
                     logger.info(f"results saved up to {index} rows")
@@ -206,9 +206,8 @@ def bench_single_row(row, index, data, extractors, metrics, project_name) -> int
 
 parser = argparse.ArgumentParser(description="EALink benchmark script")
 parser.add_argument("bench_name", help="Name of the benchmark to run", default="")
-parser.add_argument(
-    "--repair", "-r", action="store_true", help="run repair on the benchmark"
-)
+parser.add_argument( "--repair", "-r", action="store_true", help="run repair on the benchmark")
+parser.add_argument( "--count", "-c", type=int, help="number of rows to process", default=100)
 args = parser.parse_args()
 
 ensure_dataset_available()
@@ -220,4 +219,4 @@ if args.repair:
     repair(args.bench_name)
     repair(args.bench_name)
 else:
-    run_bench(args.bench_name)
+    run_bench(args.bench_name,args.count)
