@@ -214,7 +214,7 @@ impl Branchless {
             .try_reduce(Vec::new, |acc, paths| {
                 Ok(acc
                     .into_iter()
-                    .merge(paths.into_iter().rev())
+                    .merge(paths.into_iter().sorted())
                     .dedup()
                     .collect())
             })
