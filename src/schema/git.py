@@ -46,7 +46,7 @@ class ListAuthors(BaseModel):
     """listing all authors in the repo"""
 
     def __call__(self, extractor: Extractor) -> List[Author]:
-        return extractor.list_authors()
+        return extractor.list_authors(extractor.issue_lifespan_safe())
 
 
 class CommitsOfAuthor(BaseModel):
@@ -119,6 +119,7 @@ class CommitDiff(BaseModel):
 
     def __call__(self, extractor: Extractor) -> str:
         return extractor.commit_diff(self.commit_hash)
+
 
 class CommitMetadata(BaseModel):
     """retrieves the metadata of a commit given its hash"""

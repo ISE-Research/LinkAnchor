@@ -1,6 +1,7 @@
 use itertools::Itertools;
 use pyo3::{pyclass, pymethods};
 use rayon::prelude::*;
+use std::collections::HashSet;
 use std::fmt::Display;
 use std::path::{Path, PathBuf};
 use std::process::Command;
@@ -95,13 +96,17 @@ impl Branchless {
         self.wrapper.list_branches()
     }
 
-    pub fn list_authors(&self) -> Result<Vec<Author>> {
-        self.list_branches()
+    pub fn list_authors(&self, interval: (String, String)) -> Result<Vec<Author>> {
+        let (from, to) = interval;
+        let from = chrono::DateTime::parse_from_str(&from, DATETIME_FORMAT)?;
+        let to = chrono::DateTime::parse_from_str(&to, DATETIME_FORMAT)?;
+        let authors: HashSet<Author> = self
+            .commits
             .iter()
-            .map(|branch| self.wrapper.authors_of_branch(branch))
-            .try_fold(Vec::new(), |acc, authors| {
-                Result::<Vec<Author>>::Ok(acc.into_iter().merge(authors?).dedup().collect())
-            })
+            .within_period(from, to)
+            .map(|c| c.author.clone())
+            .collect();
+        Ok(authors.into_iter().collect::<Vec<Author>>())
     }
 
     pub fn list_commits(&self, pagination: Pagination) -> Vec<CommitMeta> {
