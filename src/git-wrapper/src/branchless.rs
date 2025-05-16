@@ -46,9 +46,10 @@ impl Branchless {
 
     pub fn list_files_on_commit(&self, commit: &str, pattern: &str) -> Result<Vec<String>> {
         let output = Command::new("git")
-            .arg("ls-tree")
-            .arg("-r")
+            .arg("diff-tree")
+            .arg("--no-commit-id")
             .arg("--name-only")
+            .arg("-r")
             .arg(commit)
             .current_dir(self.dir())
             .output()?;
