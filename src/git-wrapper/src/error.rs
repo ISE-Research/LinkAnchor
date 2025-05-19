@@ -25,6 +25,8 @@ pub enum GitError {
     CopyDirErr(#[from] fs_extra::error::Error),
     #[error("branch not found: {0}")]
     BranchNotFound(String),
+    #[error("No Author matched for this Author Query: {0}")]
+    AuthorNotFound(String),
 }
 pub type Result<T, E = GitError> = core::result::Result<T, E>;
 

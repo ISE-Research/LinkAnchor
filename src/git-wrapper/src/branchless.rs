@@ -6,7 +6,7 @@ use std::fmt::Display;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
-use crate::wrapper::{Author, AuthorQuery, CommitMeta, Pagination, Wrapper};
+use crate::wrapper::{self, Author, AuthorQuery, CommitMeta, Pagination, Wrapper};
 use crate::wrapper::{PaginationExt, TimePeriodExt};
 use crate::GitError;
 use crate::Result;
@@ -132,6 +132,13 @@ impl Branchless {
         interval: (String, String),
         pagination: Pagination,
     ) -> Result<Vec<CommitMeta>> {
+        let authors = self.list_authors(interval.clone())?;
+        if !authors.iter().any(|a| match &author_query {
+            AuthorQuery::Name(name) => &a.name == name,
+            AuthorQuery::Email(email) => &a.email == email,
+        }) {
+            return Err(GitError::AuthorNotFound(format!("{:?}", author_query)));
+        }
         let (from, to) = interval;
         let from = chrono::DateTime::parse_from_str(&from, DATETIME_FORMAT)?;
         let to = chrono::DateTime::parse_from_str(&to, DATETIME_FORMAT)?;
