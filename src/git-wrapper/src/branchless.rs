@@ -1,4 +1,5 @@
 use itertools::Itertools;
+
 use pyo3::{pyclass, pymethods};
 use rayon::prelude::*;
 use std::collections::HashSet;
@@ -6,7 +7,7 @@ use std::fmt::Display;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
-use crate::wrapper::{self, Author, AuthorQuery, CommitMeta, Pagination, Wrapper};
+use crate::wrapper::{Author, AuthorQuery, CommitMeta, Pagination, Wrapper};
 use crate::wrapper::{PaginationExt, TimePeriodExt};
 use crate::GitError;
 use crate::Result;
@@ -184,6 +185,10 @@ impl Branchless {
         interval: (String, String),
         pagination: Pagination,
     ) -> Result<Vec<CommitMeta>> {
+        let (from, to) = interval;
+        let from = chrono::DateTime::parse_from_str(&from, DATETIME_FORMAT)?;
+        let to = chrono::DateTime::parse_from_str(&to, DATETIME_FORMAT)?;
+
         let commits: Vec<CommitMeta> = self
             .wrapper
             .list_branches()
@@ -195,20 +200,21 @@ impl Branchless {
             .try_reduce(Vec::new, |acc, commits| {
                 Result::<Vec<CommitMeta>>::Ok(
                     acc.into_iter()
-                        .merge(commits.into_iter().rev())
+                        .merge(
+                            commits
+                                .into_iter()
+                                .within_period(from, to)
+                                .with_pagination(pagination)
+                                .sorted(),
+                        )
                         .dedup()
                         .collect(),
                 )
             })?;
 
-        let (from, to) = interval;
-        let from = chrono::DateTime::parse_from_str(&from, DATETIME_FORMAT)?;
-        let to = chrono::DateTime::parse_from_str(&to, DATETIME_FORMAT)?;
-
         Ok(commits
             .into_iter()
             .rev()
-            .within_period(from, to)
             .with_pagination(pagination)
             .collect())
     }
