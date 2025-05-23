@@ -2,7 +2,7 @@ import logging
 import os
 import time
 import argparse
-
+from datetime import datetime
 import pandas as pd
 
 from bench import data_gen
@@ -113,7 +113,6 @@ def run_bench(bench_name: str = "",count: int = 100):
                     logger.info("Token limit reached, cooling down for 30 seconds.")
                     time.sleep(30)
                     all_token_used = 0
-
             data.to_csv(os.path.join(results_dir, csv_file), index=False)
             metrics.dump(os.path.join(results_dir, f"metrics-{csv_file}.json"))
             logger.info(f"results saved to {os.path.join(results_dir, csv_file)}")
@@ -147,8 +146,8 @@ def repair(bench_name):
                     time.sleep(30)
                     all_token_used = 0
 
-            data.to_csv(os.path.join(results_dir, csv_file))
-            logger.info(f"results saved to {os.path.join(results_dir, csv_file)}")
+                data.to_csv(os.path.join(results_dir, csv_file))
+                logger.info(f"results saved to {os.path.join(results_dir, csv_file)}")
 
 
 def bench_single_row(row, index, data, extractors, metrics, project_name) -> int:
@@ -170,12 +169,18 @@ def bench_single_row(row, index, data, extractors, metrics, project_name) -> int
     logger.info(f"Processing {index}'th row...")
     try:
         ga.extractor.issue_wrapper = issue_wrapper.wrapper_for(issue_url)
+
+        start_time = datetime.now()
         commit_hash, tokens = ga.find_link()
+        end_time = datetime.now()
+        elapsed_time = end_time - start_time
+
         metrics.flush()
 
         data.at[index, "result"] = commit_hash
         data.at[index, "error"] = ""
         data.at[index, "old"] = calculage_issue_age(ga.extractor).days > 365
+        data.at[index,"time"] = elapsed_time.total_seconds()
         if not ga.extractor.has_commit(commit_hash):
             data.at[index, "error"] = f"Commit not found {commit_hash}"
             metrics.reset()
