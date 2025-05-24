@@ -1,8 +1,10 @@
-import logging
-import os
-import time
 import argparse
 from datetime import datetime
+import logging
+import os
+import sys
+import time
+
 import pandas as pd
 
 from bench import data_gen
@@ -94,7 +96,7 @@ def run_bench(bench_name: str = "",count: int = 100):
         if csv_file.endswith(".csv"):
             logger.info(f"Running benchmark for {csv_file}")
             data = pd.read_csv(os.path.join(csv_dir, csv_file))
-            batch_size = 1
+            batch_size = 10
             for i, (index, row) in enumerate(data.iterrows()):
                 if i > count:
                     break
@@ -181,6 +183,7 @@ def bench_single_row(row, index, data, extractors, metrics, project_name) -> int
         data.at[index, "error"] = ""
         data.at[index, "old"] = calculage_issue_age(ga.extractor).days > 365
         data.at[index,"time"] = elapsed_time.total_seconds()
+        data.at[index, "tokens"] = tokens
         if not ga.extractor.has_commit(commit_hash):
             data.at[index, "error"] = f"Commit not found {commit_hash}"
             metrics.reset()
@@ -212,7 +215,7 @@ def bench_single_row(row, index, data, extractors, metrics, project_name) -> int
 parser = argparse.ArgumentParser(description="EALink benchmark script")
 parser.add_argument("bench_name", help="Name of the benchmark to run", default="")
 parser.add_argument( "--repair", "-r", action="store_true", help="run repair on the benchmark")
-parser.add_argument( "--count", "-c", type=int, help="number of rows to process", default=100)
+parser.add_argument( "--count", "-c", type=int, help="number of rows to process", default=sys.maxsize)
 args = parser.parse_args()
 
 ensure_dataset_available()
