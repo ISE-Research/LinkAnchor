@@ -87,9 +87,9 @@ def run_bench(count: int = 100):
         tokens = bench_single_row(row, index, data, extractors, metrics)
         all_token_used += tokens
 
-        data.to_csv(os.path.join(results_dir, csv_file), index=False)
+        data.to_csv(os.path.join(results_dir, "practical.csv"), index=False)
         logger.info(f"results saved up to {index} rows")
-        metrics.dump(os.path.join(results_dir, f"metrics-{csv_file}.json"))
+        metrics.dump(os.path.join(results_dir, "metrics.json"))
         logger.info(f"metrics saved up to {index} rows")
 
 
