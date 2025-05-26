@@ -64,7 +64,7 @@ def ensure_repositories_cloned():
                         logger.info(f"{repo_name} already cloned at {repo_path}")
 
 
-def calculage_issue_age(extractor: Extractor):
+def calculate_issue_age(extractor: Extractor):
     start = extractor.issue_wrapper.issue_created_at()
     end = extractor.issue_wrapper.issue_closed_at()
     return end - start
@@ -81,7 +81,7 @@ def extractor_for_repo(repo_url: str, metrics: Metrics) -> Extractor:
     return e
 
 
-def run_bench(bench_name: str = "",count: int = 100):
+def run_bench(bench_name: str = "", count: int = 100):
     os.makedirs(results_dir, exist_ok=True)
     all_token_used = 0
 
@@ -181,8 +181,8 @@ def bench_single_row(row, index, data, extractors, metrics, project_name) -> int
 
         data.at[index, "result"] = commit_hash
         data.at[index, "error"] = ""
-        data.at[index, "old"] = calculage_issue_age(ga.extractor).days > 365
-        data.at[index,"time"] = elapsed_time.total_seconds()
+        data.at[index, "old"] = calculate_issue_age(ga.extractor).days > 365
+        data.at[index, "time"] = elapsed_time.total_seconds()
         data.at[index, "tokens"] = tokens
         if not ga.extractor.has_commit(commit_hash):
             data.at[index, "error"] = f"Commit not found {commit_hash}"
@@ -212,10 +212,45 @@ def bench_single_row(row, index, data, extractors, metrics, project_name) -> int
     return tokens
 
 
+def eval(bench_name,count):
+    for csv_file in os.listdir(results_dir):
+        if bench_name not in csv_file:
+            continue
+
+        if csv_file.endswith(".csv"):
+            logger.info(f"results for {csv_file}")
+            data = pd.read_csv(os.path.join(results_dir, csv_file))
+
+            count = 0
+            total_time = 0
+            total_tokens = 0
+            for i, row in data.iterrows():
+                if i > count:
+                    break
+                if (
+                    row["commit_hash"] == row["result"]
+                    or row["ancestral_distance"] <= 2
+                    or row["issue_key_present"]
+                ):
+                    count += 1
+                total_time += row["time"]
+                total_tokens += row["tokens"]
+            print(f"Git-Anchor's percision for {csv_file}:\t {count / len(data)}")
+            print(f"Git-Anchor's average token usage for {csv_file}: {total_tokens / len(data)}")
+            print(f"Git-Anchor's average time for {csv_file}:\t {total_time / len(data)}")
+
+
 parser = argparse.ArgumentParser(description="EALink benchmark script")
 parser.add_argument("bench_name", help="Name of the benchmark to run", default="")
-parser.add_argument( "--repair", "-r", action="store_true", help="run repair on the benchmark")
-parser.add_argument( "--count", "-c", type=int, help="number of rows to process", default=sys.maxsize)
+parser.add_argument(
+    "--repair", "-r", action="store_true", help="run repair on the benchmark"
+)
+parser.add_argument(
+    "--eval", "-e", action="store_true", help="run evaluation on the benchmark"
+)
+parser.add_argument(
+    "--count", "-c", type=int, help="number of rows to process", default=sys.maxsize
+)
 args = parser.parse_args()
 
 ensure_dataset_available()
@@ -226,5 +261,7 @@ if args.repair:
     # run repair twice to account for any rate limit issues posed by OpenAI API
     repair(args.bench_name)
     repair(args.bench_name)
+elif args.eval:
+    eval(args.bench_name,args.count)
 else:
-    run_bench(args.bench_name,args.count)
+    run_bench(args.bench_name, args.count)
