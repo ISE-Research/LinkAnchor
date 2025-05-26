@@ -1,5 +1,8 @@
 from pydantic import BaseModel, Field
 from src.anchor.extractor import Extractor
+from enum import Enum
+from typing import List
+from openai.types.chat import ChatCompletionMessageParam as Message
 
 
 class Control:
@@ -33,6 +36,26 @@ class Next(BaseModel, Control):
 
     def __call__(self, _: Extractor) -> str:
         return "next system message would contain the next batch of commits"
+
+
+class FeedbackValue(str, Enum):
+    DISCARD = "discard"
+    USEFUL = "useful"
+
+class Feedback(BaseModel):
+    """
+    Feedback about the previous tool call.
+    """
+
+    call_id: str = Field(..., description="id of the tool call to discard")
+    Value: FeedbackValue = Field(..., description="either DISCARD or USEFUL")
+
+    def __call__(self, messages: List[Message]) -> List[Message]:
+        for m in messages:
+            if "tool_call_id" in m and m["tool_call_id"] == self.call_id:
+                m["content"] = "<USELESS_OUTPUT>"
+                break
+        return messages
 
 
 TOOLS = [Finish, Next, GiveUp]

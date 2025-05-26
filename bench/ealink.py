@@ -212,32 +212,35 @@ def bench_single_row(row, index, data, extractors, metrics, project_name) -> int
     return tokens
 
 
-def eval(bench_name,count):
+def eval(bench_name, count):
     for csv_file in os.listdir(results_dir):
         if bench_name not in csv_file:
             continue
 
         if csv_file.endswith(".csv"):
-            logger.info(f"results for {csv_file}")
+            print("=" * 50)
             data = pd.read_csv(os.path.join(results_dir, csv_file))
 
-            count = 0
+            correct = 0
             total_time = 0
             total_tokens = 0
-            for i, row in data.iterrows():
+            for i, (_, row) in enumerate(data.iterrows()):
                 if i > count:
                     break
                 if (
                     row["commit_hash"] == row["result"]
                     or row["ancestral_distance"] <= 2
-                    or row["issue_key_present"]
+                    or row["issue_key_present"] == True
                 ):
-                    count += 1
+                    correct += 1
                 total_time += row["time"]
                 total_tokens += row["tokens"]
-            print(f"Git-Anchor's percision for {csv_file}:\t {count / len(data)}")
-            print(f"Git-Anchor's average token usage for {csv_file}: {total_tokens / len(data)}")
-            print(f"Git-Anchor's average time for {csv_file}:\t {total_time / len(data)}")
+
+            base = min(len(data), count)
+            print(f"Results for {csv_file}:")
+            print(f"{"Percision:".ljust(15)} {correct / base}")
+            print(f"{"Token usage:".ljust(15)} {total_tokens / base}")
+            print(f"{"Time:".ljust(15)} {total_time / base}")
 
 
 parser = argparse.ArgumentParser(description="EALink benchmark script")
@@ -262,6 +265,6 @@ if args.repair:
     repair(args.bench_name)
     repair(args.bench_name)
 elif args.eval:
-    eval(args.bench_name,args.count)
+    eval(args.bench_name, args.count)
 else:
     run_bench(args.bench_name, args.count)
