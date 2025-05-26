@@ -231,9 +231,9 @@ mod test {
     fn fetch() -> Result<()> {
         let w = new_mock_wrapper()?;
         let targets = [
-            Target::new_method("Mamad", "SayGoodBye"),
+            Target::new_method("Mockery", "SayGoodBye"),
             Target::new_function("greet"),
-            Target::new_class("Mamad"),
+            Target::new_class("Mockery"),
         ];
         for target in targets.iter() {
             let matches = w.fetch(target, "goodbye", PathBuf::from("./main.go"))?;

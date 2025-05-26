@@ -17,11 +17,11 @@ func greet() {
   fmt.Println("Hello, world!")
 }
 
-type Mamad struct {
+type Mockery struct {
   Name string
 }
 
-func (m *Mamad) SayHello() {
+func (m *Mockery) SayHello() {
   fmt.Println("Hello, my name is", m.Name)
 }
 EOF
@@ -36,7 +36,7 @@ git commit -m "say hello"
 cat <<EOF >> main.go
 
 // SayGoodBye says goodbye
-func (m Mamad) SayGoodBye() {
+func (m Mockery) SayGoodBye() {
   fmt.Println("Bye, my name is", m.Name)
 }
 EOF
