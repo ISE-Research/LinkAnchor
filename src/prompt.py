@@ -112,6 +112,17 @@ Rules you SHOULD follow:
 8. Keep in mind that the issue tracker and the issue are used for several artifacts distributed across several repositories. So it might be the case that the issue requires fixes in more than one repository. So if you find a commit hash in the issue comments indecating that this commit fixes the issue, it might be from another repository and you need to continue your search until you find a commit hash from the repository we are working with. inorder to make sure the commit you found is present in the repository, you MUST CALL the `CommitMetadata` function on that and see wether it returns an error or an actual commit. 
 If you found out that the commit is from another repository, you can try to find a similar commit or a commit from the same author from the commit batch already provided to you or from the next batches
 
+9. There is a function called `Feedback` that allows you to provide feedback on the results of the previous function call.
+In each iteration, you SHOULD provide feedback about EACH of the function calls that is requested from you by calling `feedback` function with the id of previous function calls. the value of the feedback is either `Discard` or `Preserve`. if the value is `Discard`, the response of that function call is replaced with <USELESS> token to save tokens. each function response has a `call_id` attribute that you can use to submit feedback in the form of calling feedback function. for example:
+# iteration 1: 
+calling CommitsBetween(args...) 
+response = {
+call_id: 12345,
+data: ...
+}
+# iteration 2:
+calling Feedback(call_id=12345, feedback="Discard")
+
 Note: 
 If you are unable to find the commit hash, and you are sure that no more attempts will yield results, you can call the `GiveUp` function.
 """
