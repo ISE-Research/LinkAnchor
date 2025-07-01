@@ -16,7 +16,6 @@ pip install uv
 ### setup virtual env
 ```bash
 # using uv venv 
-uv venv
 venv=$(uv venv --allow-existing  2>&1 | grep source | awk '{print$4}')
 source $venv
 
