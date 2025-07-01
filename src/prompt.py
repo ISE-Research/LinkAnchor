@@ -68,8 +68,6 @@ COMMIT_FOUND_MESSAGE = "found commit resolving this issue"
 
 MAX_ITERATIONS = 2000
 
-# Note that the iterative process only lasts for at most {MAX_ITERATIONS} iterations. If you reach the last iteration and you have not provided any commit_hash, the user assumes that you can not find the link
-
 PROBLEM_EXPLANATION_PROMPT_TEXT = """
 Role & Goals:
 You are an intelligent agent specialized in identifying and linking software issues directly to the specific commit hashes that resolve them. Your primary objective is to determine and provide the exact commit hash responsible for resolving a given issue.
@@ -115,20 +113,5 @@ If you found out that the commit is from another repository, you can try to find
 Note: 
 If you are unable to find the commit hash, and you are sure that no more attempts will yield results, you can call the `GiveUp` function.
 """
-# 3. Sometimes the difference between `IssueCreationTimestamp` and `IssueClosedTimestamp` is very large (more than a year). In these cases Issue was probably resolved close to the `IssueCreationTimestamp` but it was marked as closed years later. In these cases, First call `commits_between` with smallests pagination possible just to get the total number of commits in the time period, then, using pagination, start iterating over commits from the `IssueCreationTimestamp` end of the range.
-# For example, lets say after calling:
-# `commits_between(start_date=IssueCreationTimestamp, end_date=IssueClosedTimestamp, pagination=Pagination(offset=0, limit=1))`
-# you get the following response:
-# `
-# 12345
-# <first commit metadata>
-# `
-# you can then call:
-# `commits_between(start_date=IssueCreationTimestamp, end_date=IssueClosedTimestamp, pagination=Pagination(offset=12245, limit=100))`
-# to fetch the first 10 commits that were pushed after the `IssueCreationTimestamp`.
-# if you didn't find the commit in the first 10 commits, you can call:
-# `commits_between(start_date=IssueCreationTimestamp, end_date=IssueClosedTimestamp, pagination=Pagination(offset=12145, limit=100))`
-# and so on until you find the commit or reach the last iteration.
-
 
 USER_INITIAL_PROMPT_TEXT = "Find the commit that resolves the issue with the title"
