@@ -18,11 +18,3 @@ dependencies = [
     "pandas (>=2.2.3,<3.0.0)",
     "patchelf (>=0.17.2.2,<0.18.0.0)",
 ]
-
-[tool.poetry]
-packages = [{include = "git-anchor", from = "src"}]
-
-
-[build-system]
-requires = ["poetry-core>=2.0.0,<3.0.0"]
-build-backend = "poetry.core.masonry.api"

@@ -42,7 +42,7 @@ class Agent:
         """Communicate with the OpenAI API."""
 
         return self.client.beta.chat.completions.parse(
-            model="gpt-4o-nano",
+            model="gpt-4o-mini",
             messages=messages,
             tools=tools,
         )
