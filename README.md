@@ -46,3 +46,7 @@ uv run -m src.main --git <GIT_REPO_URL> --issue <ISSUE_URL> --interactive
 # debug logs enabled
 uv run -m src.main --git <GIT_REPO_URL> --issue <ISSUE_URL> --debug
 ```
+a sample run could be:
+```bash
+uv run -m src.main --git https://github.com/pallets/flask --issue https://github.com/pallets/flask/issues/5472 --interactive
+```
