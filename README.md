@@ -1,4 +1,4 @@
-# Link-Anchor
+# LinkAnchor
 an authomated tool for linking commits and issues
 
 ## Quick Run
@@ -51,7 +51,7 @@ python3 -m src.main --git <GIT_REPO_URL> --issue <ISSUE_URL> --interactive
 # debug logs enabled
 python3 -m src.main --git <GIT_REPO_URL> --issue <ISSUE_URL> --debug
 ```
-Here is a simple sample for git-anchor on github:
+Here is a simple sample for LinkAnchor on github:
 ```bash 
 export OPENAI_API_KEY=<YOUR_OPEN_API_KEY>
 
