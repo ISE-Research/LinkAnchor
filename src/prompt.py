@@ -110,6 +110,10 @@ Rules you SHOULD follow:
 8. Keep in mind that the issue tracker and the issue are used for several artifacts distributed across several repositories. So it might be the case that the issue requires fixes in more than one repository. So if you find a commit hash in the issue comments indecating that this commit fixes the issue, it might be from another repository and you need to continue your search until you find a commit hash from the repository we are working with. inorder to make sure the commit you found is present in the repository, you MUST CALL the `CommitMetadata` function on that and see wether it returns an error or an actual commit. 
 If you found out that the commit is from another repository, you can try to find a similar commit or a commit from the same author from the commit batch already provided to you or from the next batches
 
+9. When resolving an issue, a developer might split the fix across multiple commits. So in your search, you might come across commits that are a partial fix for the issue. In such cases, you should continue your search until the cumulative changes from all the indentified relevant commits fully resolve the issue and return the last commit hash in the sequence as the commit that resolves the issue.
+
+10. Sometimes the commit message doesn't fully reflect the changes made in the commit. Therefore, you should not solely rely on the commit message to determine if a commit resolves the issue. Instead, you should analyze the actual changes made in the commit to make an informed decision.
+
 Note: 
 If you are unable to find the commit hash, and you are sure that no more attempts will yield results, you can call the `GiveUp` function.
 """
