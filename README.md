@@ -1,4 +1,4 @@
-# IC-Linker
+# LinkAnchor
 an authomated tool for linking commits and issues
 
 ## Quick Run
