@@ -1,5 +1,5 @@
 # LinkAnchor
-an authomated tool for linking commits and issues
+An LLM-based agent for identifying commits that resolve issues. Given a repository and a specific issue, LinkAnchor searches the repository’s history to find the commits that address it.
 
 ## Quick Run
 
