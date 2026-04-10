@@ -26,13 +26,25 @@ The up-to-date version of the artifact can be found on github ([Link-Anchor gith
 
 # ⚙️ Installation 
 
+## Docker
+You can pull the prebuild docker image:
+```bash 
+docker pull ghcr.io/ise-research/linkanchor
+```
+or to build it manually:
+```bash 
+docker build . --tag ghcr.io/ise-research/linkanchor
+```
+
+## From Srouce
+
 > Estimated setup time: < 10 minutes.
 
-## Prerequisites
+### Prerequisites
 - Rust: Required for the git and code wrapper modules.
 - Python 3.10+: Recommended environment.
 
-## Installation Steps
+### Installation Steps
 
 ```bash
 
@@ -59,27 +71,37 @@ pip install .
 Use the following command to find the commit hash of the resolving commit:
 
 ```bash 
-
-export OPENAI_API_KEY=<YOUR_API_KEY>
+# If using the docker image
+docker run -it \
+  -e OPENAI_API_KEY=<YOUR_API_KEY> \
+  ghcr.io/ise-research/linkanchor \
+  --git https://github.com/pallets/flask --issue https://github.com/pallets/flask/issues/5472
 
 # If using raw python3
+export OPENAI_API_KEY=<YOUR_API_KEY>
 python3 -m src.main --git https://github.com/pallets/flask --issue https://github.com/pallets/flask/issues/5472
 
 # if using uv (Recommanded)
+export OPENAI_API_KEY=<YOUR_API_KEY>
 uv run -m src.main --git https://github.com/pallets/flask --issue https://github.com/pallets/flask/issues/5472
 ```
 
 using the `--explain` flag, you can enter interactive mode in which LinkAnchor will explain the decision making process behind each step of the process.
 
 ```bash 
-export OPENAI_API_KEY=<YOUR_API_KEY>
+# If using the docker image
+docker run -it \
+  -e OPENAI_API_KEY=<YOUR_API_KEY> \
+  ghcr.io/ise-research/linkanchor \
+  --git https://github.com/pallets/flask --issue https://github.com/pallets/flask/issues/5472 --explain
 
 # If using raw python3
+export OPENAI_API_KEY=<YOUR_API_KEY>
 python3 -m src.main --git https://github.com/pallets/flask --issue https://github.com/pallets/flask/issues/5472 --explain
 
 # if using uv (Recommanded)
+export OPENAI_API_KEY=<YOUR_API_KEY>
 uv run -m src.main --git https://github.com/pallets/flask --issue https://github.com/pallets/flask/issues/5472 --explain
-
 ```
 
 

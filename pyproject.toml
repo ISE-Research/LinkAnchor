@@ -1,5 +1,5 @@
 [project]
-name = "git-anchor"
+name = "link-anchor"
 version = "0.1.0"
 description = ""
 authors = [

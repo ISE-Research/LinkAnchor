@@ -1,0 +1,50 @@
+# Project specific
+./prior-works/
+./data/
+./bench/
+./INSTALL.md
+./LICENSE
+./REQUIREMENTS.md
+
+# Git
+.git
+.gitignore
+
+# Python bytecode and cache
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.cache/
+
+# Environments
+.venv/
+venv/
+ENV/
+env/
+.env
+.flaskenv
+
+# Build and Distribution
+dist/
+build/
+*.egg-info/
+nosetests.xml
+coverage.xml
+.coverage
+htmlcov/
+
+# IDEs and Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Docker-specific (preventing recursion)
+Dockerfile
+.dockerignore
+docker-compose.yml
+
+# OS Junk
+.DS_Store
+Thumbs.db
