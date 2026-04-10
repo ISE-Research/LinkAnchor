@@ -1,4 +1,4 @@
-# Git-Anchor
+# Link-Anchor
 an authomated tool for linking commits and issues
 
 ## Quick Run
