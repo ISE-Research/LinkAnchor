@@ -1,6 +1,6 @@
 FROM python:3.12-slim
 
-LABEL org.opencontainers.image.source="https://github.com/ISE-Research/LinkAnchor"
+LABEL org.opencontainers.image.source="https://github.com/ise-research/linkanchor"
 
 # 1. Install Rust toolchain
 RUN apt-get update && apt-get install -y \
