@@ -1,52 +1,97 @@
-# Link-Anchor
-an authomated tool for linking commits and issues
+# 💡 LinkAnchor: An Autonomous LLM-Based Agent for Issue-to-Commit Link Recovery
 
-## Quick Run
+> This repository contains the artifact for the paper **"LinkAnchor: An Autonomous LLM-Based Agent for Issue-to-Commit Link Recovery"**, accepted at FSE 2026.
 
-### install requirements
-```bash 
-# install rust
+LinkAnchor is the first autonomous LLM-based agent designed specifically for issue-to-commit link recovery (ILR). Unlike prior methods that score issue-commit pairs in isolation, LinkAnchor treats link recovery as a **dynamic heuristic** search over the commit graph. This allows it to aggregate the entire chain of contributing changes to identify the final resolving commit, effectively recovering distributed fixes.
+
+# Table of Contents
+
+* [Artifact Overview](#🔍-artifact-overview)
+* [Obtaining the Artifact](#🔗-obtaining-the-artifact)
+* [Quick Start (Installation)](#🚀-quick-start-installation)
+* [Reproduction Instructions](#📊-reproduction-instructions)
+* [Project Structure](#📂-project-structure)
+
+# 🔍 Artifact Overview
+
+This artifact provides the complete implementation of the LinkAnchor agent, including its lazy-access architecture and specialized function calls for repository navigation. It is designed to work with both `GitHub` and `Jira` issue-tracking systems and supports a wide range of programming languages via the `Tree-sitter` parser.
+
+
+# 🔗 Obtaining the Artifact
+
+The artifact used for producing the FSE'26 paper is available on Zenodo (DOI: [INSERT YOUR DOI]). 
+
+The up-to-date version of the artifact can be found on github ([Link-Anchor github](https://github.com/ISE-Research/LinkAnchor/))
+
+# 🚀 Quick Start (Installation)
+
+> Estimated setup time: < 10 minutes.
+
+## Prerequisites
+- Rust: Required for the git and code wrapper modules.
+- Python 3.10+: Recommended environment.
+
+## Installation Steps
+
+```Bash
+
+# 1. Install Rust
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 . "$HOME/.cargo/env"
 
-# (optional) install uv
-pip install uv
-
-```
-### setup virtual env
-```bash
-# using uv venv 
-venv=$(uv venv --allow-existing  2>&1 | grep source | awk '{print$4}')
-source $venv
-
-# virtualenv
-pip -m venv venv
+# 2. Setup Virtual Environment (using uv or venv)
+python3 -m venv venv
 source venv/bin/activate
-```
-### install python dependencies
-```bash
-# install dependencies
-uv pip install -r pyproject.toml
-```
-### install git-wrapper and code-wrapper development use:
-```bash
+
+# 3. Install Python Dependencies
+pip install . 
+
+# 4. Install Git & Code Wrapper module
 (cd src/git-wrapper && maturin develop)
 (cd src/code-wrapper && maturin develop)
 ```
-### Run
-```bash 
-export OPENAI_API_KEY=<YOUR_OPEN_API_KEY>
 
-# default mode
-uv run -m src.main --git <GIT_REPO_URL> --issue <ISSUE_URL>
+# 📊 Reproduction Instructions
 
-# interactive mode
-uv run -m src.main --git <GIT_REPO_URL> --issue <ISSUE_URL> --interactive
+## Prerequisites
+- OpenAI API Key: LinkAnchor utilizes LLMs (defaulting to GPT-4o-mini for cost-efficiency).
 
-# debug logs enabled
-uv run -m src.main --git <GIT_REPO_URL> --issue <ISSUE_URL> --debug
+## Running a single issue recovery:
+
+```Bash 
+
+export OPENAI_API_KEY=<YOUR_API_KEY>
+
+# If using raw python3
+python3 -m src.main --git https://github.com/pallets/flask --issue https://github.com/pallets/flask/issues/5472
+
+# if using uv (Recommanded)
+uv run -m src.main --git https://github.com/pallets/flask --issue https://github.com/pallets/flask/issues/5472
 ```
-a sample run could be:
-```bash
-uv run -m src.main --git https://github.com/pallets/flask --issue https://github.com/pallets/flask/issues/5472 --interactive
+
+## Full Benchmark Reproduction
+> To reproduce the primary results (Table 2 in the paper).
+
+```Bash 
+# This script runs LinkAnchor across the Apache dataset (Ambari, Calcite, etc.)
+# Note that this script also downloads and clean-ups the dataset.
+python evaluation/run_benchmark.py --projects all
 ```
+
+> Results show LinkAnchor outperforms state-of-the-art baselines (EasyLink, EALink) by 41-714% in Hit@1. (For more information refer to the paper)
+
+# 📂 Project Structure
+
+- [src](src/): Core logic for the LLM agent and repository navigation.
+    - [git-wrapper](src/git-wrapper): Rust-based high-performance git interface.
+    - [code-wrapper](src/code-wrapper): Rust-based Tree-sitter integration for code analysis.
+    - [issue-wrapper](src/issue_wrapper): python-based github/jira integration for issue-centered data retrieval
+- [bench](bench): Scripts and tools to reproduce the paper's benchmarks.
+    - [data_gen.py](bench/data_gen.py): Script for dataset download and cleanup.
+    - [ealink.py](bench/ealink.py): Script for reproducing the experiment on `ealink`'s dataset.
+    - [practical.py](bench/practical.py): Script for reproducing the experiment on any arbitrary dataset of github issues.
+- [README.md](README.md): Artifact introduction.
+- [INSTALL.md](INSTALL.md): Detailed installation instructions.
+- [REQUIREMENTS.md](REQUIREMENTS.md): Environmental requirements.
+- [STATUS.md](STATUS.md): Badge application status.
+- [LICENSE](LICENSE): Open-source license (MIT)
