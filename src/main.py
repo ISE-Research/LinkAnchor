@@ -27,7 +27,11 @@ def parse_arguments():
 
     parser.add_argument("--debug", help="Enable debug mode", action="store_true")
 
-    parser.add_argument("--interactive", help="Show advanced UI", action="store_true")
+    parser.add_argument(
+        "--explain",
+        help="Show explaination through step by step description and advanced UI",
+        action="store_true",
+    )
 
     return parser.parse_args()
 
@@ -50,7 +54,7 @@ def main():
     if args.debug:
         logger.info("Debug mode enabled")
 
-    if args.interactive:
+    if args.explain:
         os.environ["GIT_ANCHOR_INTERACTIVE"] = "TRUE"
         logger.info("Interactive mode enabled")
 
@@ -69,7 +73,7 @@ def main():
     logger.info("Finding link between issue and code...")
     (result, token_used) = ga.find_link()
 
-    if args.interactive:
+    if args.explain:
         term.log(
             Color.GREEN, f"found resolving commit: {result} with {token_used} tokens"
         )

@@ -8,7 +8,8 @@ LinkAnchor is the first autonomous LLM-based agent designed specifically for iss
 
 * [Artifact Overview](#🔍-artifact-overview)
 * [Obtaining the Artifact](#🔗-obtaining-the-artifact)
-* [Quick Start (Installation)](#🚀-quick-start-installation)
+* [Installation](#⚙️-installation)
+* [Quick Start](#🚀-quick-start)
 * [Reproduction Instructions](#📊-reproduction-instructions)
 * [Project Structure](#📂-project-structure)
 
@@ -23,7 +24,7 @@ The artifact used for producing the FSE'26 paper is available on Zenodo (DOI: [I
 
 The up-to-date version of the artifact can be found on github ([Link-Anchor github](https://github.com/ISE-Research/LinkAnchor/))
 
-# 🚀 Quick Start (Installation)
+# ⚙️ Installation 
 
 > Estimated setup time: < 10 minutes.
 
@@ -33,7 +34,7 @@ The up-to-date version of the artifact can be found on github ([Link-Anchor gith
 
 ## Installation Steps
 
-```Bash
+```bash
 
 # 1. Install Rust
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
@@ -51,14 +52,13 @@ pip install .
 (cd src/code-wrapper && maturin develop)
 ```
 
-# 📊 Reproduction Instructions
+# 🚀 Quick Start
 
-## Prerequisites
-- OpenAI API Key: LinkAnchor utilizes LLMs (defaulting to GPT-4o-mini for cost-efficiency).
+> You should have an OpenAI API Key; LinkAnchor utilizes LLMs (defaulting to GPT-4o-mini for cost-efficiency).
 
-## Running a single issue recovery:
+Use the following command to find the commit hash of the resolving commit:
 
-```Bash 
+```bash 
 
 export OPENAI_API_KEY=<YOUR_API_KEY>
 
@@ -69,10 +69,25 @@ python3 -m src.main --git https://github.com/pallets/flask --issue https://githu
 uv run -m src.main --git https://github.com/pallets/flask --issue https://github.com/pallets/flask/issues/5472
 ```
 
-## Full Benchmark Reproduction
+using the `--explain` flag, you can enter interactive mode in which LinkAnchor will explain the decision making process behind each step of the process.
+
+```bash 
+export OPENAI_API_KEY=<YOUR_API_KEY>
+
+# If using raw python3
+python3 -m src.main --git https://github.com/pallets/flask --issue https://github.com/pallets/flask/issues/5472 --explain
+
+# if using uv (Recommanded)
+uv run -m src.main --git https://github.com/pallets/flask --issue https://github.com/pallets/flask/issues/5472 --explain
+
+```
+
+
+# 📊 Reproduction Instructions
+
 > To reproduce the primary results (Table 2 in the paper).
 
-```Bash 
+```bash 
 # This script runs LinkAnchor across the Apache dataset (Ambari, Calcite, etc.)
 # Note that this script also downloads and clean-ups the dataset.
 python evaluation/run_benchmark.py --projects all
