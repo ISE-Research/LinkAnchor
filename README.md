@@ -1,5 +1,8 @@
 # 💡 LinkAnchor: An Autonomous LLM-Based Agent for Issue-to-Commit Link Recovery
 
+![GHCR Version](https://img.shields.io/badge/ghcr.io-linkanchor:latest-blue?logo=docker)
+![License](https://img.shields.io/github/license/ISE-Research/LinkAnchor)
+
 > This repository contains the artifact for the paper **"LinkAnchor: An Autonomous LLM-Based Agent for Issue-to-Commit Link Recovery"**, accepted at FSE 2026.
 
 LinkAnchor is the first autonomous LLM-based agent designed specifically for issue-to-commit link recovery (ILR). Unlike prior methods that score issue-commit pairs in isolation, LinkAnchor treats link recovery as a **dynamic heuristic** search over the commit graph. This allows it to aggregate the entire chain of contributing changes to identify the final resolving commit, effectively recovering distributed fixes.
@@ -27,7 +30,7 @@ The up-to-date version of the artifact can be found on github ([Link-Anchor gith
 # ⚙️ Installation 
 
 ## Docker
-You can pull the prebuild docker image:
+You can pull the prebuilt Docker image:
 ```bash 
 docker pull ghcr.io/ise-research/linkanchor
 ```
@@ -36,7 +39,7 @@ or to build it manually:
 docker build . --tag ghcr.io/ise-research/linkanchor
 ```
 
-## From Srouce
+## From Source
 
 > Estimated setup time: < 10 minutes.
 
@@ -52,7 +55,7 @@ docker build . --tag ghcr.io/ise-research/linkanchor
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 . "$HOME/.cargo/env"
 
-# 2. Setup Virtual Environment (using uv or venv)
+# 2. Set up Virtual Environment (using uv or venv)
 python3 -m venv venv
 source venv/bin/activate
 
@@ -81,12 +84,12 @@ docker run -it \
 export OPENAI_API_KEY=<YOUR_API_KEY>
 python3 -m src.main --git https://github.com/pallets/flask --issue https://github.com/pallets/flask/issues/5472
 
-# if using uv (Recommanded)
+# if using uv (Recommended)
 export OPENAI_API_KEY=<YOUR_API_KEY>
 uv run -m src.main --git https://github.com/pallets/flask --issue https://github.com/pallets/flask/issues/5472
 ```
 
-using the `--explain` flag, you can enter interactive mode in which LinkAnchor will explain the decision making process behind each step of the process.
+Using the `--explain` flag, you can enter interactive mode in which LinkAnchor will explain the decision-making process behind each step of the process.
 
 ```bash 
 # If using the docker image
@@ -111,11 +114,11 @@ uv run -m src.main --git https://github.com/pallets/flask --issue https://github
 
 ```bash 
 # This script runs LinkAnchor across the Apache dataset (Ambari, Calcite, etc.)
-# Note that this script also downloads and clean-ups the dataset.
+# Note that this script also downloads and cleans up the dataset.
 python evaluation/run_benchmark.py --projects all
 ```
 
-> Results show LinkAnchor outperforms state-of-the-art baselines (EasyLink, EALink) by 41-714% in Hit@1. (For more information refer to the paper)
+> Results show LinkAnchor outperforms state-of-the-art baselines (EasyLink, EALink) by 41-714% in Hit@1. (For more information, refer to the paper)
 
 # 📂 Project Structure
 
