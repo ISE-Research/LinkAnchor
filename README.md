@@ -63,8 +63,8 @@ source venv/bin/activate
 pip install . 
 
 # 4. Install Git & Code Wrapper module
-(cd src/git-wrapper && maturin develop)
-(cd src/code-wrapper && maturin develop)
+(cd src/git-wrapper  && maturin build --release && pip install target/wheels/*.whl)
+(cd src/code-wrapper && maturin build --release && pip install target/wheels/*.whl)
 ```
 
 # 🚀 Quick Start
