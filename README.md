@@ -9,23 +9,15 @@ LinkAnchor is the first autonomous LLM-based agent designed specifically for iss
 
 # Table of Contents
 
-* [Artifact Overview](#🔍-artifact-overview)
-* [Obtaining the Artifact](#🔗-obtaining-the-artifact)
+* [Overview](#🔍-overview)
 * [Installation](#⚙️-installation)
 * [Quick Start](#🚀-quick-start)
 * [Reproduction Instructions](#📊-reproduction-instructions)
 * [Project Structure](#📂-project-structure)
 
-# 🔍 Artifact Overview
+# 🔍 Overview
 
 This artifact provides the complete implementation of the LinkAnchor agent, including its lazy-access architecture and specialized function calls for repository navigation. It is designed to work with both `GitHub` and `Jira` issue-tracking systems and supports a wide range of programming languages via the `Tree-sitter` parser.
-
-
-# 🔗 Obtaining the Artifact
-
-The artifact used for producing the FSE'26 paper is available on Zenodo (DOI: [INSERT YOUR DOI]). 
-
-The up-to-date version of the artifact can be found on github ([Link-Anchor github](https://github.com/ISE-Research/LinkAnchor/))
 
 # ⚙️ Installation 
 
