@@ -15,15 +15,15 @@ ENV PATH="/root/.cargo/bin:${PATH}"
 # 2. Set working directory
 WORKDIR /app
 
-# 4. Copy project files
+# 3. Copy project files
 COPY . .
 
-# 5. Install Python dependencies
+# 4. Install Python dependencies
 RUN pip install . 
 
-# 6. Build rust-written modules using maturin
+# 5. Build rust-written modules using maturin
 RUN cd /app/src/git-wrapper && maturin build --release && pip install --no-cache-dir target/wheels/*.whl
 RUN cd /app/src/code-wrapper && maturin build --release && pip install --no-cache-dir target/wheels/*.whl
 
-# 7. Define the entry point for the agent
+# 6. Define the entry point for the agent
 ENTRYPOINT ["python", "-m", "src.main"]
