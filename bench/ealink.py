@@ -213,14 +213,13 @@ def bench_single_row(row, index, data, extractors, metrics, project_name) -> int
 
 
 parser = argparse.ArgumentParser(description="EALink benchmark script")
-parser.add_argument("bench_name", help="Name of the benchmark to run", default="")
+parser.add_argument("bench_name", nargs="?", help="Name of the benchmark to run", default="")
 parser.add_argument( "--repair", "-r", action="store_true", help="run repair on the benchmark")
 parser.add_argument( "--count", "-c", type=int, help="number of rows to process", default=sys.maxsize)
 args = parser.parse_args()
 
 ensure_dataset_available()
 ensure_repositories_cloned()
-
 
 if args.repair:
     # run repair twice to account for any rate limit issues posed by OpenAI API

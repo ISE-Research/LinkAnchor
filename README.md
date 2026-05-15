@@ -107,7 +107,7 @@ uv run -m src.main --git https://github.com/pallets/flask --issue https://github
 ```bash 
 # This script runs LinkAnchor across the Apache dataset (Ambari, Calcite, etc.)
 # Note that this script also downloads and cleans up the dataset.
-python evaluation/run_benchmark.py --projects all
+python3 -m bench.eaklink
 ```
 
 > Results show LinkAnchor outperforms state-of-the-art baselines (EasyLink, EALink) by 41-714% in Hit@1. (For more information, refer to the paper)
