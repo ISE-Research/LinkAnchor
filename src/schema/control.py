@@ -1,4 +1,9 @@
+from enum import Enum
+from typing import List
+
+from openai.types.chat import ChatCompletionMessageParam as Message
 from pydantic import BaseModel, Field
+
 from src.anchor.extractor import Extractor
 
 
@@ -28,11 +33,31 @@ class GiveUp(BaseModel, Control):
         return "LLM gave up, no commit hash found"
 
 
-class Next(BaseModel, Control):
-    """Returns the next batch of commits to be analyzed"""
-
-    def __call__(self, _: Extractor) -> str:
-        return "next system message would contain the next batch of commits"
+class FeedbackValue(str, Enum):
+    DISCARD = "discard"
+    USEFUL = "useful"
 
 
-TOOLS = [Finish, Next, GiveUp]
+class Feedback(BaseModel, Control):
+    """
+    Feedback about the previous tool call.
+    """
+
+    call_id: str = Field(..., description="id of the tool call to discard")
+    Value: FeedbackValue = Field(..., description="either DISCARD or USEFUL")
+
+    def apply_feedback(self, messages: List[Message]) -> List[Message]:
+        if self.Value == FeedbackValue.USEFUL:
+            return messages
+
+        for m in messages:
+            if "tool_call_id" in m and m["tool_call_id"] == self.call_id:
+                m["content"] = "<USELESS_OUTPUT>"
+                break
+        return messages
+
+    def __call__(self, extractor: Extractor) -> str:
+        return "Feedback applied successfully"
+
+
+TOOLS = [Finish, Feedback, GiveUp]

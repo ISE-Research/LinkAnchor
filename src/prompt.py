@@ -1,6 +1,7 @@
 from typing import Any, List
 from git_wrapper import CommitMeta
 from openai.types.chat import ChatCompletionSystemMessageParam as SystemMessage
+from openai.types.chat import ChatCompletionAssistantMessageParam as AssistantMessage
 from openai.types.chat import ChatCompletionUserMessageParam as UserMessage
 from openai.types.chat import ChatCompletionToolMessageParam as ToolMessage
 from openai.types.chat import ParsedFunctionToolCall as ToolCall
@@ -19,7 +20,18 @@ def show_commits(commits: List[CommitMeta]) -> SystemMessage:
     """
     return SystemMessage(
         role="system",
+        name="feedback",
         content=f"current batch of commits to be analyzed consisting of {len(commits)} items:\n{commits}",
+    )
+
+
+def feedback_for(tool_call: ToolCall) -> AssistantMessage:
+    """
+    Prompt for providing feedback about the results of a tool call.
+    """
+    return AssistantMessage(
+        role="assistant",
+        content=f"you SHOULD provide feedback about the results of the function call with id {tool_call.id} by calling the `Feedback` function with either DISCARD or USEFUL as a value and {tool_call.id} as call_id.",
     )
 
 
@@ -67,6 +79,7 @@ def extract_commit_hash(content: str) -> str | None:
 COMMIT_FOUND_MESSAGE = "found commit resolving this issue"
 
 MAX_ITERATIONS = 2000
+SIZE_THRESHOLD = 4096
 
 PROBLEM_EXPLANATION_PROMPT_TEXT = """
 Role & Goals:
@@ -113,6 +126,17 @@ If you found out that the commit is from another repository, you can try to find
 9. When resolving an issue, a developer might split the fix across multiple commits. So in your search, you might come across commits that are a partial fix for the issue. In such cases, you should continue your search until the cumulative changes from all the indentified relevant commits fully resolve the issue and return the last commit hash in the sequence as the commit that resolves the issue.
 
 10. Sometimes the commit message doesn't fully reflect the changes made in the commit. Therefore, you should not solely rely on the commit message to determine if a commit resolves the issue. Instead, you should analyze the actual changes made in the commit to make an informed decision.
+
+11. Among your tools, there is a function called `Feedback` that allows you to provide feedback on the results of the previous function call.
+In each iteration, you SHOULD provide feedback about EACH of the function calls that is requested from you by calling `feedback` function with the id of previous function calls. the value of the feedback is either `DISCARD` or `USEFUL`. if the value is `DISCARD`, the response of that function call is replaced with <USELESS> token to save tokens. each function response has a `call_id` attribute that you can use to submit feedback in the form of calling feedback function. for example:
+# iteration 1: 
+calling CommitsBetween(args...) 
+response = {
+call_id: 12345,
+data: ...
+}
+# iteration 2:
+calling Feedback(call_id=12345, feedback="Discard")
 
 Note: 
 If you are unable to find the commit hash, and you are sure that no more attempts will yield results, you can call the `GiveUp` function.

@@ -1,8 +1,10 @@
 from datetime import datetime
 from typing import List
+
 from pydantic import BaseModel, Field
+
 from src.anchor.extractor import Extractor
-from src.issue_wrapper.wrapper import Pagination, CommentMeta
+from src.issue_wrapper.wrapper import CommentMeta, Pagination
 
 
 class IssueTitle(BaseModel):
@@ -68,4 +70,5 @@ TOOLS = [
     IssueComments,
     IssueCreationTimestamp,
     IssueClosedTimestamp,
+    IssueParticipants,
 ]

@@ -44,7 +44,7 @@ def main():
 
     logging.basicConfig(
         level=log_level,
-        format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+        format="%(asctime)s [%(levelname)s] %(name)s (%(filename)s:%(lineno)d): %(message)s",
     )
     # silence httpx logging
     logging.getLogger("httpx").setLevel(logging.WARNING)
