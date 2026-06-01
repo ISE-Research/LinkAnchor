@@ -107,7 +107,18 @@ uv run -m src.main --git https://github.com/pallets/flask --issue https://github
 ```bash 
 # This script runs LinkAnchor across the Apache dataset (Ambari, Calcite, etc.)
 # Note that this script also downloads and cleans up the dataset.
-python3 -m bench.eaklink
+python3 -m bench.ealink
+
+# Running for a single project for the first N rows
+python3 -m bench.ealink <PROJECT_NAME> --count <NUMBER_OF_ROWS>
+```
+if you've encountered failure during the test, such as OpenAI 400 errors, you can run the following command to rerun the rows that experienced failure:
+```bash 
+python3 -m bench.ealink <PROJECT_NAME> --repair --count <NUMBER_OF_ROWS
+```
+calculating the accuracy:
+```bash 
+python3 -m bench.evaluate data/ealink/results/<PROJECT_CSV_FILE> --count <NUMBER_OF_ROWS>
 ```
 
 > Results show LinkAnchor outperforms state-of-the-art baselines (EasyLink, EALink) by 41-714% in Hit@1. (For more information, refer to the paper)
