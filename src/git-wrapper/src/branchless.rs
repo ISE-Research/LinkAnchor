@@ -26,21 +26,6 @@ impl Display for Branchless {
 }
 
 impl Branchless {
-    fn commits_on_all_branchs(wrapper: &Wrapper) -> Result<Vec<CommitMeta>> {
-        wrapper
-            .list_branches()
-            .iter()
-            .map(|branch| wrapper.commits_of_branch(branch, Pagination::all()))
-            .try_fold(Vec::new(), |acc, commits| {
-                Ok(acc
-                    .into_iter()
-                    .merge(commits?.into_iter().rev())
-                    .dedup()
-                    .collect())
-            })
-            .map(|commits| commits.into_iter().rev().collect())
-    }
-
     pub fn dir(&self) -> &Path {
         self.wrapper.dir()
     }
@@ -78,7 +63,7 @@ impl Branchless {
     #[new]
     pub fn new(repo_url: &str) -> Result<Self> {
         let wrapper = Wrapper::new(repo_url)?;
-        let commits = Self::commits_on_all_branchs(&wrapper)?;
+        let commits = wrapper.commits_from_git_log(vec!["--all"], Pagination::all())?;
 
         Ok(Branchless { wrapper, commits })
     }
@@ -86,7 +71,7 @@ impl Branchless {
     #[staticmethod]
     pub fn from_local(local_dir_path: PathBuf) -> Result<Self> {
         let wrapper = Wrapper::from_local(local_dir_path)?;
-        let commits = Self::commits_on_all_branchs(&wrapper)?;
+        let commits = wrapper.commits_from_git_log(vec!["--all"], Pagination::all())?;
         Ok(Branchless { wrapper, commits })
     }
 
@@ -176,7 +161,9 @@ impl Branchless {
     }
 
     pub fn has_commit(&self, commit_hash: &str) -> bool {
-        self.commits.iter().any(|c| c.hash == commit_hash)
+        self.commits
+            .iter()
+            .any(|c| c.hash.starts_with(commit_hash) || commit_hash.starts_with(&c.hash))
     }
 
     pub fn commits_on_file(

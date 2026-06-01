@@ -81,7 +81,7 @@ def extractor_for_repo(repo_url: str, metrics: Metrics) -> Extractor:
     return e
 
 
-def run_bench(bench_name: str = "",count: int = 100):
+def run_bench(bench_name: str = "", count: int=1000000):
     os.makedirs(results_dir, exist_ok=True)
     all_token_used = 0
 
@@ -120,7 +120,7 @@ def run_bench(bench_name: str = "",count: int = 100):
             logger.info(f"results saved to {os.path.join(results_dir, csv_file)}")
 
 
-def repair(bench_name):
+def repair(bench_name, count: int):
     all_token_used = 0
     metrics = Metrics()
     extractors: dict[str, Extractor] = {}
@@ -134,7 +134,11 @@ def repair(bench_name):
             logger.info(f"Running repair for {csv_file}")
             data = pd.read_csv(os.path.join(results_dir, csv_file))
             for index, row in data.iterrows():
-                if pd.isna(data.loc[index, "error"]):
+                if index > count:
+                    break
+                if pd.isna(data.loc[index, "error"]) and not pd.isna(
+                    data.loc[index, "result"]
+                ):
                     continue
 
                 logger.info(f"Repairing {index}'th row...")
@@ -182,7 +186,7 @@ def bench_single_row(row, index, data, extractors, metrics, project_name) -> int
         data.at[index, "result"] = commit_hash
         data.at[index, "error"] = ""
         data.at[index, "old"] = calculage_issue_age(ga.extractor).days > 365
-        data.at[index,"time"] = elapsed_time.total_seconds()
+        data.at[index, "time"] = elapsed_time.total_seconds()
         data.at[index, "tokens"] = tokens
         if not ga.extractor.has_commit(commit_hash):
             data.at[index, "error"] = f"Commit not found {commit_hash}"
@@ -213,9 +217,15 @@ def bench_single_row(row, index, data, extractors, metrics, project_name) -> int
 
 
 parser = argparse.ArgumentParser(description="EALink benchmark script")
-parser.add_argument("bench_name", nargs="?", help="Name of the benchmark to run", default="")
-parser.add_argument( "--repair", "-r", action="store_true", help="run repair on the benchmark")
-parser.add_argument( "--count", "-c", type=int, help="number of rows to process", default=sys.maxsize)
+parser.add_argument(
+    "bench_name", nargs="?", help="Name of the benchmark to run", default=""
+)
+parser.add_argument(
+    "--repair", "-r", action="store_true", help="run repair on the benchmark"
+)
+parser.add_argument(
+    "--count", "-c", type=int, help="number of rows to process", default=sys.maxsize
+)
 args = parser.parse_args()
 
 ensure_dataset_available()
@@ -223,7 +233,7 @@ ensure_repositories_cloned()
 
 if args.repair:
     # run repair twice to account for any rate limit issues posed by OpenAI API
-    repair(args.bench_name)
-    repair(args.bench_name)
+    repair(args.bench_name, args.count)
+    repair(args.bench_name, args.count)
 else:
-    run_bench(args.bench_name,args.count)
+    run_bench(args.bench_name, args.count)

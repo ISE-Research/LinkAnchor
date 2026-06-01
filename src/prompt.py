@@ -79,7 +79,7 @@ def extract_commit_hash(content: str) -> str | None:
 COMMIT_FOUND_MESSAGE = "found commit resolving this issue"
 
 MAX_ITERATIONS = 2000
-SIZE_THRESHOLD = 4096
+SIZE_THRESHOLD = 4096*10
 
 PROBLEM_EXPLANATION_PROMPT_TEXT = """
 Role & Goals:

@@ -70,13 +70,7 @@ class Agent:
         ]
         feedback_requests = []
 
-        for i in range(prompt.MAX_ITERATIONS):
-            # write all messages into the {i}_messages.text file for debugging
-            with open(f"{i}_messages.txt", "w") as f:
-                for m in messages:
-                    f.write(f"{m}\n")
-
-
+        for _ in range(prompt.MAX_ITERATIONS):
             completion = self.communicate(messages + feedback_requests, tools)
             feedback_requests = []
 
@@ -124,10 +118,6 @@ class Agent:
                         messages = function.apply_feedback(messages)
                         term.log(Color.WHITE, f"Recieved Feedback {function.Value}")
                 try:
-                    term.log(
-                        Color.WHITE,
-                        f"Calling function {function.__repr__()} with extractor",
-                    )
                     # just to saticfy type checking
                     function: Callable[[Extractor], Any] = functionn  # type: ignore
                     result = function(extractor)
@@ -135,7 +125,7 @@ class Agent:
                     if sys.getsizeof(result) > prompt.SIZE_THRESHOLD:
                         term.log(
                             Color.WHITE,
-                            f"The output of {tool_call.id} is too large, asking for feedback",
+                            f"The output is too large, asking for feedback ({tool_call.id})",
                         )
                         feedback_requests.append(prompt.feedback_for(tool_call))
 

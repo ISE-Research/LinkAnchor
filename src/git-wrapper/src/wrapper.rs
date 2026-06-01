@@ -382,7 +382,7 @@ impl Wrapper {
 }
 
 impl Wrapper {
-    fn commits_from_git_log<S: AsRef<OsStr>>(
+    pub(crate) fn commits_from_git_log<S: AsRef<OsStr>>(
         &self,
         git_log_extra_args: Vec<S>,
         pagination: Pagination,
