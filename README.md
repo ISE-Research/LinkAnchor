@@ -4,6 +4,7 @@
 ![License](https://img.shields.io/github/license/ISE-Research/LinkAnchor)
 
 > This repository contains the artifact for the paper **"LinkAnchor: An Autonomous LLM-Based Agent for Issue-to-Commit Link Recovery"**, accepted at FSE 2026.
+> For the exact `FSE'26` replication package, please visit the `fse26` branch.
 
 LinkAnchor is the first autonomous LLM-based agent designed specifically for issue-to-commit link recovery (ILR). Unlike prior methods that score issue-commit pairs in isolation, LinkAnchor treats link recovery as a **dynamic heuristic** search over the commit graph. This allows it to aggregate the entire chain of contributing changes to identify the final resolving commit, effectively recovering distributed fixes.
 
