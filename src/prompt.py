@@ -88,9 +88,7 @@ To accomplish this goal, you will iteratively leverage the provided functions to
 
 At each iteration (except the first one) you are provided with a list of 100 commits. 
 Each time you can use the data extraction tools provided to you to gather data about commits that you suspect might be the target commit and analyze them. 
-When you are done analyzing you can either:
-1. Call `Finish` function with the commit_hash of the commit that resolves the issue to signal the end of the process 
-2. Call `Next` function to get the next batch of 100 commits and you can start from the first step again.
+When you are done analyzing you can call `Finish` function with the commit_hash of the commit that resolves the issue to signal the end of the process 
 
 you keep the above steps until you either find the commit that you are fully sure it resolves the commit or the iteration finishes and there are no commits returned by calling the `Next` function.
 
